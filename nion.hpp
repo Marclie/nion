@@ -925,7 +925,7 @@ constexpr nion<T> exp(const nion<T> &z) noexcept {
         v /= v_norm;
 
     // compute exponential of nion
-    return exp(r) * (cos(v_norm) + v * sin(v_norm));
+    return exp(r) * (v * sin(v_norm) + cos(v_norm));
 }
 
 /**
@@ -952,7 +952,7 @@ constexpr nion<T> log(const nion<T> &z) noexcept {
         v /= v_norm;
 
     // compute natural logarithm of nion
-    return log(z_norm) + v * acos(r / z_norm);
+    return log(z_norm) + v * atan2(v_norm, r);
 }
 
 /**
@@ -1308,7 +1308,7 @@ constexpr nion<T> acsch(const nion<T> &z) noexcept{
  * @tparam T type of the nion.
  * @param z The nion to compute the inverse sine of.
  * @return The inverse sine of the nion.
- * @details The inverse sine of the nion is defined as asin(z) = asin(r + v) = v/|v| * ln(sqrt(1 - z^2) - v/|v| * z).
+ * @details The inverse sine of the nion is defined as asin(z) = asin(r + v) = -v * asinh(v * z);
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Logarithmic_forms
  */
 template<arithmetic T>
@@ -1322,7 +1322,7 @@ constexpr nion<T> asin(const nion<T> &z) noexcept {
         v /= v_norm;
 
     // compute the inv sine of the nion
-    return v * log(sqrt(1 - z*z) - v * z);
+    return -v * asinh(v * z);
 }
 
 /**
@@ -1343,7 +1343,7 @@ constexpr nion<T> acos(const nion<T> &z) noexcept {
  * @tparam T type of the nion.
  * @param z The nion to compute the inverse tangent of.
  * @return The inverse tangent of the nion.
- * @details The inverse tangent of the nion is defined as atan(z) = -0.5*v/|v| * ln((1+v/|v|*z) / (1-v/|v|*z)).
+ * @details The inverse tangent of the nion is defined as atan(z) = v * atanh(-v*z);
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Logarithmic_forms
  */
@@ -1358,7 +1358,7 @@ constexpr nion<T> atan(const nion<T> &z) noexcept {
         v /= v_norm;
 
     // compute the inv tangent of the nion
-    return -0.5l * v * log((1 + v * z) * 1/(1 - v * z));
+    return v * atanh(-v*z);
 }
 
 /**
@@ -1401,7 +1401,7 @@ constexpr nion<T> acsc(const nion<T> &z) noexcept {
 }
 
 /***************************
-    *  NION GAMMA FUNCTIONS *
+    *  NION GAMMA FUNCTION *
     ***************************/
 
 /**
