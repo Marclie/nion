@@ -217,8 +217,37 @@ void stdComplexComparison(int trials) {
             addStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to total addition difference
-            T diff = std::abs(nionResult - stdResult);
+            diff = std::abs(nionResult - stdResult);
             totalAdd += diff;
+        }
+
+        /// conjugate
+        {
+            // evaluate nion conjugate, and time
+            startNion = std::chrono::high_resolution_clock::now();
+            nionResult = abs(nion_complex1.conj());
+            endNion = std::chrono::high_resolution_clock::now();
+
+            conjNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
+            nionResult = abs(nion_complex2.conj());
+            endNion = std::chrono::high_resolution_clock::now();
+            conjNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
+
+            // evaluate std::complex conjugate, and time
+            startStd = std::chrono::high_resolution_clock::now();
+            stdResult = norm(std::conj(complex1));
+            endStd = std::chrono::high_resolution_clock::now();
+            conjStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
+
+            startStd = std::chrono::high_resolution_clock::now();
+            stdResult = norm(std::conj(complex2));
+            endStd = std::chrono::high_resolution_clock::now();
+            conjStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
+
+            // get difference between nion and std::complex norms. Add to total conjugate difference
+            diff = std::abs(nionResult - stdResult);
+            totalConj += diff;
+
         }
 
         /// multiplication
@@ -257,35 +286,6 @@ void stdComplexComparison(int trials) {
             // get difference between nion and std::complex norms. Add to total division difference
             diff = std::abs(nionResult - stdResult);
             totalDiv += diff;
-
-            /// conjugate
-            {
-                // evaluate nion conjugate, and time
-                startNion = std::chrono::high_resolution_clock::now();
-                nionResult = abs(nion_complex1.conj());
-                endNion = std::chrono::high_resolution_clock::now();
-
-                conjNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
-                nionResult = abs(nion_complex2.conj());
-                endNion = std::chrono::high_resolution_clock::now();
-                conjNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
-
-                // evaluate std::complex conjugate, and time
-                startStd = std::chrono::high_resolution_clock::now();
-                stdResult = norm(std::conj(complex1));
-                endStd = std::chrono::high_resolution_clock::now();
-                conjStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
-
-                startStd = std::chrono::high_resolution_clock::now();
-                stdResult = norm(std::conj(complex2));
-                endStd = std::chrono::high_resolution_clock::now();
-                conjStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
-
-                // get difference between nion and std::complex norms. Add to total conjugate difference
-                diff = std::abs(nionResult - stdResult);
-                totalConj += diff;
-
-            }
         }
     }
 
@@ -293,6 +293,10 @@ void stdComplexComparison(int trials) {
     std::cout << "Average addition time for nion: " << addNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average addition time for std::complex: " << addStdTimer / trialfp << " ns" << std::endl;
     std::cout << "Average difference between nion and std::complex: " << totalAdd / trialfp << std::endl;
+
+    std::cout << "\nAverage conjugate time for nion: " << conjNionTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average conjugate time for std::complex: " << conjStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalConj / trialfp << std::endl;
 
     std::cout << "\nAverage multiplication time for nion: " << mulNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average multiplication time for std::complex: " << mulStdTimer / trialfp << " ns" << std::endl;
@@ -302,16 +306,14 @@ void stdComplexComparison(int trials) {
     std::cout << "Average division time for std::complex: " << divStdTimer / trialfp << " ns" << std::endl;
     std::cout << "Average difference between nion and std::complex: " << totalDiv / trialfp << std::endl;
 
-    std::cout << "\nAverage conjugate time for nion: " << conjNionTimer / trialfp << " ns" << std::endl;
-    std::cout << "Average conjugate time for std::complex: " << conjStdTimer / trialfp << " ns" << std::endl;
-    std::cout << "Average difference between nion and std::complex: " << totalConj / trialfp << std::endl;
+
 }
 
 int main() {
 
     std::cout.precision(17);
 
-    int trials = 1000;
+    int trials = 1000000;
     std::cout << "nion complex number library" << std::endl;
     order2Test();
     stdComplexComparison<long double>(trials);

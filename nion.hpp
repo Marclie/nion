@@ -206,8 +206,9 @@ struct nion {
      * @brief overload the - operator for a nion.
      * @return The negation of the nion.
      */
-    nion<T> operator-() const {
+    inline nion<T> operator-() const {
         nion<T> negated(*this);
+        #pragma simd
         for (std::size_t i = 0; i < order; i++) {
             negated.components[i] = -components[i];
         }
@@ -220,9 +221,10 @@ struct nion {
      * @detail (a,b)* = (a*,-b)
      * @note This is a recursive function.
      */
-    nion<T> conj() const {
+    inline nion<T> conj() const {
         nion<T> conjugate(*this);
         // negate all components except the first
+        #pragma simd
         for (std::size_t i = 1; i < order; i++) {
             conjugate.components[i] = -components[i];
         }
@@ -234,12 +236,13 @@ struct nion {
      * @param other The nion to add to this nion.
      * @return The sum of this nion and the other nion inplace.
      */
-    void operator+=(const nion <T> &other) {
+    inline void operator+=(const nion <T> &other) {
         // if the order is less than the other nion, resize this nion.
         if (this->order < other.order) {
             *this = this->resize(other.order);
         }
         // add the components of the other nion to this nion.
+        #pragma simd
         for (std::size_t i = 0; i < other.order; i++) {
             this->components[i] += other.components[i];
         }
@@ -250,12 +253,13 @@ struct nion {
      * @param other The nion to substract from this nion.
      * @return The subtraction of this nion and the other nion inplace.
      */
-    void operator-=(const nion <T> &other) {
+    inline void operator-=(const nion <T> &other) {
         // if the order is less than the other nion, resize this nion.
         if (this->order < other.order) {
             *this = this->resize(other.order);
         }
         // substract the components of the other nion from this nion.
+        #pragma simd
         for (std::size_t i = 0; i < other.order; i++) {
             this->components[i] -= other.components[i];
         }
@@ -312,7 +316,7 @@ struct nion {
      * @note product has the same order as the larger order of the two nions.
      * @note This is recursive function.
      */
-    nion<T> operator*(const nion <T> &other) const {
+    inline nion<T> operator*(const nion <T> &other) const {
 
         // check if the order is greater than zero
         if (order <= 0) {
@@ -355,7 +359,7 @@ struct nion {
      * @brief compute the inverse of the nion.
      * @return The inverse of the nion.
      */
-    nion<T> inv() const {
+    inline nion<T> inv() const {
         return conj() / abs();
     };
 
@@ -375,6 +379,7 @@ struct nion {
      */
     T dot(const nion<T> &other) const {
         T dotProduct = 0;
+        #pragma simd
         for (std::size_t i = 0; i < order; i++) {
             dotProduct += components[i] * other.components[i];
         }
@@ -451,6 +456,7 @@ struct nion {
         if (order != other.order) {
             return false;
         }
+        #pragma simd
         for (std::size_t i = 0; i < order; i++) {
             if (std::abs(components[i] - other.components[i]) >= epsilon) {
                 return false;
@@ -469,6 +475,7 @@ struct nion {
         if (order != other.order) {
             return true;
         }
+        #pragma simd
         for (std::size_t i = 0; i < order; i++) {
             if (std::abs(components[i] - other.components[i]) >= epsilon) {
                 return true;
@@ -552,8 +559,9 @@ struct nion {
      * @return The product of this nion and the scalar.
      */
     template<arithmetic S>
-    nion<T> operator*(S scalar) const {
+    inline nion<T> operator*(S scalar) const {
         nion<T> product(*this);
+        #pragma simd
         for (std::size_t i = 0; i < order; i++) {
             product.components[i] *= scalar;
         }
@@ -578,7 +586,7 @@ struct nion {
      * @return The sum of this nion and the scalar inplace.
      */
     template<arithmetic S>
-    void operator+=(S scalar) const {
+    inline void operator+=(S scalar) const {
         this->components[0] += scalar;
     };
 
@@ -589,7 +597,7 @@ struct nion {
      * @return The subtraction of this nion and the scalar inplace.
      */
     template<arithmetic S>
-    void operator-=(S scalar) const {
+    inline void operator-=(S scalar) const {
         this->components[0] -= scalar;
     };
 
@@ -624,10 +632,11 @@ struct nion {
      *          and all other components are equal to zero.
      */
     template<arithmetic S>
-    bool operator==(S scalar) const {
+    inline bool operator==(S scalar) const {
         if (real() != scalar) {
             return false;
         }
+        #pragma simd
         for (std::size_t i = 1; i < order; i++) {
             if (components[i] != 0) {
                 return false;
@@ -645,10 +654,11 @@ struct nion {
      *          and all other components are equal to zero.
      */
     template<arithmetic S>
-    bool operator!=(S scalar) const {
+    inline bool operator!=(S scalar) const {
         if (real() != scalar) {
             return true;
         }
+        #pragma simd
         for (std::size_t i = 1; i < order; i++) {
             if (components[i] != 0) {
                 return true;
@@ -753,6 +763,7 @@ bool operator!=(S scalar, const nion<T> &z) {
 std::ostream &operator<<(std::ostream &os, const nion<T> &z) {
     T component = z.components[0];
     os << component;
+
     for (int i = 1; i < z.order; i++) {
         component = z.components[i];
         os << " + " << component << " e" << i;
