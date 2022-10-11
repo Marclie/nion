@@ -40,31 +40,28 @@ concept arithmetic = std::is_arithmetic<T>::value;
 template<arithmetic T>
 struct nion {
     T* components;
-    uint_fast8_t order;
+    std::size_t order;
     static constexpr T epsilon = std::numeric_limits<T>::epsilon();
 
     /**
      * @brief Default constructor.
      * @details Constructs a nion object with only real component with value 0.
      */
-    nion() {
-        *this = nion<T>(1);
-    };
+    nion<T>() : components(&T(0)), order(1) {};
 
     /**
      * @brief Construct a new nion object from vector
      * @param components The components of the nion.
      * @param order The order of the nion.
      */
-    explicit nion(const T* &components, uint_fast8_t order) {
-        this->order = order;
+    explicit nion<T>(const T* &components, std::size_t order) : order(order) {
 
         // check if the order is greater than zero
         if (order <= 0) {
             throw std::invalid_argument("The order of the nions must be greater than zero.");
         }
 
-        this->components = (T*)calloc(order, sizeof(T));
+        this->components = (T*) malloc(order * sizeof(T));
         std::memcpy(this->components, components, order * sizeof(T));
     };
 
@@ -72,12 +69,11 @@ struct nion {
      * @brief Construct a new nion object from brace initializer list
      * @param order The order of the nion.
      */
-    nion(const std::initializer_list<T> &components) {
-        this->order = components.size();
+    nion<T>(const std::initializer_list<T> &components) : order(components.size()) {
         if (order <= 0) {
             throw std::invalid_argument("The order of the nions must be greater than zero.");
         }
-        this->components = (T*)calloc(order, sizeof(T));
+        this->components = (T*) malloc(order * sizeof(T));
         std::memcpy(this->components, components.begin(), order * sizeof(T));
     };
 
@@ -85,9 +81,22 @@ struct nion {
      * @brief Construct an empty nion object
      * @param order The order of the nion.
      */
-    explicit nion(uint_fast8_t order) {
-        this->order = order;
-        this->components = (T*)calloc(order, sizeof(T));
+    explicit nion<T>(std::size_t order) : order(order) {
+        this->components = (T*) malloc(this->order * sizeof(T));
+        std::memset(this->components, 0, order * sizeof(T));
+    };
+
+    /**
+     * @brief copy constructor
+     * @param other The nion to copy.
+     * @return A copy of the nion.
+     * @note This is a deep copy.
+     */
+    nion<T>(const nion<T> &other) : order(other.order) {
+        if (&other != this) {
+            this->components = (T*) malloc(order * sizeof(T));
+            std::memcpy(this->components, other.components, order * sizeof(T));
+        }
     };
 
     /**
@@ -98,8 +107,10 @@ struct nion {
      * @note This is a convenience function for creating a nion from a scalar.
      */
     template<arithmetic S>
-    explicit nion(S realVal, uint_fast8_t order) {
-        *this = nion<T>(order);
+    explicit nion<T>(S realVal, std::size_t order) : order(order) {
+        this->components = (T*) malloc(order * sizeof(T));
+        std::memset(this->components, 0, order * sizeof(T));
+
         this->components[0] = realVal;
     };
 
@@ -109,8 +120,10 @@ struct nion {
      * @param complex The std::complex object.
      * @return nion<T> The nion object.
      */
-    explicit nion(std::complex<T> complex) {
-        *this = nion<T>(2);
+    explicit nion<T>(std::complex<T> complex) : order(2) {
+        this->components = (T*) malloc(order * sizeof(T));
+        memset(this->components, 0, order * sizeof(T));
+
         this->components[0] = complex.real();
         this->components[1] = complex.imag();
     };
@@ -118,9 +131,7 @@ struct nion {
     /**
      * @brief Destroy the nion object
      */
-    ~nion() {
-        free(components);
-    };
+    ~nion<T>() { free(this->components); };
 
     /**
      * @brief get the left pair of the nion. a in (a,b)
@@ -129,7 +140,7 @@ struct nion {
      * @return The left pair of the nion.
      */
     nion<T> left() const {
-        unsigned int halfOrder = order / 2;
+        std::size_t halfOrder = order / 2;
         nion<T> a(halfOrder);
         std::memcpy(a.components, components, (order - halfOrder) * sizeof(T));
         return a;
@@ -142,7 +153,7 @@ struct nion {
      * @return The right pair of the nion.
      */
     nion<T> right() const {
-        uint_fast8_t halfOrder = order - order / 2;
+        std::size_t halfOrder = order - order / 2;
         nion<T> b(halfOrder);
         std::memcpy(b.components, components + (order - halfOrder), halfOrder * sizeof(T));
         return b;
@@ -156,22 +167,12 @@ struct nion {
      * @return The nion constructed from the half order nions.
      * @note This is a convenience function for constructing a nion from pairing two half order nions.
      */
-     nion(const nion<T> &a, const nion<T> &b) {
-        *this = nion<T>(a.order + b.order);
+     nion<T>(const nion<T> &a, const nion<T> &b) : order(a.order + b.order) {
+        this->components = (T*) malloc(order * sizeof(T));
+        memset(this->components, 0, order * sizeof(T));
+
         std::memcpy(this->components, a.components, a.order * sizeof(T));
         std::memcpy(this->components + a.order, b.components, b.order * sizeof(T));
-    };
-
-    /**
-     * @brief copy constructor
-     * @param other The nion to copy.
-     * @return A copy of the nion.
-     * @note This is a deep copy.
-     */
-    nion(const nion<T> &other) {
-        this->order = other.order;
-        this->components = (T*)calloc(order, sizeof(T));
-        std::memcpy(this->components, other.components, order * sizeof(T));
     };
 
     /**
@@ -181,9 +182,12 @@ struct nion {
      * @note This is a deep copy.
      */
     nion<T> &operator=(const nion<T> &other) {
-        this->order = other.order;
-        this->components = (T*)calloc(order, sizeof(T));
-        std::memcpy(this->components, other.components, order * sizeof(T));
+        if (&other != this) {
+            this->order = other.order;
+            this->components = (T * )
+            malloc(order * sizeof(T));
+            std::memcpy(this->components, other.components, order * sizeof(T));
+        }
         return *this;
     };
 
@@ -204,7 +208,7 @@ struct nion {
      */
     nion<T> operator-() const {
         nion<T> negated(*this);
-        for (uint_fast8_t i = 0; i < order; i++) {
+        for (std::size_t i = 0; i < order; i++) {
             negated.components[i] = -components[i];
         }
         return negated;
@@ -219,7 +223,7 @@ struct nion {
     nion<T> conj() const {
         nion<T> conjugate(*this);
         // negate all components except the first
-        for (uint_fast8_t i = 1; i < order; i++) {
+        for (std::size_t i = 1; i < order; i++) {
             conjugate.components[i] = -components[i];
         }
         return conjugate;
@@ -236,7 +240,7 @@ struct nion {
             *this = this->resize(other.order);
         }
         // add the components of the other nion to this nion.
-        for (uint_fast8_t i = 0; i < other.order; i++) {
+        for (std::size_t i = 0; i < other.order; i++) {
             this->components[i] += other.components[i];
         }
     };
@@ -252,7 +256,7 @@ struct nion {
             *this = this->resize(other.order);
         }
         // substract the components of the other nion from this nion.
-        for (uint_fast8_t i = 0; i < other.order; i++) {
+        for (std::size_t i = 0; i < other.order; i++) {
             this->components[i] -= other.components[i];
         }
     };
@@ -371,7 +375,7 @@ struct nion {
      */
     T dot(const nion<T> &other) const {
         T dotProduct = 0;
-        for (uint_fast8_t i = 0; i < order; i++) {
+        for (std::size_t i = 0; i < order; i++) {
             dotProduct += components[i] * other.components[i];
         }
         return dotProduct;
@@ -424,7 +428,7 @@ struct nion {
      * @return The nion converted to the new order.
      * @note newOrder must be larger than the current order.
      */
-    nion<T> resize(unsigned int newOrder) const {
+    nion<T> resize(std::size_t newOrder) const {
 
         // keep the same order if the new order is smaller than the current order
         if (newOrder <= order) {
@@ -447,7 +451,7 @@ struct nion {
         if (order != other.order) {
             return false;
         }
-        for (uint_fast8_t i = 0; i < order; i++) {
+        for (std::size_t i = 0; i < order; i++) {
             if (std::abs(components[i] - other.components[i]) >= epsilon) {
                 return false;
             }
@@ -465,7 +469,7 @@ struct nion {
         if (order != other.order) {
             return true;
         }
-        for (uint_fast8_t i = 0; i < order; i++) {
+        for (std::size_t i = 0; i < order; i++) {
             if (std::abs(components[i] - other.components[i]) >= epsilon) {
                 return true;
             }
@@ -550,7 +554,7 @@ struct nion {
     template<arithmetic S>
     nion<T> operator*(S scalar) const {
         nion<T> product(*this);
-        for (uint_fast8_t i = 0; i < order; i++) {
+        for (std::size_t i = 0; i < order; i++) {
             product.components[i] *= scalar;
         }
         return product;
@@ -624,7 +628,7 @@ struct nion {
         if (real() != scalar) {
             return false;
         }
-        for (uint_fast8_t i = 1; i < order; i++) {
+        for (std::size_t i = 1; i < order; i++) {
             if (components[i] != 0) {
                 return false;
             }
@@ -645,7 +649,7 @@ struct nion {
         if (real() != scalar) {
             return true;
         }
-        for (uint_fast8_t i = 1; i < order; i++) {
+        for (std::size_t i = 1; i < order; i++) {
             if (components[i] != 0) {
                 return true;
             }
@@ -754,7 +758,7 @@ std::ostream &operator<<(std::ostream &os, const nion<T> &z) {
         os << " + " << component << " e" << i;
     }
     return os;
-};
+}
 
 /**
  * @brief overload the >> operator for nions.
@@ -768,7 +772,7 @@ std::istream &operator>>(std::istream &is, nion<T> &z) {
         is >> z.components[i];
     }
     return is;
-};
+}
 
 /***************************
     *  NION FUNCTION IMPLEMENTATIONS *
@@ -904,12 +908,11 @@ nion<T> exp(const nion<T> &z) noexcept {
 
     // make unit vector
     T v_norm = v.norm();
-    nion<T> v_unit = v;
     if (v_norm != 0)
-        v_unit /= v_norm;
+        v /= v_norm;
 
     // compute exponential of nion
-    return exp(r) * (cos(v_norm) + v_unit * sin(v_norm));
+    return exp(r) * (cos(v_norm) + v * sin(v_norm));
 }
 
 /**
@@ -932,12 +935,11 @@ nion<T> log(const nion<T> &z) noexcept {
     T v_norm = v.norm();
 
     // make unit vector
-    nion<T> v_unit = v;
     if (v_norm != 0)
-        v_unit /= v_norm;
+        v /= v_norm;
 
     // compute natural logarithm of nion
-    return log(z_norm) + v_unit * acos(r / z_norm);
+    return log(z_norm) + v * acos(r / z_norm);
 }
 
 /**
@@ -1117,12 +1119,11 @@ nion<T> sin(const nion<T> &z) noexcept{
 
     // make unit vector
     T v_norm = v.norm();
-    nion<T> v_unit = v;
     if (v_norm != 0)
-        v_unit /= v_norm;
+        v /= v_norm;
 
     // compute the sine of the nion
-    return sin(r) * cosh(v_norm) + v_unit * sinh(v_norm) * cos(r);
+    return sin(r) * cosh(v_norm) + v * sinh(v_norm) * cos(r);
 }
 
 /**
@@ -1142,12 +1143,11 @@ nion<T> cos(const nion<T> &z) noexcept{
 
     // make unit vector
     T v_norm = v.norm();
-    nion<T> v_unit = v;
     if (v_norm != 0)
-        v_unit /= v_norm;
+        v /= v_norm;
 
     // compute the cosine of the nion
-    return cos(r) * cosh(v_norm) - v_unit * sinh(v_norm) * sin(r);
+    return cos(r) * cosh(v_norm) - v * sinh(v_norm) * sin(r);
 }
 
 /**
@@ -1303,11 +1303,13 @@ nion<T> asin(const nion<T> &z) noexcept {
     // get the polar form of the nion
     nion<T> v = z.imag();
 
-    // compute the unit vector of the imaginary part
-    nion<T> v_unit = v / norm(v);
+    // make unit vector
+    T v_norm = v.norm();
+    if (v_norm != 0)
+        v /= v_norm;
 
     // compute the inv sine of the nion
-    return v_unit * log(sqrt(1 - z*z) - v_unit * z);
+    return v * log(sqrt(1 - z*z) - v * z);
 }
 
 /**
@@ -1337,11 +1339,13 @@ nion<T> atan(const nion<T> &z) noexcept {
     // get the polar form of the nion
     nion<T> v = z.imag();
 
-    // compute the unit vector of the imaginary part
-    nion<T> v_unit = v / norm(v);
+    // make unit vector
+    T v_norm = v.norm();
+    if (v_norm != 0)
+        v /= v_norm;
 
     // compute the inv tangent of the nion
-    return -0.5l * v_unit * log((1 + v_unit * z) * 1/(1 - v_unit * z));
+    return -0.5l * v * log((1 + v * z) * 1/(1 - v * z));
 }
 
 /**
