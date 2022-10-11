@@ -47,14 +47,16 @@ struct nion {
      * @brief Default constructor.
      * @details Constructs a nion object with only real component with value 0.
      */
-    nion<T>() : components(&T(0)), order(1) {};
+    constexpr nion<T>() : components((T*)malloc(sizeof(T))), order(1) {
+        components[0] = 0;
+    }
 
     /**
      * @brief Construct a new nion object from vector
      * @param components The components of the nion.
      * @param order The order of the nion.
      */
-    explicit nion<T>(const T* &components, std::size_t order) : order(order) {
+    constexpr explicit nion<T>(const T* &components, std::size_t order) : order(order) {
 
         // check if the order is greater than zero
         if (order <= 0) {
@@ -69,7 +71,7 @@ struct nion {
      * @brief Construct a new nion object from brace initializer list
      * @param order The order of the nion.
      */
-    nion<T>(const std::initializer_list<T> &components) : order(components.size()) {
+    constexpr nion<T>(const std::initializer_list<T> &components) : order(components.size()) {
         if (order <= 0) {
             throw std::invalid_argument("The order of the nions must be greater than zero.");
         }
@@ -81,7 +83,7 @@ struct nion {
      * @brief Construct an empty nion object
      * @param order The order of the nion.
      */
-    explicit nion<T>(std::size_t order) : order(order) {
+    constexpr explicit nion<T>(std::size_t order) : order(order) {
         this->components = (T*) malloc(this->order * sizeof(T));
         std::memset(this->components, 0, order * sizeof(T));
     };
@@ -92,7 +94,7 @@ struct nion {
      * @return A copy of the nion.
      * @note This is a deep copy.
      */
-    nion<T>(const nion<T> &other) : order(other.order) {
+    constexpr nion<T>(const nion<T> &other) : order(other.order) {
         if (&other != this) {
             this->components = (T*) malloc(order * sizeof(T));
             std::memcpy(this->components, other.components, order * sizeof(T));
@@ -107,7 +109,7 @@ struct nion {
      * @note This is a convenience function for creating a nion from a scalar.
      */
     template<arithmetic S>
-    explicit nion<T>(S realVal, std::size_t order) : order(order) {
+    constexpr explicit nion<T>(S realVal, std::size_t order) : order(order) {
         this->components = (T*) malloc(order * sizeof(T));
         std::memset(this->components, 0, order * sizeof(T));
 
@@ -120,7 +122,7 @@ struct nion {
      * @param complex The std::complex object.
      * @return nion<T> The nion object.
      */
-    explicit nion<T>(std::complex<T> complex) : order(2) {
+    constexpr explicit nion<T>(std::complex<T> complex) : order(2) {
         this->components = (T*) malloc(order * sizeof(T));
         memset(this->components, 0, order * sizeof(T));
 
@@ -139,7 +141,7 @@ struct nion {
      * @param nion The nion to get the left pair of.
      * @return The left pair of the nion.
      */
-    nion<T> left() const {
+    constexpr nion<T> left() const {
         std::size_t halfOrder = order / 2;
         nion<T> a(halfOrder);
         std::memcpy(a.components, components, (order - halfOrder) * sizeof(T));
@@ -152,7 +154,7 @@ struct nion {
      * @param nion The nion to get the right pair of.
      * @return The right pair of the nion.
      */
-    nion<T> right() const {
+    constexpr nion<T> right() const {
         std::size_t halfOrder = order - order / 2;
         nion<T> b(halfOrder);
         std::memcpy(b.components, components + (order - halfOrder), halfOrder * sizeof(T));
@@ -167,7 +169,7 @@ struct nion {
      * @return The nion constructed from the half order nions.
      * @note This is a convenience function for constructing a nion from pairing two half order nions.
      */
-     nion<T>(const nion<T> &a, const nion<T> &b) : order(a.order + b.order) {
+    constexpr nion<T>(const nion<T> &a, const nion<T> &b) : order(a.order + b.order) {
         this->components = (T*) malloc(order * sizeof(T));
         memset(this->components, 0, order * sizeof(T));
 
@@ -181,7 +183,7 @@ struct nion {
      * @return A copy of the nion.
      * @note This is a deep copy.
      */
-    nion<T> &operator=(const nion<T> &other) {
+    constexpr nion<T> &operator=(const nion<T> &other) {
         if (&other != this) {
             this->order = other.order;
             this->components = (T * )
@@ -197,7 +199,7 @@ struct nion {
      * @return The nion constructed from the scalar.
      * @note This is a convenience function for constructing a nion from a scalar.
      */
-    nion<T> &operator=(T scalar) {
+    constexpr nion<T> &operator=(T scalar) {
         *this = nion<T>(scalar, 1);
         return *this;
     };
@@ -206,8 +208,9 @@ struct nion {
      * @brief overload the - operator for a nion.
      * @return The negation of the nion.
      */
-    nion<T> operator-() const {
+    constexpr nion<T> operator-() const {
         nion<T> negated(*this);
+        #pragma simd
         for (std::size_t i = 0; i < order; i++) {
             negated.components[i] = -components[i];
         }
@@ -220,9 +223,10 @@ struct nion {
      * @detail (a,b)* = (a*,-b)
      * @note This is a recursive function.
      */
-    nion<T> conj() const {
+    constexpr nion<T> conj() const {
         nion<T> conjugate(*this);
         // negate all components except the first
+        #pragma simd
         for (std::size_t i = 1; i < order; i++) {
             conjugate.components[i] = -components[i];
         }
@@ -234,12 +238,13 @@ struct nion {
      * @param other The nion to add to this nion.
      * @return The sum of this nion and the other nion inplace.
      */
-    void operator+=(const nion <T> &other) {
+    constexpr void operator+=(const nion <T> &other) {
         // if the order is less than the other nion, resize this nion.
         if (this->order < other.order) {
             *this = this->resize(other.order);
         }
         // add the components of the other nion to this nion.
+        #pragma simd
         for (std::size_t i = 0; i < other.order; i++) {
             this->components[i] += other.components[i];
         }
@@ -250,12 +255,13 @@ struct nion {
      * @param other The nion to substract from this nion.
      * @return The subtraction of this nion and the other nion inplace.
      */
-    void operator-=(const nion <T> &other) {
+    constexpr void operator-=(const nion <T> &other) {
         // if the order is less than the other nion, resize this nion.
         if (this->order < other.order) {
             *this = this->resize(other.order);
         }
         // substract the components of the other nion from this nion.
+        #pragma simd
         for (std::size_t i = 0; i < other.order; i++) {
             this->components[i] -= other.components[i];
         }
@@ -266,7 +272,7 @@ struct nion {
      * @param other The nion to multiply this nion by.
      * @return The product of this nion and the other nion inplace.
      */
-    void operator*=(const nion <T> &other) {
+    constexpr void operator*=(const nion <T> &other) {
         *this = *this * other;
     };
 
@@ -275,7 +281,7 @@ struct nion {
      * @param other The nion to divide this nion by.
      * @return The division of this nion and the other nion inplace.
      */
-    void operator/=(const nion <T> &other) {
+    constexpr void operator/=(const nion <T> &other) {
         // if the order is less than the other nion, resize this nion.
         *this = *this / other;
     };
@@ -285,7 +291,7 @@ struct nion {
      * @param other The nion to add to this nion.
      * @return The sum of this nion and the other nion.
      */
-    nion<T> operator+(const nion <T> &other) const {
+    constexpr nion<T> operator+(const nion <T> &other) const {
         nion<T> sum(*this);
         sum += other;
         return sum;
@@ -296,7 +302,7 @@ struct nion {
      * @param other The nion to substract this nion by.
      * @return The subtraction of this nion and the other nion.
      */
-    nion<T> operator-(const nion <T> &other) const {
+    constexpr nion<T> operator-(const nion <T> &other) const {
         nion<T> difference(*this);
         difference -= other;
         return difference;
@@ -312,7 +318,7 @@ struct nion {
      * @note product has the same order as the larger order of the two nions.
      * @note This is recursive function.
      */
-    nion<T> operator*(const nion <T> &other) const {
+    constexpr nion<T> operator*(const nion <T> &other) const {
 
         // check if the order is greater than zero
         if (order <= 0) {
@@ -355,7 +361,7 @@ struct nion {
      * @brief compute the inverse of the nion.
      * @return The inverse of the nion.
      */
-    nion<T> inv() const {
+    constexpr nion<T> inv() const {
         return conj() / abs();
     };
 
@@ -364,7 +370,7 @@ struct nion {
      * @param other The nion to divide this nion by.
      * @return The division of this nion and the other nion.
      */
-    nion<T> operator/(const nion <T> &other) const {
+    constexpr nion<T> operator/(const nion <T> &other) const {
         return *this * other.inv();
     };
 
@@ -373,8 +379,9 @@ struct nion {
      * @param other The nion to compute the dot product with.
      * @return The dot product of this nion and the other nion.
      */
-    T dot(const nion<T> &other) const {
+    constexpr T dot(const nion<T> &other) const {
         T dotProduct = 0;
+        #pragma simd
         for (std::size_t i = 0; i < order; i++) {
             dotProduct += components[i] * other.components[i];
         }
@@ -386,7 +393,7 @@ struct nion {
      * @return The absolute value of the nion.
      * @details The absolute value of the nion is the sum of the squares of its components.
      */
-    T abs() const {
+    constexpr T abs() const {
         return this->dot(*this);
     };
 
@@ -395,7 +402,7 @@ struct nion {
      * @return The norm of the nion.
      * @details The norm of a nion is the sqrt of the sum of the squares of its components.
      */
-    T norm() const { return sqrt(abs()); };
+    constexpr T norm() const { return sqrt(abs()); };
 
     /**
      * @brief project nion to the real line.
@@ -404,19 +411,19 @@ struct nion {
      * @return The projection of the nion to the real line.
      * @details computes the length of the nion and does the shortest rotation to the real line.
      */
-    nion<T> proj() const { return copysign(norm(), real()); }
+    constexpr nion<T> proj() const { return copysign(norm(), real()); }
 
     /**
      * @brief return real part of the nion.
      * @return The real part of the nion.
      */
-    T real() const { return components[0]; }
+    constexpr T real() const { return components[0]; }
 
     /**
      * @brief Calculate the imaginary components of a nion.
      * @return The imaginary components of the nion.
      */
-    nion<T> imag() const {
+    constexpr nion<T> imag() const {
         nion<T> imaginary(*this);
         imaginary.components[0] = 0;
         return imaginary;
@@ -428,7 +435,7 @@ struct nion {
      * @return The nion converted to the new order.
      * @note newOrder must be larger than the current order.
      */
-    nion<T> resize(std::size_t newOrder) const {
+    constexpr nion<T> resize(std::size_t newOrder) const {
 
         // keep the same order if the new order is smaller than the current order
         if (newOrder <= order) {
@@ -447,10 +454,11 @@ struct nion {
      * @return True if the nions are equal, false otherwise.
      * @details Two nions are equal if they have the same order and the same components.
      */
-    bool operator==(const nion <T> &other) const {
+    constexpr bool operator==(const nion <T> &other) const {
         if (order != other.order) {
             return false;
         }
+        #pragma simd
         for (std::size_t i = 0; i < order; i++) {
             if (std::abs(components[i] - other.components[i]) >= epsilon) {
                 return false;
@@ -465,10 +473,11 @@ struct nion {
      * @return True if the nions are not equal, false otherwise.
      * @details Two nions are equal if they have the same order and the same components.
      */
-    bool operator!=(const nion <T> &other) const {
+    constexpr bool operator!=(const nion <T> &other) const {
         if (order != other.order) {
             return true;
         }
+        #pragma simd
         for (std::size_t i = 0; i < order; i++) {
             if (std::abs(components[i] - other.components[i]) >= epsilon) {
                 return true;
@@ -484,7 +493,7 @@ struct nion {
      * @details sorting is undefined for nions with orders greater than 1. However, we can still compare
      *         nions with orders greater than 1 by comparing the projections of the nions onto the real line.
      */
-    bool operator>(const nion <T> &other) const {
+    constexpr bool operator>(const nion <T> &other) const {
         return proj() > other.proj();
     };
 
@@ -495,7 +504,7 @@ struct nion {
      * @details sorting is undefined for nions with orders greater than 1. However, we can still compare
      *         nions with orders greater than 1 by comparing the projections of the nions onto the real line.
      */
-    bool operator<(const nion <T> &other) const {
+    constexpr bool operator<(const nion <T> &other) const {
         return proj() < other.proj();
     };
 
@@ -506,7 +515,7 @@ struct nion {
      * @details sorting is undefined for nions with orders greater than 1. However, we can still compare
      *         nions with orders greater than 1 by comparing the projections of the nions onto the real line.
      */
-    bool operator>=(const nion <T> &other) const {
+    constexpr bool operator>=(const nion <T> &other) const {
         return proj() >= other.proj();
     };
 
@@ -517,7 +526,7 @@ struct nion {
      * @details sorting is undefined for nions with orders greater than 1. However, we can still compare
      *         nions with orders greater than 1 by comparing the projections of the nions onto the real line.
      */
-    bool operator<=(const nion <T> &other) const {
+    constexpr bool operator<=(const nion <T> &other) const {
         return proj() <= other.proj();
     };
 
@@ -528,7 +537,7 @@ struct nion {
      * @return The sum of this nion and the scalar.
      */
     template<arithmetic S>
-    nion<T> operator+(S scalar) const {
+    constexpr nion<T> operator+(S scalar) const {
         nion<T> sum(*this);
         sum.components[0] += scalar;
         return sum;
@@ -541,7 +550,7 @@ struct nion {
      * @return The subtraction of this nion and the scalar.
      */
     template<arithmetic S>
-    nion<T> operator-(S scalar) const {
+    constexpr nion<T> operator-(S scalar) const {
         return *this + (-scalar);
     };
 
@@ -552,8 +561,9 @@ struct nion {
      * @return The product of this nion and the scalar.
      */
     template<arithmetic S>
-    nion<T> operator*(S scalar) const {
+    constexpr nion<T> operator*(S scalar) const {
         nion<T> product(*this);
+        #pragma simd
         for (std::size_t i = 0; i < order; i++) {
             product.components[i] *= scalar;
         }
@@ -567,7 +577,7 @@ struct nion {
      * @return The division of this nion and the scalar.
      */
     template<arithmetic S>
-    nion<T> operator/(S scalar) const {
+    constexpr nion<T> operator/(S scalar) const {
         return *this * (1.0l / scalar);
     };
 
@@ -578,7 +588,7 @@ struct nion {
      * @return The sum of this nion and the scalar inplace.
      */
     template<arithmetic S>
-    void operator+=(S scalar) const {
+    constexpr void operator+=(S scalar) const {
         this->components[0] += scalar;
     };
 
@@ -589,7 +599,7 @@ struct nion {
      * @return The subtraction of this nion and the scalar inplace.
      */
     template<arithmetic S>
-    void operator-=(S scalar) const {
+    constexpr void operator-=(S scalar) const {
         this->components[0] -= scalar;
     };
 
@@ -600,7 +610,7 @@ struct nion {
      * @return The product of this nion and the scalar inplace.
      */
     template<arithmetic S>
-    void operator*=(S scalar) {
+    constexpr void operator*=(S scalar) {
         *this = *this * scalar;
     };
 
@@ -611,7 +621,7 @@ struct nion {
      * @return The division of this nion and the scalar inplace.
      */
     template<arithmetic S>
-    void operator/=(S scalar) {
+    constexpr void operator/=(S scalar) {
         *this = *this / scalar;
     };
 
@@ -624,10 +634,11 @@ struct nion {
      *          and all other components are equal to zero.
      */
     template<arithmetic S>
-    bool operator==(S scalar) const {
+    constexpr bool operator==(S scalar) const {
         if (real() != scalar) {
             return false;
         }
+        #pragma simd
         for (std::size_t i = 1; i < order; i++) {
             if (components[i] != 0) {
                 return false;
@@ -645,10 +656,11 @@ struct nion {
      *          and all other components are equal to zero.
      */
     template<arithmetic S>
-    bool operator!=(S scalar) const {
+    constexpr bool operator!=(S scalar) const {
         if (real() != scalar) {
             return true;
         }
+        #pragma simd
         for (std::size_t i = 1; i < order; i++) {
             if (components[i] != 0) {
                 return true;
@@ -672,7 +684,7 @@ struct nion {
  * @return
  */
 template<arithmetic T, arithmetic S>
-nion<T> operator*(S scalar, const nion<T> &z) {
+constexpr nion<T> operator*(S scalar, const nion<T> &z) {
     return z * scalar;
 }
 
@@ -685,7 +697,7 @@ nion<T> operator*(S scalar, const nion<T> &z) {
  * @return
  */
 template<arithmetic T, arithmetic S>
-nion<T> operator/(S scalar, const nion<T> &z) {
+constexpr nion<T> operator/(S scalar, const nion<T> &z) {
     return z.inv() * scalar;
 }
 
@@ -697,7 +709,7 @@ nion<T> operator/(S scalar, const nion<T> &z) {
  * @param z The nion to add the scalar by.
 */
 template<arithmetic T, arithmetic S>
-nion<T> operator+(S scalar, const nion<T> &z) {
+constexpr nion<T> operator+(S scalar, const nion<T> &z) {
     return z + scalar;
 }
 
@@ -709,7 +721,7 @@ nion<T> operator+(S scalar, const nion<T> &z) {
  * @param z The nion to subtract the scalar by.
 */
 template<arithmetic T, arithmetic S>
-nion<T> operator-(S scalar, const nion<T> &z) {
+constexpr nion<T> operator-(S scalar, const nion<T> &z) {
     return -z + scalar;
 }
 
@@ -753,6 +765,7 @@ bool operator!=(S scalar, const nion<T> &z) {
 std::ostream &operator<<(std::ostream &os, const nion<T> &z) {
     T component = z.components[0];
     os << component;
+
     for (int i = 1; i < z.order; i++) {
         component = z.components[i];
         os << " + " << component << " e" << i;
@@ -796,7 +809,7 @@ T real(const nion<T> &z) {
  * @return The imaginary part of the nion.
  */
 template<arithmetic T>
-nion<T> imag(const nion<T> &z) {
+constexpr nion<T> imag(const nion<T> &z) {
     return z.imag();
 }
 
@@ -807,7 +820,7 @@ nion<T> imag(const nion<T> &z) {
  * @return The conjugate of the nion.
  */
 template<arithmetic T>
-nion<T> conj(const nion<T> &z) {
+constexpr nion<T> conj(const nion<T> &z) {
     return z.conj();
 }
 
@@ -840,7 +853,7 @@ T norm(const nion<T> &z) {
  * @return The inverse of the nion.
  */
 template<arithmetic T>
-nion<T> inv(const nion<T> &z) {
+constexpr nion<T> inv(const nion<T> &z) {
     return z.inv();
 }
 
@@ -900,7 +913,7 @@ nion<T> outer(const nion<T> &lhs, const nion<T> &rhs); //TODO: implement outer p
  *          where a is the real component and v is the imaginary components.
  */
 template<arithmetic T>
-nion<T> exp(const nion<T> &z) noexcept {
+constexpr nion<T> exp(const nion<T> &z) noexcept {
 
     // get polar form of nion
     T r = z.real();
@@ -924,7 +937,7 @@ nion<T> exp(const nion<T> &z) noexcept {
  *          where a is the real component and v is the imaginary components.
  */
 template<arithmetic T>
-nion<T> log(const nion<T> &z) noexcept {
+constexpr nion<T> log(const nion<T> &z) noexcept {
 
     // get polar form of nion
     T r = z.real();
@@ -952,7 +965,7 @@ nion<T> log(const nion<T> &z) noexcept {
  * @details The power of a nion is defined as z^p = e^(p * ln(z)).
  */
 template<arithmetic T, arithmetic S>
-nion<T> pow(const nion<T> &z, S power) noexcept {
+constexpr nion<T> pow(const nion<T> &z, S power) noexcept {
     if (power == 0) {
         return nion<T>(z.order, 1);
     } else if (std::abs(power - 1) <= z.epsilon) {
@@ -973,7 +986,7 @@ nion<T> pow(const nion<T> &z, S power) noexcept {
  * @details The power of a nion is defined as z^p = e^(p * ln(z)).
  */
 template<arithmetic T>
-nion<T> pow(const nion<T> &z, const nion<T> &power) noexcept {
+constexpr nion<T> pow(const nion<T> &z, const nion<T> &power) noexcept {
     return exp(power * log(z));
 }
 
@@ -987,7 +1000,7 @@ nion<T> pow(const nion<T> &z, const nion<T> &power) noexcept {
  * @details The power of with a nion is defined as x^z = e^(z * ln(x)).
  */
 template<arithmetic T, arithmetic S>
-nion<T> pow(S x, const nion<T> &z) noexcept {
+constexpr nion<T> pow(S x, const nion<T> &z) noexcept {
     if (x == 0) {
         return nion<T>(z.order, 0);
     } else if (std::abs(x - 1) <= z.epsilon) {
@@ -1005,7 +1018,7 @@ nion<T> pow(S x, const nion<T> &z) noexcept {
  * @details The square root of a nion is defined as sqrt(z) = z^(1/2).
  */
 template<arithmetic T>
-nion<T> sqrt(const nion<T> &z) noexcept{
+constexpr nion<T> sqrt(const nion<T> &z) noexcept{
     return pow(z, 0.5f);
 }
 
@@ -1017,7 +1030,7 @@ nion<T> sqrt(const nion<T> &z) noexcept{
  * @details The cube root of a nion is defined as cbrt(z) = z^(1/3).
  */
 template<arithmetic T>
-nion<T> cbrt(const nion<T> &z) noexcept{
+constexpr nion<T> cbrt(const nion<T> &z) noexcept{
     return pow(z, 1.0/3.0f);
 }
 
@@ -1033,7 +1046,7 @@ nion<T> cbrt(const nion<T> &z) noexcept{
  * @details The hyperbolic sine of a nion is defined as sinh(z) = (e^z - e^-z) / 2.
  */
 template<arithmetic T>
-nion<T> sinh(const nion<T> &z) noexcept{
+constexpr nion<T> sinh(const nion<T> &z) noexcept{
     return (exp(z) - exp(-z)) * 0.5f;
 }
 
@@ -1045,7 +1058,7 @@ nion<T> sinh(const nion<T> &z) noexcept{
  * @details The hyperbolic cosine of a nion is defined as cosh(z) = (e^z + e^-z) / 2.
  */
 template<arithmetic T>
-nion<T> cosh(const nion<T> &z) noexcept{
+constexpr nion<T> cosh(const nion<T> &z) noexcept{
     return (exp(z) + exp(-z)) * 0.5f;
 }
 
@@ -1057,7 +1070,7 @@ nion<T> cosh(const nion<T> &z) noexcept{
  * @details The hyperbolic tangent of a nion is defined as tanh(z) = sinh(z) / cosh(z).
  */
 template<arithmetic T>
-nion<T> tanh(const nion<T> &z) noexcept{
+constexpr nion<T> tanh(const nion<T> &z) noexcept{
     return sinh(z) / cosh(z);
 }
 
@@ -1069,7 +1082,7 @@ nion<T> tanh(const nion<T> &z) noexcept{
  * @details The hyperbolic cotangent of a nion is defined as coth(z) = cosh(z) / sinh(z).
  */
 template<arithmetic T>
-nion<T> coth(const nion<T> &z) noexcept{
+constexpr nion<T> coth(const nion<T> &z) noexcept{
     return cosh(z) / sinh(z);
 }
 
@@ -1081,7 +1094,7 @@ nion<T> coth(const nion<T> &z) noexcept{
  * @details The hyperbolic secant of a nion is defined as sech(z) = 1 / cosh(z).
  */
 template<arithmetic T>
-nion<T> sech(const nion<T> &z) noexcept{
+constexpr nion<T> sech(const nion<T> &z) noexcept{
     return cosh(z).inv();
 }
 
@@ -1093,7 +1106,7 @@ nion<T> sech(const nion<T> &z) noexcept{
  * @details The hyperbolic cosecant of a nion is defined as csch(z) = 1 / sinh(z).
  */
 template<arithmetic T>
-nion<T> csch(const nion<T> &z) noexcept{
+constexpr nion<T> csch(const nion<T> &z) noexcept{
     return sinh(z).inv();
 }
 
@@ -1112,7 +1125,7 @@ nion<T> csch(const nion<T> &z) noexcept{
  * @see https://en.wikipedia.org/wiki/Sine_and_cosine#Relationship_to_complex_numbers
  */
 template<arithmetic T>
-nion<T> sin(const nion<T> &z) noexcept{
+constexpr nion<T> sin(const nion<T> &z) noexcept{
     // get the polar form of the nion
     T r = real(z);
     nion<T> v = imag(z);
@@ -1136,7 +1149,7 @@ nion<T> sin(const nion<T> &z) noexcept{
  * @see https://en.wikipedia.org/wiki/Sine_and_cosine#Relationship_to_complex_numbers
  */
 template<arithmetic T>
-nion<T> cos(const nion<T> &z) noexcept{
+constexpr nion<T> cos(const nion<T> &z) noexcept{
     // get the polar form of the nion
     T r = real(z);
     nion<T> v = imag(z);
@@ -1158,7 +1171,7 @@ nion<T> cos(const nion<T> &z) noexcept{
  * @details The tangent of the nion is defined as tan(z) = sin(z) / cos(z).
  */
 template<arithmetic T>
-nion<T> tan(const nion<T> &z) noexcept{
+constexpr nion<T> tan(const nion<T> &z) noexcept{
     return sin(z) / cos(z);
 }
 
@@ -1170,7 +1183,7 @@ nion<T> tan(const nion<T> &z) noexcept{
  * @details The cotangent of the nion is defined as cot(z) = cos(z) / sin(z).
  */
 template<arithmetic T>
-nion<T> cot(const nion<T> &z) noexcept{
+constexpr nion<T> cot(const nion<T> &z) noexcept{
     return cos(z) / sin(z);
 }
 
@@ -1182,7 +1195,7 @@ nion<T> cot(const nion<T> &z) noexcept{
  * @details The secant of the nion is defined as sec(z) = 1 / cos(z).
  */
 template<arithmetic T>
-nion<T> sec(const nion<T> &z) noexcept{
+constexpr nion<T> sec(const nion<T> &z) noexcept{
     return cos(z).inv();
 }
 
@@ -1194,7 +1207,7 @@ nion<T> sec(const nion<T> &z) noexcept{
  * @details The cosecant of the nion is defined as csc(z) = 1 / sin(z).
  */
 template<arithmetic T>
-nion<T> csc(const nion<T> &z) noexcept{
+constexpr nion<T> csc(const nion<T> &z) noexcept{
     return sin(z).inv();
 }
 
@@ -1212,7 +1225,7 @@ nion<T> csc(const nion<T> &z) noexcept{
  * @see https://mathworld.wolfram.com/InverseHyperbolicSine.html
  */
 template<arithmetic T>
-nion<T> asinh(const nion<T> &z) noexcept{
+constexpr nion<T> asinh(const nion<T> &z) noexcept{
     return log(z + sqrt(1 + z*z));
 }
 
@@ -1226,7 +1239,7 @@ nion<T> asinh(const nion<T> &z) noexcept{
  * @see https://mathworld.wolfram.com/InverseHyperbolicCosine.html
  */
 template<arithmetic T>
-nion<T> acosh(const nion<T> &z) noexcept{
+constexpr nion<T> acosh(const nion<T> &z) noexcept{
     return log(z + sqrt(z + 1) * sqrt(z - 1));
 }
 
@@ -1240,7 +1253,7 @@ nion<T> acosh(const nion<T> &z) noexcept{
  * @see https://mathworld.wolfram.com/InverseHyperbolicTangent.html
  */
 template<arithmetic T>
-nion<T> atanh(const nion<T> &z) noexcept{
+constexpr nion<T> atanh(const nion<T> &z) noexcept{
     return 0.5l * (log(1 + z) - log(1 - z));
 }
 
@@ -1254,7 +1267,7 @@ nion<T> atanh(const nion<T> &z) noexcept{
  * @see https://mathworld.wolfram.com/InverseHyperbolicCotangent.html
  */
 template<arithmetic T>
-nion<T> acoth(const nion<T> &z) noexcept{
+constexpr nion<T> acoth(const nion<T> &z) noexcept{
     return 0.5l * (log(1 + 1/z) - log(1 - 1/z));
 }
 
@@ -1268,7 +1281,7 @@ nion<T> acoth(const nion<T> &z) noexcept{
  * @see https://mathworld.wolfram.com/InverseHyperbolicSecant.html
  */
 template<arithmetic T>
-nion<T> asech(const nion<T> &z) noexcept{
+constexpr nion<T> asech(const nion<T> &z) noexcept{
     return log(sqrt(1/z - 1) * sqrt(1/z + 1) + 1/z);
 }
 
@@ -1282,7 +1295,7 @@ nion<T> asech(const nion<T> &z) noexcept{
  * @see https://mathworld.wolfram.com/InverseHyperbolicCosecant.html
  */
 template<arithmetic T>
-nion<T> acsch(const nion<T> &z) noexcept{
+constexpr nion<T> acsch(const nion<T> &z) noexcept{
     return log(sqrt(1 + pow(z, -2)) + 1/z);
 }
 
@@ -1299,7 +1312,7 @@ nion<T> acsch(const nion<T> &z) noexcept{
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Logarithmic_forms
  */
 template<arithmetic T>
-nion<T> asin(const nion<T> &z) noexcept {
+constexpr nion<T> asin(const nion<T> &z) noexcept {
     // get the polar form of the nion
     nion<T> v = z.imag();
 
@@ -1321,7 +1334,7 @@ nion<T> asin(const nion<T> &z) noexcept {
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_complex_plane
  */
 template<arithmetic T>
-nion<T> acos(const nion<T> &z) noexcept {
+constexpr nion<T> acos(const nion<T> &z) noexcept {
     return M_PI_2l - asin(z);
 }
 
@@ -1335,7 +1348,7 @@ nion<T> acos(const nion<T> &z) noexcept {
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Logarithmic_forms
  */
 template<arithmetic T>
-nion<T> atan(const nion<T> &z) noexcept {
+constexpr nion<T> atan(const nion<T> &z) noexcept {
     // get the polar form of the nion
     nion<T> v = z.imag();
 
@@ -1357,7 +1370,7 @@ nion<T> atan(const nion<T> &z) noexcept {
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_complex_plane
  */
 template<arithmetic T>
-nion<T> acot(const nion<T> &z) noexcept {
+constexpr nion<T> acot(const nion<T> &z) noexcept {
     return M_PI_2l - atan(z);
 }
 
@@ -1370,7 +1383,7 @@ nion<T> acot(const nion<T> &z) noexcept {
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_complex_plane
  */
 template<arithmetic T>
-nion<T> asec(const nion<T> &z) noexcept {
+constexpr nion<T> asec(const nion<T> &z) noexcept {
     return acos(1/z);
 }
 
@@ -1383,7 +1396,7 @@ nion<T> asec(const nion<T> &z) noexcept {
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_complex_plane
  */
 template<arithmetic T>
-nion<T> acsc(const nion<T> &z) noexcept {
+constexpr nion<T> acsc(const nion<T> &z) noexcept {
     return asin(1/z);
 }
 
@@ -1401,7 +1414,7 @@ nion<T> acsc(const nion<T> &z) noexcept {
  * @see https://www.wolframalpha.com/input?i=gamma%28a+%2B+b+i%29
  */
 template<arithmetic T>
-nion<T> gamma(const nion<T> &z) noexcept {
+constexpr nion<T> gamma(const nion<T> &z) noexcept {
     // compute the gamma function of the nion
     return sqrt(2 * M_PI) * exp(-z) * sqrt(1/z) * pow(1/(12 * z - 1/(10 * z)) + z, z);
 }
