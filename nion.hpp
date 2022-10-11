@@ -40,7 +40,7 @@ concept arithmetic = std::is_arithmetic<T>::value;
 template<arithmetic T>
 struct nion {
     T* components;
-    std::size_t order;
+    uint_fast16_t order;
     static constexpr T epsilon = std::numeric_limits<T>::epsilon();
 
     /**
@@ -56,7 +56,7 @@ struct nion {
      * @param components The components of the nion.
      * @param order The order of the nion.
      */
-    constexpr explicit nion<T>(const T* &components, std::size_t order) : order(order) {
+    constexpr explicit nion<T>(const T* components, uint_fast16_t order) : order(order) {
 
         // check if the order is greater than zero
         if (order <= 0) {
@@ -83,7 +83,7 @@ struct nion {
      * @brief Construct an empty nion object
      * @param order The order of the nion.
      */
-    constexpr explicit nion<T>(std::size_t order) : order(order) {
+    constexpr explicit nion<T>(uint_fast16_t order) : order(order) {
         this->components = (T*) malloc(this->order * sizeof(T));
         std::memset(this->components, 0, order * sizeof(T));
     };
@@ -109,7 +109,7 @@ struct nion {
      * @note This is a convenience function for creating a nion from a scalar.
      */
     template<arithmetic S>
-    constexpr explicit nion<T>(S realVal, std::size_t order) : order(order) {
+    constexpr explicit nion<T>(S realVal, uint_fast16_t order) : order(order) {
         this->components = (T*) malloc(order * sizeof(T));
         std::memset(this->components, 0, order * sizeof(T));
 
@@ -142,7 +142,7 @@ struct nion {
      * @return The left pair of the nion.
      */
     constexpr nion<T> left() const {
-        std::size_t halfOrder = order / 2;
+        uint_fast16_t halfOrder = order / 2;
         nion<T> a(halfOrder);
         std::memcpy(a.components, components, (order - halfOrder) * sizeof(T));
         return a;
@@ -155,7 +155,7 @@ struct nion {
      * @return The right pair of the nion.
      */
     constexpr nion<T> right() const {
-        std::size_t halfOrder = order - order / 2;
+        uint_fast16_t halfOrder = order - order / 2;
         nion<T> b(halfOrder);
         std::memcpy(b.components, components + (order - halfOrder), halfOrder * sizeof(T));
         return b;
@@ -211,11 +211,20 @@ struct nion {
     constexpr nion<T> operator-() const {
         nion<T> negated(*this);
         #pragma simd
-        for (std::size_t i = 0; i < order; i++) {
+        for (uint_fast16_t i = 0; i < order; i++) {
             negated.components[i] = -components[i];
         }
         return negated;
     };
+
+    /**
+     * @brief overload the [] operator for a nion.
+     * @param index The index of the component to get.
+     * @return The component at the index.
+     */
+    constexpr T &operator[](uint_fast16_t index) const {
+        return components[index];
+    }
 
     /**
      * @brief Get the conjugate of the nion.
@@ -227,8 +236,8 @@ struct nion {
         nion<T> conjugate(*this);
         // negate all components except the first
         #pragma simd
-        for (std::size_t i = 1; i < order; i++) {
-            conjugate.components[i] = -components[i];
+        for (uint_fast16_t i = 1; i < order; i++) {
+            conjugate.components[i] *= -1;
         }
         return conjugate;
     };
@@ -245,7 +254,7 @@ struct nion {
         }
         // add the components of the other nion to this nion.
         #pragma simd
-        for (std::size_t i = 0; i < other.order; i++) {
+        for (uint_fast16_t i = 0; i < other.order; i++) {
             this->components[i] += other.components[i];
         }
     };
@@ -262,7 +271,7 @@ struct nion {
         }
         // substract the components of the other nion from this nion.
         #pragma simd
-        for (std::size_t i = 0; i < other.order; i++) {
+        for (uint_fast16_t i = 0; i < other.order; i++) {
             this->components[i] -= other.components[i];
         }
     };
@@ -382,7 +391,7 @@ struct nion {
     constexpr T dot(const nion<T> &other) const {
         T dotProduct = 0;
         #pragma simd
-        for (std::size_t i = 0; i < order; i++) {
+        for (uint_fast16_t i = 0; i < order; i++) {
             dotProduct += components[i] * other.components[i];
         }
         return dotProduct;
@@ -394,7 +403,14 @@ struct nion {
      * @details The absolute value of the nion is the sum of the squares of its components.
      */
     constexpr T abs() const {
-        return this->dot(*this);
+        T absVal = 0;
+
+        #pragma simd
+        for (uint_fast16_t i = 0; i < order; i++) {
+            absVal += components[i] * components[i];
+        }
+
+        return absVal;
     };
 
     /**
@@ -435,7 +451,7 @@ struct nion {
      * @return The nion converted to the new order.
      * @note newOrder must be larger than the current order.
      */
-    constexpr nion<T> resize(std::size_t newOrder) const {
+    constexpr nion<T> resize(uint_fast16_t newOrder) const {
 
         // keep the same order if the new order is smaller than the current order
         if (newOrder <= order) {
@@ -459,7 +475,7 @@ struct nion {
             return false;
         }
         #pragma simd
-        for (std::size_t i = 0; i < order; i++) {
+        for (uint_fast16_t i = 0; i < order; i++) {
             if (std::abs(components[i] - other.components[i]) >= epsilon) {
                 return false;
             }
@@ -478,7 +494,7 @@ struct nion {
             return true;
         }
         #pragma simd
-        for (std::size_t i = 0; i < order; i++) {
+        for (uint_fast16_t i = 0; i < order; i++) {
             if (std::abs(components[i] - other.components[i]) >= epsilon) {
                 return true;
             }
@@ -564,7 +580,7 @@ struct nion {
     constexpr nion<T> operator*(S scalar) const {
         nion<T> product(*this);
         #pragma simd
-        for (std::size_t i = 0; i < order; i++) {
+        for (uint_fast16_t i = 0; i < order; i++) {
             product.components[i] *= scalar;
         }
         return product;
@@ -639,7 +655,7 @@ struct nion {
             return false;
         }
         #pragma simd
-        for (std::size_t i = 1; i < order; i++) {
+        for (uint_fast16_t i = 1; i < order; i++) {
             if (components[i] != 0) {
                 return false;
             }
@@ -661,7 +677,7 @@ struct nion {
             return true;
         }
         #pragma simd
-        for (std::size_t i = 1; i < order; i++) {
+        for (uint_fast16_t i = 1; i < order; i++) {
             if (components[i] != 0) {
                 return true;
             }

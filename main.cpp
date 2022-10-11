@@ -19,6 +19,9 @@
 #include <complex>
 #include <random>
 #include <chrono>
+#include <boost/math/quaternion.hpp>
+
+void stdQuaternionComparison(int trials);
 
 void order2Test(){
 
@@ -164,6 +167,11 @@ void stdComplexComparison(int trials) {
     std::cout << "\nComparing std::complex with nion: " << trials << " trials\n" << std::endl;
     std::default_random_engine generator(std::chrono::steady_clock::now().time_since_epoch().count());
 
+    // timers for norms
+    long double normNionTimer = 0;
+    long double normStdTimer = 0;
+    T totalNorm = 0;
+
     // timers for addition
     long double addNionTimer = 0;
     long double addStdTimer = 0;
@@ -227,15 +235,36 @@ void stdComplexComparison(int trials) {
     std::complex<T> stdResult;
     T diff;
 
+    std::uniform_real_distribution<T> distribution(-100.0, 100.0);
     for (int i = 0; i < trials; ++i) {
         // get random std::complex number
-        std::uniform_real_distribution<T> distribution(-10.0, 10.0);
         std::complex<T> complex1(distribution(generator), distribution(generator));
         std::complex<T> complex2(distribution(generator), distribution(generator));
 
         // assign std::complex to nion
         nion<T> nion_complex1(complex1);
         nion<T> nion_complex2(complex2);
+
+
+        // norm
+        {
+            // evaluate nion norm, and time
+            startNion = std::chrono::high_resolution_clock::now();
+            T nionNorm = nion_complex1.abs();
+            endNion = std::chrono::high_resolution_clock::now();
+            normNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
+
+            // evaluate std::complex norm, and time
+            startStd = std::chrono::high_resolution_clock::now();
+            T stdNorm = norm(complex1);
+            endStd = std::chrono::high_resolution_clock::now();
+            normStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
+
+            // get difference between nion and std::complex norms. Add to total norm difference
+            diff = nionNorm - stdNorm;
+            diff /= stdNorm;
+            totalNorm += diff;
+        }
 
         /// addition
         {
@@ -450,7 +479,11 @@ void stdComplexComparison(int trials) {
     }
 
     T trialfp = static_cast<T>(trials);
-    std::cout << "Average addition time for nion: " << addNionTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average norm time for nion: " << addNionTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average norm time for std::complex: " << addStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average relative difference between nion and std::complex: " << totalAdd / trialfp << std::endl;
+
+    std::cout << "\nAverage addition time for nion: " << addNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average addition time for std::complex: " << addStdTimer / trialfp << " ns" << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalAdd / trialfp << std::endl;
 
@@ -491,7 +524,127 @@ void stdComplexComparison(int trials) {
     std::cout << "Average relative difference between nion and std::complex: " << totalCos / trialfp << std::endl;
 
 }
+template <typename T>
+void boostQuaternionComparison(int trials) {
+    std::cout << "\n\n#### Comparing boost::math::quaternion with nion: " << trials << " trials ####\n" << std::endl;
+    std::default_random_engine generator(std::chrono::steady_clock::now().time_since_epoch().count());
 
+    // timers for norms
+    long double normNionTimer = 0;
+    long double normBoostTimer = 0;
+    T totalNorm = 0;
+
+    // timers for addition
+    long double addNionTimer = 0;
+    long double addBoostTimer = 0;
+    T totalAdd = 0;
+
+    // timers for conjugate
+    long double conjNionTimer = 0;
+    long double conjBoostTimer = 0;
+    T totalConj = 0;
+
+    // timers for multiplication
+    long double mulNionTimer = 0;
+    long double mulBoostTimer = 0;
+    T totalMul = 0;
+
+    // timers for division
+    long double divNionTimer = 0;
+    long double divBoostTimer = 0;
+    T totalDiv = 0;
+
+    // timers for power
+    long double powNionTimer = 0;
+    long double powBoostTimer = 0;
+    T totalPow = 0;
+
+    // timers for exponential
+    long double expNionTimer = 0;
+    long double expBoostTimer = 0;
+    T totalExp = 0;
+
+    // timers for logarithm
+    long double logNionTimer = 0;
+    long double logBoostTimer = 0;
+    T totalLog = 0;
+
+    // timers for atan(tan)
+    long double tanNionTimer = 0;
+    long double tanBoostTimer = 0;
+    T totalTan = 0;
+
+    // timers for asin(sin)
+    long double sinNionTimer = 0;
+    long double sinBoostTimer = 0;
+    T totalSin = 0;
+
+    // timers for acos(cos)
+    long double cosNionTimer = 0;
+    long double cosBoostTimer = 0;
+    T totalCos = 0;
+
+    auto startNion = std::chrono::high_resolution_clock::now();
+    auto endNion = std::chrono::high_resolution_clock::now();
+    auto startBoost = std::chrono::high_resolution_clock::now();
+    auto endBoost = std::chrono::high_resolution_clock::now();
+
+    nion<T> nionResult;
+    boost::math::quaternion<T> boostResult;
+    T diff;
+    for (int i = 0; i < trials; ++i) {
+
+        //generate random quaternion numbers
+        T* vals1 = new T[4];
+        T* vals2 = new T[4];
+        for (int j = 0; j < 4; ++j) {
+            std::uniform_real_distribution<T> distribution(-100, 100);
+            vals1[j] = distribution(generator);
+            vals2[j] = distribution(generator);
+        }
+
+        nion<T> nion1(vals1, 4);
+        nion<T> nion2(vals2, 4);
+        boost::math::quaternion<T> boost1(vals1[0], vals1[1], vals1[2], vals1[3]);
+        boost::math::quaternion<T> boost2(vals2[0], vals2[1], vals2[2], vals2[3]);
+
+        // norm
+        startNion = std::chrono::high_resolution_clock::now();
+        nionResult = nion1.abs();
+        endNion = std::chrono::high_resolution_clock::now();
+        normNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
+
+        startBoost = std::chrono::high_resolution_clock::now();
+        boostResult = boost::math::norm(boost1);
+        endBoost = std::chrono::high_resolution_clock::now();
+        normBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
+
+        diff = std::abs(nionResult.norm() - boost::math::norm(boostResult));
+        totalNorm += diff / nionResult.real();
+
+        // addition
+        startNion = std::chrono::high_resolution_clock::now();
+        nionResult = nion1 + nion2;
+        endNion = std::chrono::high_resolution_clock::now();
+        addNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
+
+        startBoost = std::chrono::high_resolution_clock::now();
+        boostResult = boost1 + boost2;
+        endBoost = std::chrono::high_resolution_clock::now();
+        addBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
+
+        diff = std::abs(nionResult.abs() - boost::math::norm(boostResult));
+        totalAdd += diff / nionResult.real();
+    }
+
+    std::cout << "Average norm time for nion: " << normNionTimer / trials << " ns" << std::endl;
+    std::cout << "Average norm time for boost::math::quaternion: " << normBoostTimer / trials << " ns" << std::endl;
+    std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalNorm / trials << std::endl;
+
+    std::cout << "\nAverage addition time for nion: " << addNionTimer / trials << " ns" << std::endl;
+    std::cout << "Average addition time for boost::math::quaternion: " << addBoostTimer / trials << " ns" << std::endl;
+    std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalAdd / trials << std::endl;
+}
 int main() {
 
     std::cout.precision(17);
@@ -500,6 +653,7 @@ int main() {
     std::cout << "nion complex number library" << std::endl;
     order2Test();
     stdComplexComparison<long double>(trials);
+    boostQuaternionComparison<long double>(trials);
 /*
     std::cout << "\n\t mixed order test\n\tThere may not be references for this behavior, but it works with my recursion" << std::endl;
 
@@ -537,3 +691,5 @@ int main() {
 
     return 0;
 }
+
+
