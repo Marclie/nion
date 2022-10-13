@@ -207,23 +207,65 @@ void stdComplexComparison(int trials) {
     long double logStdTimer = 0;
     T totalLog = 0;
 
-    // timers for atan(tan)
-    long double tanNionTimer = 0;
-    long double tanStdTimer = 0;
-    T totalTan = 0;
-
-    // timers for asin(sin)
+    // timers for sin
     long double sinNionTimer = 0;
     long double sinStdTimer = 0;
     T totalSin = 0;
 
-    // timers for acos(cos)
+    // timers for asin
+    long double asinNionTimer = 0;
+    long double asinStdTimer = 0;
+    T totalAsin = 0;
+
+    // timers for cos
     long double cosNionTimer = 0;
     long double cosStdTimer = 0;
     T totalCos = 0;
 
+    // timers for acos
+    long double acosNionTimer = 0;
+    long double acosStdTimer = 0;
+    T totalAcos = 0;
 
+    // timers for tan
+    long double tanNionTimer = 0;
+    long double tanStdTimer = 0;
+    T totalTan = 0;
 
+    // timers for atan
+    long double atanNionTimer = 0;
+    long double atanStdTimer = 0;
+    T totalAtan = 0;
+
+    // timers for sinh
+    long double sinhNionTimer = 0;
+    long double sinhStdTimer = 0;
+    T totalSinh = 0;
+
+    // timers for asinh
+    long double asinhNionTimer = 0;
+    long double asinhStdTimer = 0;
+    T totalAsinh = 0;
+
+    // timers for cosh
+    long double coshNionTimer = 0;
+    long double coshStdTimer = 0;
+    T totalCosh = 0;
+
+    // timers for acosh
+    long double acoshNionTimer = 0;
+    long double acoshStdTimer = 0;
+    T totalAcosh = 0;
+
+    // timers for tanh
+    long double tanhNionTimer = 0;
+    long double tanhStdTimer = 0;
+    T totalTanh = 0;
+
+    // timers for atanh
+    long double atanhNionTimer = 0;
+    long double atanhStdTimer = 0;
+    T totalAtanh = 0;
 
 
     auto startNion = std::chrono::high_resolution_clock::now();
@@ -416,37 +458,17 @@ void stdComplexComparison(int trials) {
             totalLog += diff;
         }
 
-        /// tangent
-        {
-            // evaluate nion tangent, and time
-            startNion = std::chrono::high_resolution_clock::now();
-            nionResult = atan(tan(nion_complex1));
-            endNion = std::chrono::high_resolution_clock::now();
-            tanNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
-
-            // evaluate std::complex tangent, and time
-            startStd = std::chrono::high_resolution_clock::now();
-            stdResult = atan(std::tan(complex1));
-            endStd = std::chrono::high_resolution_clock::now();
-            tanStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
-
-            // get difference between nion and std::complex norms. Add to total tangent difference
-            diff = nionResult.abs() - norm(stdResult);
-            diff /= norm(stdResult);
-            totalTan += diff;
-        }
-
         /// sine
         {
             // evaluate nion sine, and time
             startNion = std::chrono::high_resolution_clock::now();
-            nionResult = asin(sin(nion_complex1));
+            nionResult = sin(nion_complex1);
             endNion = std::chrono::high_resolution_clock::now();
             sinNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
 
             // evaluate std::complex sine, and time
             startStd = std::chrono::high_resolution_clock::now();
-            stdResult = asin(std::sin(complex1));
+            stdResult = sin(complex1);
             endStd = std::chrono::high_resolution_clock::now();
             sinStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
@@ -456,17 +478,37 @@ void stdComplexComparison(int trials) {
             totalSin += diff;
         }
 
+        /// asine
+        {
+            // evaluate nion asine, and time
+            startNion = std::chrono::high_resolution_clock::now();
+            nionResult = asin(nion_complex1);
+            endNion = std::chrono::high_resolution_clock::now();
+            asinNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
+
+            // evaluate std::complex asine, and time
+            startStd = std::chrono::high_resolution_clock::now();
+            stdResult = asin(complex1);
+            endStd = std::chrono::high_resolution_clock::now();
+            asinStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
+
+            // get difference between nion and std::complex norms. Add to total asine difference
+            diff = nionResult.abs() - norm(stdResult);
+            diff /= norm(stdResult);
+            totalAsin += diff;
+        }
+
         /// cosine
         {
             // evaluate nion cosine, and time
             startNion = std::chrono::high_resolution_clock::now();
-            nionResult = acos(cos(nion_complex1));
+            nionResult = cos(nion_complex1);
             endNion = std::chrono::high_resolution_clock::now();
             cosNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
 
             // evaluate std::complex cosine, and time
             startStd = std::chrono::high_resolution_clock::now();
-            stdResult = acos(std::cos(complex1));
+            stdResult = cos(complex1);
             endStd = std::chrono::high_resolution_clock::now();
             cosStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
@@ -476,6 +518,185 @@ void stdComplexComparison(int trials) {
             totalCos += diff;
         }
 
+        /// acosine
+        {
+            // evaluate nion acosine, and time
+            startNion = std::chrono::high_resolution_clock::now();
+            nionResult = acos(nion_complex1);
+            endNion = std::chrono::high_resolution_clock::now();
+            acosNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
+
+            // evaluate std::complex acosine, and time
+            startStd = std::chrono::high_resolution_clock::now();
+            stdResult = acos(complex1);
+            endStd = std::chrono::high_resolution_clock::now();
+            acosStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
+
+            // get difference between nion and std::complex norms. Add to total acosine difference
+            diff = nionResult.abs() - norm(stdResult);
+            diff /= norm(stdResult);
+            totalAcos += diff;
+        }
+
+        /// tangent
+        {
+            // evaluate nion tangent, and time
+            startNion = std::chrono::high_resolution_clock::now();
+            nionResult = tan(nion_complex1);
+            endNion = std::chrono::high_resolution_clock::now();
+            tanNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
+
+            // evaluate std::complex tangent, and time
+            startStd = std::chrono::high_resolution_clock::now();
+            stdResult = tan(complex1);
+            endStd = std::chrono::high_resolution_clock::now();
+            tanStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
+
+            // get difference between nion and std::complex norms. Add to total tangent difference
+            diff = nionResult.abs() - norm(stdResult);
+            diff /= norm(stdResult);
+            totalTan += diff;
+        }
+
+        /// atan
+        {
+            // evaluate nion atan, and time
+            startNion = std::chrono::high_resolution_clock::now();
+            nionResult = atan(nion_complex1);
+            endNion = std::chrono::high_resolution_clock::now();
+            atanNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
+
+            // evaluate std::complex atan, and time
+            startStd = std::chrono::high_resolution_clock::now();
+            stdResult = atan(complex1);
+            endStd = std::chrono::high_resolution_clock::now();
+            atanStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
+
+            // get difference between nion and std::complex norms. Add to total atan difference
+            diff = nionResult.abs() - norm(stdResult);
+            diff /= norm(stdResult);
+            totalAtan += diff;
+        }
+
+        /// hyperbolic sine
+        {
+            // evaluate nion hyperbolic sine, and time
+            startNion = std::chrono::high_resolution_clock::now();
+            nionResult = sinh(nion_complex1);
+            endNion = std::chrono::high_resolution_clock::now();
+            sinhNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
+
+            // evaluate std::complex hyperbolic sine, and time
+            startStd = std::chrono::high_resolution_clock::now();
+            stdResult = sinh(complex1);
+            endStd = std::chrono::high_resolution_clock::now();
+            sinhStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
+
+            // get difference between nion and std::complex norms. Add to total hyperbolic sine difference
+            diff = nionResult.abs() - norm(stdResult);
+            diff /= norm(stdResult);
+            totalSinh += diff;
+        }
+
+        /// hyperbolic cosine
+        {
+            // evaluate nion hyperbolic cosine, and time
+            startNion = std::chrono::high_resolution_clock::now();
+            nionResult = cosh(nion_complex1);
+            endNion = std::chrono::high_resolution_clock::now();
+            coshNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
+
+            // evaluate std::complex hyperbolic cosine, and time
+            startStd = std::chrono::high_resolution_clock::now();
+            stdResult = cosh(complex1);
+            endStd = std::chrono::high_resolution_clock::now();
+            coshStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
+
+            // get difference between nion and std::complex norms. Add to total hyperbolic cosine difference
+            diff = nionResult.abs() - norm(stdResult);
+            diff /= norm(stdResult);
+            totalCosh += diff;
+        }
+
+        /// hyperbolic tangent
+        {
+            // evaluate nion hyperbolic tangent, and time
+            startNion = std::chrono::high_resolution_clock::now();
+            nionResult = tanh(nion_complex1);
+            endNion = std::chrono::high_resolution_clock::now();
+            tanhNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
+
+            // evaluate std::complex hyperbolic tangent, and time
+            startStd = std::chrono::high_resolution_clock::now();
+            stdResult = tanh(complex1);
+            endStd = std::chrono::high_resolution_clock::now();
+            tanhStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
+
+            // get difference between nion and std::complex norms. Add to total hyperbolic tangent difference
+            diff = nionResult.abs() - norm(stdResult);
+            diff /= norm(stdResult);
+            totalTanh += diff;
+        }
+
+        /// hyperbolic arc sine
+        {
+            // evaluate nion hyperbolic arc sine, and time
+            startNion = std::chrono::high_resolution_clock::now();
+            nionResult = asinh(nion_complex1);
+            endNion = std::chrono::high_resolution_clock::now();
+            asinhNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
+
+            // evaluate std::complex hyperbolic arc sine, and time
+            startStd = std::chrono::high_resolution_clock::now();
+            stdResult = asinh(complex1);
+            endStd = std::chrono::high_resolution_clock::now();
+            asinhStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
+
+            // get difference between nion and std::complex norms. Add to total hyperbolic arc sine difference
+            diff = nionResult.abs() - norm(stdResult);
+            diff /= norm(stdResult);
+            totalAsinh += diff;
+        }
+
+        /// hyperbolic arc cosine
+        {
+            // evaluate nion hyperbolic arc cosine, and time
+            startNion = std::chrono::high_resolution_clock::now();
+            nionResult = acosh(nion_complex1);
+            endNion = std::chrono::high_resolution_clock::now();
+            acoshNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
+
+            // evaluate std::complex hyperbolic arc cosine, and time
+            startStd = std::chrono::high_resolution_clock::now();
+            stdResult = acosh(complex1);
+            endStd = std::chrono::high_resolution_clock::now();
+            acoshStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
+
+            // get difference between nion and std::complex norms. Add to total hyperbolic arc cosine difference
+            diff = nionResult.abs() - norm(stdResult);
+            diff /= norm(stdResult);
+            totalAcosh += diff;
+        }
+
+        /// hyperbolic arc tangent
+        {
+            // evaluate nion hyperbolic arc tangent, and time
+            startNion = std::chrono::high_resolution_clock::now();
+            nionResult = atanh(nion_complex1);
+            endNion = std::chrono::high_resolution_clock::now();
+            atanhNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
+
+            // evaluate std::complex hyperbolic arc tangent, and time
+            startStd = std::chrono::high_resolution_clock::now();
+            stdResult = atanh(complex1);
+            endStd = std::chrono::high_resolution_clock::now();
+            atanhStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
+
+            // get difference between nion and std::complex norms. Add to total hyperbolic arc tangent difference
+            diff = nionResult.abs() - norm(stdResult);
+            diff /= norm(stdResult);
+            totalAtanh += diff;
+        }
     }
 
     T trialfp = static_cast<T>(trials);
@@ -511,18 +732,53 @@ void stdComplexComparison(int trials) {
     std::cout << "Average logarithm time for std::complex: " << logStdTimer / trialfp << " ns" << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalLog / trialfp << std::endl;
 
-    std::cout << "\nAverage atan(tan) time for nion: " << tanNionTimer / trialfp << " ns" << std::endl;
-    std::cout << "Average atan(tan) time for std::complex: " << tanStdTimer / trialfp << " ns" << std::endl;
-    std::cout << "Average relative difference between nion and std::complex: " << totalTan / trialfp << std::endl;
-
-    std::cout << "\nAverage asin(sin) time for nion: " << sinNionTimer / trialfp << " ns" << std::endl;
-    std::cout << "Average asin(sin) time for std::complex: " << sinStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "\nAverage sin time for nion: " << sinNionTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average sin time for std::complex: " << sinStdTimer / trialfp << " ns" << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalSin / trialfp << std::endl;
 
-    std::cout << "\nAverage acos(cos) time for nion: " << cosNionTimer / trialfp << " ns" << std::endl;
-    std::cout << "Average acos(cos) time for std::complex: " << cosStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "\nAverage asin time for nion: " << asinNionTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average asin time for std::complex: " << asinStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average relative difference between nion and std::complex: " << totalAsin / trialfp << std::endl;
+
+    std::cout << "\nAverage cos time for nion: " << cosNionTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average cos time for std::complex: " << cosStdTimer / trialfp << " ns" << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalCos / trialfp << std::endl;
 
+    std::cout << "\nAverage acos time for nion: " << acosNionTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average acos time for std::complex: " << acosStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average relative difference between nion and std::complex: " << totalAcos / trialfp << std::endl;
+
+    std::cout << "\nAverage tan time for nion: " << tanNionTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average tan time for std::complex: " << tanStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average relative difference between nion and std::complex: " << totalTan / trialfp << std::endl;
+
+    std::cout << "\nAverage atan time for nion: " << atanNionTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average atan time for std::complex: " << atanStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average relative difference between nion and std::complex: " << totalAtan / trialfp << std::endl;
+
+    std::cout << "\nAverage sinh time for nion: " << sinhNionTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average sinh time for std::complex: " << sinhStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average relative difference between nion and std::complex: " << totalSinh / trialfp << std::endl;
+
+    std::cout << "\nAverage asinh time for nion: " << asinhNionTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average asinh time for std::complex: " << asinhStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average relative difference between nion and std::complex: " << totalAsinh / trialfp << std::endl;
+
+    std::cout << "\nAverage cosh time for nion: " << coshNionTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average cosh time for std::complex: " << coshStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average relative difference between nion and std::complex: " << totalCosh / trialfp << std::endl;
+
+    std::cout << "\nAverage acosh time for nion: " << acoshNionTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average acosh time for std::complex: " << acoshStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average relative difference between nion and std::complex: " << totalAcosh / trialfp << std::endl;
+
+    std::cout << "\nAverage tanh time for nion: " << tanhNionTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average tanh time for std::complex: " << tanhStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average relative difference between nion and std::complex: " << totalTanh / trialfp << std::endl;
+
+    std::cout << "\nAverage atanh time for nion: " << atanhNionTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average atanh time for std::complex: " << atanhStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average relative difference between nion and std::complex: " << totalAtanh / trialfp << std::endl;
 }
 template <typename T>
 void boostQuaternionComparison(int trials) {
@@ -592,6 +848,7 @@ void boostQuaternionComparison(int trials) {
     nion<T> nionResult;
     boost::math::quaternion<T> boostResult;
     T diff;
+
     for (int i = 0; i < trials; ++i) {
 
         //generate random quaternion numbers
@@ -610,7 +867,7 @@ void boostQuaternionComparison(int trials) {
 
         // norm
         startNion = std::chrono::high_resolution_clock::now();
-        nionResult = nion1.abs();
+        nionResult = abs(nion1);
         endNion = std::chrono::high_resolution_clock::now();
         normNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
 
@@ -619,8 +876,9 @@ void boostQuaternionComparison(int trials) {
         endBoost = std::chrono::high_resolution_clock::now();
         normBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-        diff = std::abs(nionResult.norm() - boost::math::norm(boostResult));
-        totalNorm += diff / nionResult.real();
+        diff = std::abs(abs(nionResult) - boost::math::norm(boostResult));
+        diff /= boost::math::norm(boostResult);
+        totalNorm += diff;
 
         // addition
         startNion = std::chrono::high_resolution_clock::now();
@@ -633,8 +891,9 @@ void boostQuaternionComparison(int trials) {
         endBoost = std::chrono::high_resolution_clock::now();
         addBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-        diff = std::abs(nionResult.abs() - boost::math::norm(boostResult));
-        totalAdd += diff / nionResult.real();
+        diff = std::abs(abs(nionResult) - boost::math::norm(boostResult));
+        diff /= boost::math::norm(boostResult);
+        totalAdd += diff;
     }
 
     std::cout << "Average norm time for nion: " << normNionTimer / trials << " ns" << std::endl;
@@ -645,17 +904,9 @@ void boostQuaternionComparison(int trials) {
     std::cout << "Average addition time for boost::math::quaternion: " << addBoostTimer / trials << " ns" << std::endl;
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalAdd / trials << std::endl;
 }
-int main() {
 
-    std::cout.precision(17);
-
-    int trials = 100000;
-    std::cout << "nion complex number library" << std::endl;
-    order2Test();
-    stdComplexComparison<long double>(trials);
-    boostQuaternionComparison<long double>(trials);
-/*
-    std::cout << "\n\t mixed order test\n\tThere may not be references for this behavior, but it works with my recursion" << std::endl;
+void mixedOrderTest(){
+    std::cout << "\n\t mixed order test\n" << std::endl;
 
     nion<long double>n6({1, 2});
     std::cout << "n6:\t"<< n6 <<  std::endl;
@@ -672,7 +923,7 @@ int main() {
     std::cout << "n7 / n6:\t"<< n7 / n6 <<  std::endl;
     std::cout << "n7 * n6 / n7:\t" << n7 * n6 / n7 <<  std::endl;
 
-    std::cout << "\n\t non 2 power order test\n\tThere may not be references for this behavior, but it works with my recursion" << std::endl;
+    std::cout << "\n\t non 2 power order test\n" << std::endl;
     nion<long double> n8({1,2,3});
     std::cout << "n8:\t"<< n8 <<  std::endl;
     std::cout << "n8 + n8:\t"<< n8 + n8 <<  std::endl;
@@ -687,9 +938,20 @@ int main() {
     std::cout << "n8 / n7:\t"<< n8 / n7 <<  std::endl;
     std::cout << "n8 * n7 / n8:\t" << n8 * n7 / n8 <<  std::endl;
     std::cout << "n7 * n8 / n7:\t" << n7 * n8 / n7 <<  std::endl;
-*/
+}
+
+int main() {
+
+    std::cout.precision(17);
+
+    int trials = 10000;
+    std::cout << "nion complex number library" << std::endl;
+//    order2Test();
+//    mixedOrderTest();
+    stdComplexComparison<long double>(trials);
+//    boostQuaternionComparison<long double>(trials);
+
 
     return 0;
 }
-
 
