@@ -20,149 +20,192 @@
 #include <random>
 #include <chrono>
 #include <boost/math/quaternion.hpp>
+#include <fstream>
 
 void stdQuaternionComparison(int trials);
 
-void order2Test(){
+void order2Test() {
 
-    std::cout << "machine epsilon:\t" << nion<long double>::epsilon << std::endl;
+    std::cout << "machine epsilon:\t" << nion < long double > ::epsilon << std::endl;
 
 
-    nion<long double> n1({42,69});
-    std::cout  << "n1:\t"<< n1 <<  std::endl;
+    nion<long double> n1({42, 69});
+    std::cout << "n1:\t" << n1 << std::endl;
 
-    nion<long double> n2({69,42});
-    std::cout  << "n2:\t"<< n2 <<  std::endl;
+    nion<long double> n2({69, 42});
+    std::cout << "n2:\t" << n2 << std::endl;
 
     std::cout << "\nnegation" << std::endl;
     std::cout << "n1:\t" << -n1 << std::endl;
     std::cout << "n2:\t" << -n2 << std::endl;
 
     std::cout << "\nconjugates" << std::endl;
-    std::cout  << "n1 conjugate:\t"<< n1.conj() <<  std::endl;
-    std::cout  << "n2 conjugate:\t"<< n2.conj() <<  std::endl;
+    std::cout << "n1 conjugate:\t" << n1.conj() << std::endl;
+    std::cout << "n2 conjugate:\t" << n2.conj() << std::endl;
 
     std::cout << "\n inverse" << std::endl;
-    std::cout  << "n1 inverse:\t"<< n1.inv() <<  std::endl; // go here: https://www.wolframalpha.com/input/?i=1%2F(42%2B69i)
-    std::cout  << "n2 inverse:\t"<< n2.inv() <<  std::endl; // go here: https://www.wolframalpha.com/input/?i=1%2F(69%2B42i)
+    std::cout << "n1 inverse:\t" << n1.inv()
+              << std::endl; // go here: https://www.wolframalpha.com/input/?i=1%2F(42%2B69i)
+    std::cout << "n2 inverse:\t" << n2.inv()
+              << std::endl; // go here: https://www.wolframalpha.com/input/?i=1%2F(69%2B42i)
 
     std::cout << "\nnorms" << std::endl;
-    std::cout  << "n1 norm:\t"<< n1.norm() <<  std::endl;
-    std::cout  << "n2 norm:\t"<< n2.norm() <<  std::endl;
+    std::cout << "n1 norm:\t" << n1.norm() << std::endl;
+    std::cout << "n2 norm:\t" << n2.norm() << std::endl;
 
     std::cout << "\naddition" << std::endl;
-    std::cout  << "n1 + n2:\t"<< n1 + n2 <<  std::endl;
-    std::cout  << "n1 - n2:\t"<< n1 - n2 <<  std::endl;
+    std::cout << "n1 + n2:\t" << n1 + n2 << std::endl;
+    std::cout << "n1 - n2:\t" << n1 - n2 << std::endl;
     nion<long double> n3(2);
     n3 += n1;
     n3 -= n2;
-    std::cout  << "n3 = 0 + n1 - n2:\t"<< n3 <<  std::endl;
+    std::cout << "n3 = 0 + n1 - n2:\t" << n3 << std::endl;
 
 
     std::cout << "\nmultiplication" << std::endl;
-    std::cout  << "n1 * n2:\t"<< (n1 * n2) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=N%5B%2842%2B69i%29*%2869%2B42i%29%5D
-    std::cout  << "n1 / n1:\t"<< (n1 / n1) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%2F%2842%2B69i%29
-    std::cout  << "n1 / n2:\t"<< (n1 / n2) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%2F%2869%2B42i%29
+    std::cout << "n1 * n2:\t" << (n1 * n2)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=N%5B%2842%2B69i%29*%2869%2B42i%29%5D
+    std::cout << "n1 / n1:\t" << (n1 / n1)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%2F%2842%2B69i%29
+    std::cout << "n1 / n2:\t" << (n1 / n2)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%2F%2869%2B42i%29
     nion<long double> n4(n1);
     n4 *= n2;
-    std::cout  << "n4 = n1 * n2:\t"<< n4 <<  std::endl;
+    std::cout << "n4 = n1 * n2:\t" << n4 << std::endl;
     n4 /= n2;
-    std::cout  << "n4 = (n1 * n2) / n2:\t"<< n4 <<  std::endl;
+    std::cout << "n4 = (n1 * n2) / n2:\t" << n4 << std::endl;
 
 
-    std::cout  << "dot product:\t"<< dot(n1, n2) <<  std::endl;
+    std::cout << "dot product:\t" << dot(n1, n2) << std::endl;
 
 
     std::cout << "\n#### ALGEBRA ####\n" << std::endl;
 
 
     std::cout << "\n\t power functions" << std::endl;
-    std::cout << "pow(n1, 0):\t"<< pow(n1, 0) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%5E0
-    std::cout << "pow(n1, 1):\t"<< pow(n1, 1) <<  std::endl;
-    std::cout << "pow(n1, 2):\t"<< pow(n1, 2) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%5E2
-    std::cout << "pow(n1, 3):\t"<< pow(n1, 3) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%5E3
-    std::cout << "pow(n1, -1):\t"<< pow(n1, -1) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%5E-1
-    std::cout << "sqrt(n1):\t"<< sqrt(n1) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=sqrt%2842%2B69i%29
-    std::cout << "cbrt(n1):\t"<< cbrt(n1) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=cbrt%2842%2B69i%29
+    std::cout << "pow(n1, 0):\t" << pow(n1, 0)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%5E0
+    std::cout << "pow(n1, 1):\t" << pow(n1, 1) << std::endl;
+    std::cout << "pow(n1, 2):\t" << pow(n1, 2)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%5E2
+    std::cout << "pow(n1, 3):\t" << pow(n1, 3)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%5E3
+    std::cout << "pow(n1, -1):\t" << pow(n1, -1)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%5E-1
+    std::cout << "sqrt(n1):\t" << sqrt(n1)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=sqrt%2842%2B69i%29
+    std::cout << "cbrt(n1):\t" << cbrt(n1)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=cbrt%2842%2B69i%29
 
     std::cout << "\n\t test power functions" << std::endl;
-    std::cout << "n1 * pow(n1, -1):\t"<< n1 * pow(n1, -1) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29*%2842%2B69i%29%5E-1
-    std::cout << "pow(n1, 2) * pow(n1, -2):\t"<< pow(n1, 2) * pow(n1, -2) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%5E2*%2842%2B69i%29%5E-2
-    std::cout << "pow(n1, 2) / pow(n1, 2):\t"<< pow(n1, 2) / pow(n1, 2) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%5E2/%2842%2B69i%29%5E2
-    std::cout << "sqrt(pow(n1, 2)):\t"<< sqrt(pow(n1, 2)) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=sqrt%28%2842%2B69i%29%5E2%29
-    std::cout << "sqrt(n1) * sqrt(n1):\t"<< sqrt(n1) * sqrt(n1) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=sqrt%2842%2B69i%29*sqrt%2842%2B69i%29
-    std::cout << "cbrt(n1) * cbrt(n1) * cbrt(n1):\t"<< cbrt(n1) * cbrt(n1) * cbrt(n1) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=cbrt%2842%2B69i%29*cbrt%2842%2B69i%29*cbrt%2842%2B69i%29
-    std::cout << "pow(n1, n2):\t"<< pow(n1, n2) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%5E%2869%2B42i%29
-    std::cout << "pow(n1, -n2):\t"<< pow(n1, -n2) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%5E-%2869%2B42i%29
-    std::cout << "pow(n1, n2) * pow(n1, -n2):\t"<< pow(n1, n2) * pow(n1, -n2) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%5E%2869%2B42i%29*%2842%2B69i%29%5E-%2869%2B42i%29
+    std::cout << "n1 * pow(n1, -1):\t" << n1 * pow(n1, -1)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29*%2842%2B69i%29%5E-1
+    std::cout << "pow(n1, 2) * pow(n1, -2):\t" << pow(n1, 2) * pow(n1, -2)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%5E2*%2842%2B69i%29%5E-2
+    std::cout << "pow(n1, 2) / pow(n1, 2):\t" << pow(n1, 2) / pow(n1, 2)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%5E2/%2842%2B69i%29%5E2
+    std::cout << "sqrt(pow(n1, 2)):\t" << sqrt(pow(n1, 2))
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=sqrt%28%2842%2B69i%29%5E2%29
+    std::cout << "sqrt(n1) * sqrt(n1):\t" << sqrt(n1) * sqrt(n1)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=sqrt%2842%2B69i%29*sqrt%2842%2B69i%29
+    std::cout << "cbrt(n1) * cbrt(n1) * cbrt(n1):\t" << cbrt(n1) * cbrt(n1) * cbrt(n1)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=cbrt%2842%2B69i%29*cbrt%2842%2B69i%29*cbrt%2842%2B69i%29
+    std::cout << "pow(n1, n2):\t" << pow(n1, n2)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%5E%2869%2B42i%29
+    std::cout << "pow(n1, -n2):\t" << pow(n1, -n2)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%5E-%2869%2B42i%29
+    std::cout << "pow(n1, n2) * pow(n1, -n2):\t" << pow(n1, n2) * pow(n1, -n2)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=%2842%2B69i%29%5E%2869%2B42i%29*%2842%2B69i%29%5E-%2869%2B42i%29
 
     std::cout << "\n\t transcendental functions" << std::endl;
     nion<long double> expo = exp(n1); // go here: https://www.wolframalpha.com/input?i=exp%2842%2B69i%29
     nion<long double> ln = log(n1); // go here: https://www.wolframalpha.com/input?i=log%2842%2B69i%29
-    std::cout  << "exp(n1):\t"<< expo <<  std::endl;
-    std::cout  << "exp(std::complex)" << std::complex<long double>(42, 69) << ":\t"<< exp(std::complex<long double>(42, 69)) <<  std::endl;
-    std::cout  << "log(n1):\t"<< ln <<  std::endl;
+    std::cout << "exp(n1):\t" << expo << std::endl;
+    std::cout << "exp(std::complex)" << std::complex<long double>(42, 69) << ":\t"
+              << exp(std::complex<long double>(42, 69)) << std::endl;
+    std::cout << "log(n1):\t" << ln << std::endl;
 
     std::cout << "\n\t test transcendental functions" << std::endl;
-    std::cout  << "exp(log(n1)):\t"<< exp(ln) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=exp%28log%2842%2B69i%29%29
-    std::cout  << "log(exp(n1)):\t"<< log(expo) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=log%28exp%2842%2B69i%29%29
+    std::cout << "exp(log(n1)):\t" << exp(ln)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=exp%28log%2842%2B69i%29%29
+    std::cout << "log(exp(n1)):\t" << log(expo)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=log%28exp%2842%2B69i%29%29
 
-    nion<long double>n5({1, -2});
-    std::cout << "n5:\t"<< n5 <<  std::endl;
+    nion<long double> n5({1, -2});
+    std::cout << "n5:\t" << n5 << std::endl;
     std::cout << "\n\t trigonometric functions" << std::endl;
-    std::cout << "sin(n5):\t"<< sin(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=sin%281-2i%29
-    std::cout << "cos(n5):\t"<< cos(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=cos%281-2i%29
-    std::cout << "tan(n5):\t"<< tan(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=tan%281-2i%29
-    std::cout << "cot(n5):\t"<< cot(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=cot%281-2i%29
-    std::cout << "sec(n5):\t"<< sec(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=sec%281-2i%29
-    std::cout << "csc(n5):\t"<< csc(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=csc%281-2i%29
+    std::cout << "sin(n5):\t" << sin(n5) << std::endl; // go here: https://www.wolframalpha.com/input?i=sin%281-2i%29
+    std::cout << "cos(n5):\t" << cos(n5) << std::endl; // go here: https://www.wolframalpha.com/input?i=cos%281-2i%29
+    std::cout << "tan(n5):\t" << tan(n5) << std::endl; // go here: https://www.wolframalpha.com/input?i=tan%281-2i%29
+    std::cout << "cot(n5):\t" << cot(n5) << std::endl; // go here: https://www.wolframalpha.com/input?i=cot%281-2i%29
+    std::cout << "sec(n5):\t" << sec(n5) << std::endl; // go here: https://www.wolframalpha.com/input?i=sec%281-2i%29
+    std::cout << "csc(n5):\t" << csc(n5) << std::endl; // go here: https://www.wolframalpha.com/input?i=csc%281-2i%29
 
     std::cout << "\n\t inverse trigonometric functions" << std::endl;
-    std::cout << "asin(n5):\t"<< asin(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=asin%281-2i%29
-    std::cout << "acos(n5):\t"<< acos(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=acos%281-2i%29
-    std::cout << "atan(n5):\t"<< atan(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=atan%281-2i%29
-    std::cout << "acot(n5):\t"<< acot(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=acot%281-2i%29
-    std::cout << "asec(n5):\t"<< asec(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=asec%281-2i%29
-    std::cout << "acsc(n5):\t"<< acsc(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=acsc%281-2i%29
+    std::cout << "asin(n5):\t" << asin(n5) << std::endl; // go here: https://www.wolframalpha.com/input?i=asin%281-2i%29
+    std::cout << "acos(n5):\t" << acos(n5) << std::endl; // go here: https://www.wolframalpha.com/input?i=acos%281-2i%29
+    std::cout << "atan(n5):\t" << atan(n5) << std::endl; // go here: https://www.wolframalpha.com/input?i=atan%281-2i%29
+    std::cout << "acot(n5):\t" << acot(n5) << std::endl; // go here: https://www.wolframalpha.com/input?i=acot%281-2i%29
+    std::cout << "asec(n5):\t" << asec(n5) << std::endl; // go here: https://www.wolframalpha.com/input?i=asec%281-2i%29
+    std::cout << "acsc(n5):\t" << acsc(n5) << std::endl; // go here: https://www.wolframalpha.com/input?i=acsc%281-2i%29
 
     std::cout << "\n\t test inverse trigonometric functions" << std::endl;
-    std::cout << "asin(sin(n5)):\t"<< asin(sin(n5)) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=asin%28sin%281-2i%29%29
-    std::cout << "acos(cos(n5)):\t"<< acos(cos(n5)) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=acos%28cos%281-2i%29%29
-    std::cout << "atan(tan(n5)):\t"<< atan(tan(n5)) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=atan%28tan%281-2i%29%29
-    std::cout << "acot(cot(n5)):\t"<< acot(cot(n5)) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=acot%28cot%281-2i%29%29
-    std::cout << "asec(sec(n5)):\t"<< asec(sec(n5)) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=asec%28sec%281-2i%29%29
-    std::cout << "acsc(csc(n5)):\t"<< acsc(csc(n5)) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=acsc%28csc%281-2i%29%29
+    std::cout << "asin(sin(n5)):\t" << asin(sin(n5))
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=asin%28sin%281-2i%29%29
+    std::cout << "acos(cos(n5)):\t" << acos(cos(n5))
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=acos%28cos%281-2i%29%29
+    std::cout << "atan(tan(n5)):\t" << atan(tan(n5))
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=atan%28tan%281-2i%29%29
+    std::cout << "acot(cot(n5)):\t" << acot(cot(n5))
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=acot%28cot%281-2i%29%29
+    std::cout << "asec(sec(n5)):\t" << asec(sec(n5))
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=asec%28sec%281-2i%29%29
+    std::cout << "acsc(csc(n5)):\t" << acsc(csc(n5))
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=acsc%28csc%281-2i%29%29
 
     std::cout << "\n\t hyperbolic trigonometric functions" << std::endl;
-    std::cout << "sinh(n1):\t"<< sinh(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=sinh%281-2i%29
-    std::cout << "cosh(n1):\t"<< cosh(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=cosh%281-2i%29
-    std::cout << "tanh(n1):\t"<< tanh(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=tanh%281-2i%29
-    std::cout << "coth(n1):\t"<< coth(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=coth%281-2i%29
-    std::cout << "sech(n1):\t"<< sech(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=sech%281-2i%29
-    std::cout << "csch(n1):\t"<< csch(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=csch%281-2i%29
+    std::cout << "sinh(n1):\t" << sinh(n5) << std::endl; // go here: https://www.wolframalpha.com/input?i=sinh%281-2i%29
+    std::cout << "cosh(n1):\t" << cosh(n5) << std::endl; // go here: https://www.wolframalpha.com/input?i=cosh%281-2i%29
+    std::cout << "tanh(n1):\t" << tanh(n5) << std::endl; // go here: https://www.wolframalpha.com/input?i=tanh%281-2i%29
+    std::cout << "coth(n1):\t" << coth(n5) << std::endl; // go here: https://www.wolframalpha.com/input?i=coth%281-2i%29
+    std::cout << "sech(n1):\t" << sech(n5) << std::endl; // go here: https://www.wolframalpha.com/input?i=sech%281-2i%29
+    std::cout << "csch(n1):\t" << csch(n5) << std::endl; // go here: https://www.wolframalpha.com/input?i=csch%281-2i%29
 
     std::cout << "\n\t inverse hyperbolic trigonometric functions" << std::endl;
-    std::cout << "asinh(n5):\t"<< asinh(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=asinh%281-2i%29
-    std::cout << "acosh(n5):\t"<< acosh(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=acosh%281-2i%29
-    std::cout << "atanh(n5):\t"<< atanh(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=atanh%281-2i%29
-    std::cout << "acoth(n5):\t"<< acoth(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=acoth%281-2i%29
-    std::cout << "asech(n5):\t"<< asech(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=asech%281-2i%29
-    std::cout << "acsch(n5):\t"<< acsch(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=acsch%281-2i%29
+    std::cout << "asinh(n5):\t" << asinh(n5)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=asinh%281-2i%29
+    std::cout << "acosh(n5):\t" << acosh(n5)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=acosh%281-2i%29
+    std::cout << "atanh(n5):\t" << atanh(n5)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=atanh%281-2i%29
+    std::cout << "acoth(n5):\t" << acoth(n5)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=acoth%281-2i%29
+    std::cout << "asech(n5):\t" << asech(n5)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=asech%281-2i%29
+    std::cout << "acsch(n5):\t" << acsch(n5)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=acsch%281-2i%29
 
     std::cout << "\n\t test inverse hyperbolic trigonometric functions" << std::endl;
-    std::cout << "asinh(sinh(n5)):\t"<< asinh(sinh(n5)) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=asinh%28sinh%281-2i%29%29
-    std::cout << "acosh(cosh(n5)):\t"<< acosh(cosh(n5)) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=acosh%28cosh%281-2i%29%29
-    std::cout << "atanh(tanh(n5)):\t"<< atanh(tanh(n5)) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=atanh%28tanh%281-2i%29%29
-    std::cout << "acoth(coth(n5)):\t"<< acoth(coth(n5)) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=acoth%28coth%281-2i%29%29
-    std::cout << "asech(sech(n5)):\t"<< asech(sech(n5)) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=asech%28sech%281-2i%29%29
-    std::cout << "acsch(csch(n5)):\t"<< acsch(csch(n5)) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=acsch%28csch%281-2i%29%29
+    std::cout << "asinh(sinh(n5)):\t" << asinh(sinh(n5))
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=asinh%28sinh%281-2i%29%29
+    std::cout << "acosh(cosh(n5)):\t" << acosh(cosh(n5))
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=acosh%28cosh%281-2i%29%29
+    std::cout << "atanh(tanh(n5)):\t" << atanh(tanh(n5))
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=atanh%28tanh%281-2i%29%29
+    std::cout << "acoth(coth(n5)):\t" << acoth(coth(n5))
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=acoth%28coth%281-2i%29%29
+    std::cout << "asech(sech(n5)):\t" << asech(sech(n5))
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=asech%28sech%281-2i%29%29
+    std::cout << "acsch(csch(n5)):\t" << acsch(csch(n5))
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=acsch%28csch%281-2i%29%29
 
 
     std::cout << "\n\t gamma function" << std::endl;
-    std::cout << "gamma(n5):\t"<< gamma(n5) <<  std::endl; // go here: https://www.wolframalpha.com/input?i=gamma%281-2i%29
+    std::cout << "gamma(n5):\t" << gamma(n5)
+              << std::endl; // go here: https://www.wolframalpha.com/input?i=gamma%281-2i%29
 }
 
-template <typename T>
+template<typename T>
 void stdComplexComparison(int trials) {
     std::cout << "\nComparing std::complex with nion: " << trials << " trials\n" << std::endl;
     std::default_random_engine generator(std::chrono::steady_clock::now().time_since_epoch().count());
@@ -171,101 +214,121 @@ void stdComplexComparison(int trials) {
     long double normNionTimer = 0;
     long double normStdTimer = 0;
     T totalNorm = 0;
+    T totalNetNorm = 0;
 
     // timers for addition
     long double addNionTimer = 0;
     long double addStdTimer = 0;
     T totalAdd = 0;
+    T totalNetAdd = 0;
 
     // timers for conjugate
     long double conjNionTimer = 0;
     long double conjStdTimer = 0;
     T totalConj = 0;
+    T totalNetConj = 0;
 
     // timers for multiplication
     long double mulNionTimer = 0;
     long double mulStdTimer = 0;
     T totalMul = 0;
+    T totalNetMul = 0;
 
     // timers for division
     long double divNionTimer = 0;
     long double divStdTimer = 0;
     T totalDiv = 0;
+    T totalNetDiv = 0;
 
     // timers for power
     long double powNionTimer = 0;
     long double powStdTimer = 0;
     T totalPow = 0;
+    T totalNetPow = 0;
 
     // timers for exponential
     long double expNionTimer = 0;
     long double expStdTimer = 0;
     T totalExp = 0;
+    T totalNetExp = 0;
 
     // timers for logarithm
     long double logNionTimer = 0;
     long double logStdTimer = 0;
     T totalLog = 0;
+    T totalNetLog = 0;
 
     // timers for sin
     long double sinNionTimer = 0;
     long double sinStdTimer = 0;
     T totalSin = 0;
+    T totalNetSin = 0;
 
     // timers for asin
     long double asinNionTimer = 0;
     long double asinStdTimer = 0;
     T totalAsin = 0;
+    T totalNetAsin = 0;
 
     // timers for cos
     long double cosNionTimer = 0;
     long double cosStdTimer = 0;
     T totalCos = 0;
+    T totalNetCos = 0;
 
     // timers for acos
     long double acosNionTimer = 0;
     long double acosStdTimer = 0;
     T totalAcos = 0;
+    T totalNetAcos = 0;
 
     // timers for tan
     long double tanNionTimer = 0;
     long double tanStdTimer = 0;
     T totalTan = 0;
+    T totalNetTan = 0;
 
     // timers for atan
     long double atanNionTimer = 0;
     long double atanStdTimer = 0;
     T totalAtan = 0;
+    T totalNetAtan = 0;
 
     // timers for sinh
     long double sinhNionTimer = 0;
     long double sinhStdTimer = 0;
     T totalSinh = 0;
+    T totalNetSinh = 0;
 
     // timers for asinh
     long double asinhNionTimer = 0;
     long double asinhStdTimer = 0;
     T totalAsinh = 0;
+    T totalNetAsinh = 0;
 
     // timers for cosh
     long double coshNionTimer = 0;
     long double coshStdTimer = 0;
     T totalCosh = 0;
+    T totalNetCosh = 0;
 
     // timers for acosh
     long double acoshNionTimer = 0;
     long double acoshStdTimer = 0;
     T totalAcosh = 0;
+    T totalNetAcosh = 0;
 
     // timers for tanh
     long double tanhNionTimer = 0;
     long double tanhStdTimer = 0;
     T totalTanh = 0;
+    T totalNetTanh = 0;
 
     // timers for atanh
     long double atanhNionTimer = 0;
     long double atanhStdTimer = 0;
     T totalAtanh = 0;
+    T totalNetAtanh = 0;
 
 
     auto startNion = std::chrono::high_resolution_clock::now();
@@ -273,19 +336,19 @@ void stdComplexComparison(int trials) {
     auto startStd = std::chrono::high_resolution_clock::now();
     auto endStd = std::chrono::high_resolution_clock::now();
 
-    nion<T> nionResult;
+    nion < T > nionResult;
     std::complex<T> stdResult;
     T diff;
 
-    std::uniform_real_distribution<T> distribution(-100.0, 100.0);
+    std::uniform_real_distribution<T> distribution(-10.0, 10.0);
     for (int i = 0; i < trials; ++i) {
         // get random std::complex number
         std::complex<T> complex1(distribution(generator), distribution(generator));
         std::complex<T> complex2(distribution(generator), distribution(generator));
 
         // assign std::complex to nion
-        nion<T> nion_complex1(complex1);
-        nion<T> nion_complex2(complex2);
+        nion < T > nion_complex1(complex1);
+        nion < T > nion_complex2(complex2);
 
 
         // norm
@@ -304,6 +367,7 @@ void stdComplexComparison(int trials) {
 
             // get difference between nion and std::complex norms. Add to total norm difference
             diff = nionNorm - stdNorm;
+            totalNetNorm += diff;
             diff /= stdNorm;
             totalNorm += diff;
         }
@@ -324,6 +388,7 @@ void stdComplexComparison(int trials) {
 
             // get difference between nion and std::complex norms. Add to total addition difference
             diff = nionResult.abs() - norm(stdResult);
+            totalNetAdd += diff;
             diff /= norm(stdResult);
             totalAdd += diff;
         }
@@ -353,6 +418,7 @@ void stdComplexComparison(int trials) {
 
             // get difference between nion and std::complex norms. Add to total conjugate difference
             diff = nionResult.abs() - norm(stdResult);
+            totalNetConj += diff;
             diff /= norm(stdResult);
             totalConj += diff;
 
@@ -374,6 +440,7 @@ void stdComplexComparison(int trials) {
 
             // get difference between nion and std::complex norms. Add to total multiplication difference
             diff = nionResult.abs() - norm(stdResult);
+            totalNetMul += diff;
             diff /= norm(stdResult);
             totalMul += diff;
         }
@@ -394,6 +461,7 @@ void stdComplexComparison(int trials) {
 
             // get difference between nion and std::complex norms. Add to total division difference
             diff = nionResult.abs() - norm(stdResult);
+            totalNetDiv += diff;
             diff /= norm(stdResult);
             totalDiv += diff;
         }
@@ -414,6 +482,7 @@ void stdComplexComparison(int trials) {
 
             // get difference between nion and std::complex norms. Add to total power difference
             diff = nionResult.abs() - norm(stdResult);
+            totalNetPow += diff;
             diff /= norm(stdResult);
             totalPow += diff;
         }
@@ -434,6 +503,7 @@ void stdComplexComparison(int trials) {
 
             // get difference between nion and std::complex norms. Add to total exponential difference
             diff = nionResult.abs() - norm(stdResult);
+            totalNetExp += diff;
             diff /= norm(stdResult);
             totalExp += diff;
         }
@@ -454,6 +524,7 @@ void stdComplexComparison(int trials) {
 
             // get difference between nion and std::complex norms. Add to total logarithm difference
             diff = nionResult.abs() - norm(stdResult);
+            totalNetLog += diff;
             diff /= norm(stdResult);
             totalLog += diff;
         }
@@ -474,6 +545,7 @@ void stdComplexComparison(int trials) {
 
             // get difference between nion and std::complex norms. Add to total sine difference
             diff = nionResult.abs() - norm(stdResult);
+            totalNetSin += diff;
             diff /= norm(stdResult);
             totalSin += diff;
         }
@@ -494,6 +566,7 @@ void stdComplexComparison(int trials) {
 
             // get difference between nion and std::complex norms. Add to total asine difference
             diff = nionResult.abs() - norm(stdResult);
+            totalNetAsin += diff;
             diff /= norm(stdResult);
             totalAsin += diff;
         }
@@ -514,6 +587,7 @@ void stdComplexComparison(int trials) {
 
             // get difference between nion and std::complex norms. Add to total cosine difference
             diff = nionResult.abs() - norm(stdResult);
+            totalNetCos += diff;
             diff /= norm(stdResult);
             totalCos += diff;
         }
@@ -534,6 +608,7 @@ void stdComplexComparison(int trials) {
 
             // get difference between nion and std::complex norms. Add to total acosine difference
             diff = nionResult.abs() - norm(stdResult);
+            totalNetAcos += diff;
             diff /= norm(stdResult);
             totalAcos += diff;
         }
@@ -554,6 +629,7 @@ void stdComplexComparison(int trials) {
 
             // get difference between nion and std::complex norms. Add to total tangent difference
             diff = nionResult.abs() - norm(stdResult);
+            totalNetTan += diff;
             diff /= norm(stdResult);
             totalTan += diff;
         }
@@ -574,6 +650,7 @@ void stdComplexComparison(int trials) {
 
             // get difference between nion and std::complex norms. Add to total atan difference
             diff = nionResult.abs() - norm(stdResult);
+            totalNetAtan += diff;
             diff /= norm(stdResult);
             totalAtan += diff;
         }
@@ -594,6 +671,7 @@ void stdComplexComparison(int trials) {
 
             // get difference between nion and std::complex norms. Add to total hyperbolic sine difference
             diff = nionResult.abs() - norm(stdResult);
+            totalNetSinh += diff;
             diff /= norm(stdResult);
             totalSinh += diff;
         }
@@ -614,6 +692,7 @@ void stdComplexComparison(int trials) {
 
             // get difference between nion and std::complex norms. Add to total hyperbolic cosine difference
             diff = nionResult.abs() - norm(stdResult);
+            totalNetCosh += diff;
             diff /= norm(stdResult);
             totalCosh += diff;
         }
@@ -634,6 +713,7 @@ void stdComplexComparison(int trials) {
 
             // get difference between nion and std::complex norms. Add to total hyperbolic tangent difference
             diff = nionResult.abs() - norm(stdResult);
+            totalNetTanh += diff;
             diff /= norm(stdResult);
             totalTanh += diff;
         }
@@ -654,6 +734,7 @@ void stdComplexComparison(int trials) {
 
             // get difference between nion and std::complex norms. Add to total hyperbolic arc sine difference
             diff = nionResult.abs() - norm(stdResult);
+            totalNetAsinh += diff;
             diff /= norm(stdResult);
             totalAsinh += diff;
         }
@@ -674,6 +755,7 @@ void stdComplexComparison(int trials) {
 
             // get difference between nion and std::complex norms. Add to total hyperbolic arc cosine difference
             diff = nionResult.abs() - norm(stdResult);
+            totalNetAcosh += diff;
             diff /= norm(stdResult);
             totalAcosh += diff;
         }
@@ -694,6 +776,7 @@ void stdComplexComparison(int trials) {
 
             // get difference between nion and std::complex norms. Add to total hyperbolic arc tangent difference
             diff = nionResult.abs() - norm(stdResult);
+            totalNetAtanh += diff;
             diff /= norm(stdResult);
             totalAtanh += diff;
         }
@@ -702,85 +785,106 @@ void stdComplexComparison(int trials) {
     T trialfp = static_cast<T>(trials);
     std::cout << "Average norm time for nion: " << addNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average norm time for std::complex: " << addStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalNetAdd / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalAdd / trialfp << std::endl;
 
     std::cout << "\nAverage addition time for nion: " << addNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average addition time for std::complex: " << addStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalNetAdd / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalAdd / trialfp << std::endl;
 
     std::cout << "\nAverage conjugate time for nion: " << conjNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average conjugate time for std::complex: " << conjStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalNetConj / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalConj / trialfp << std::endl;
 
     std::cout << "\nAverage multiplication time for nion: " << mulNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average multiplication time for std::complex: " << mulStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalNetMul / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalMul / trialfp << std::endl;
 
     std::cout << "\nAverage division time for nion: " << divNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average division time for std::complex: " << divStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalNetDiv / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalDiv / trialfp << std::endl;
 
     std::cout << "\nAverage power time for nion: " << powNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average power time for std::complex: " << powStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalNetPow / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalPow / trialfp << std::endl;
 
     std::cout << "\nAverage exponential time for nion: " << expNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average exponential time for std::complex: " << expStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalNetExp / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalExp / trialfp << std::endl;
 
     std::cout << "\nAverage logarithm time for nion: " << logNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average logarithm time for std::complex: " << logStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalNetLog / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalLog / trialfp << std::endl;
 
     std::cout << "\nAverage sin time for nion: " << sinNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average sin time for std::complex: " << sinStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalNetSin / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalSin / trialfp << std::endl;
 
     std::cout << "\nAverage asin time for nion: " << asinNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average asin time for std::complex: " << asinStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalNetAsin / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalAsin / trialfp << std::endl;
 
     std::cout << "\nAverage cos time for nion: " << cosNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average cos time for std::complex: " << cosStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalNetCos / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalCos / trialfp << std::endl;
 
     std::cout << "\nAverage acos time for nion: " << acosNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average acos time for std::complex: " << acosStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalNetAcos / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalAcos / trialfp << std::endl;
 
     std::cout << "\nAverage tan time for nion: " << tanNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average tan time for std::complex: " << tanStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalNetTan / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalTan / trialfp << std::endl;
 
     std::cout << "\nAverage atan time for nion: " << atanNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average atan time for std::complex: " << atanStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalNetAtan / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalAtan / trialfp << std::endl;
 
     std::cout << "\nAverage sinh time for nion: " << sinhNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average sinh time for std::complex: " << sinhStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalNetSinh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalSinh / trialfp << std::endl;
 
     std::cout << "\nAverage asinh time for nion: " << asinhNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average asinh time for std::complex: " << asinhStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalNetAsinh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalAsinh / trialfp << std::endl;
 
     std::cout << "\nAverage cosh time for nion: " << coshNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average cosh time for std::complex: " << coshStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalNetCosh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalCosh / trialfp << std::endl;
 
     std::cout << "\nAverage acosh time for nion: " << acoshNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average acosh time for std::complex: " << acoshStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalNetAcosh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalAcosh / trialfp << std::endl;
 
     std::cout << "\nAverage tanh time for nion: " << tanhNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average tanh time for std::complex: " << tanhStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalNetTanh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalTanh / trialfp << std::endl;
 
     std::cout << "\nAverage atanh time for nion: " << atanhNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average atanh time for std::complex: " << atanhStdTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalNetAtanh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalAtanh / trialfp << std::endl;
 }
-template <typename T>
+
+template<typename T>
 void boostQuaternionComparison(int trials) {
     std::cout << "\n\n#### Comparing boost::math::quaternion with nion: " << trials << " trials ####\n" << std::endl;
     std::default_random_engine generator(std::chrono::steady_clock::now().time_since_epoch().count());
@@ -845,23 +949,23 @@ void boostQuaternionComparison(int trials) {
     auto startBoost = std::chrono::high_resolution_clock::now();
     auto endBoost = std::chrono::high_resolution_clock::now();
 
-    nion<T> nionResult;
+    nion < T > nionResult;
     boost::math::quaternion<T> boostResult;
     T diff;
 
     for (int i = 0; i < trials; ++i) {
 
         //generate random quaternion numbers
-        T* vals1 = new T[4];
-        T* vals2 = new T[4];
+        T *vals1 = new T[4];
+        T *vals2 = new T[4];
         for (int j = 0; j < 4; ++j) {
             std::uniform_real_distribution<T> distribution(-100, 100);
             vals1[j] = distribution(generator);
             vals2[j] = distribution(generator);
         }
 
-        nion<T> nion1(vals1, 4);
-        nion<T> nion2(vals2, 4);
+        nion < T > nion1(vals1, 4);
+        nion < T > nion2(vals2, 4);
         boost::math::quaternion<T> boost1(vals1[0], vals1[1], vals1[2], vals1[3]);
         boost::math::quaternion<T> boost2(vals2[0], vals2[1], vals2[2], vals2[3]);
 
@@ -898,59 +1002,79 @@ void boostQuaternionComparison(int trials) {
 
     std::cout << "Average norm time for nion: " << normNionTimer / trials << " ns" << std::endl;
     std::cout << "Average norm time for boost::math::quaternion: " << normBoostTimer / trials << " ns" << std::endl;
-    std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalNorm / trials << std::endl;
+    std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalNorm / trials
+              << std::endl;
 
     std::cout << "\nAverage addition time for nion: " << addNionTimer / trials << " ns" << std::endl;
     std::cout << "Average addition time for boost::math::quaternion: " << addBoostTimer / trials << " ns" << std::endl;
-    std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalAdd / trials << std::endl;
+    std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalAdd / trials
+              << std::endl;
 }
 
-void mixedOrderTest(){
+void mixedOrderTest() {
     std::cout << "\n\t mixed order test\n" << std::endl;
 
-    nion<long double>n6({1, 2});
-    std::cout << "n6:\t"<< n6 <<  std::endl;
+    nion<long double> n6({1, 2});
+    std::cout << "n6:\t" << n6 << std::endl;
 
-    nion<long double>n7({3, 4, 1, 2});
-    std::cout << "n7:\t"<< n7 <<  std::endl;
+    nion<long double> n7({3, 4, 1, 2});
+    std::cout << "n7:\t" << n7 << std::endl;
 
-    std::cout << "n6 + n7:\t"<< n6 + n7 <<  std::endl;
-    std::cout << "n6 - n7:\t"<< n6 - n7 <<  std::endl;
-    std::cout << "n6 * n7:\t"<< n6 * n7 <<  std::endl;
-    std::cout << "n6 / n7:\t"<< n6 / n7 <<  std::endl;
-    std::cout << "n6 * n7 / n6:\t" << n6 * n7 / n6 <<  std::endl;
-    std::cout << "n7 * n6:\t"<< n7 * n6 <<  std::endl;
-    std::cout << "n7 / n6:\t"<< n7 / n6 <<  std::endl;
-    std::cout << "n7 * n6 / n7:\t" << n7 * n6 / n7 <<  std::endl;
+    std::cout << "n6 + n7:\t" << n6 + n7 << std::endl;
+    std::cout << "n6 - n7:\t" << n6 - n7 << std::endl;
+    std::cout << "n6 * n7:\t" << n6 * n7 << std::endl;
+    std::cout << "n6 / n7:\t" << n6 / n7 << std::endl;
+    std::cout << "n6 * n7 / n6:\t" << n6 * n7 / n6 << std::endl;
+    std::cout << "n7 * n6:\t" << n7 * n6 << std::endl;
+    std::cout << "n7 / n6:\t" << n7 / n6 << std::endl;
+    std::cout << "n7 * n6 / n7:\t" << n7 * n6 / n7 << std::endl;
 
     std::cout << "\n\t non 2 power order test\n" << std::endl;
-    nion<long double> n8({1,2,3});
-    std::cout << "n8:\t"<< n8 <<  std::endl;
-    std::cout << "n8 + n8:\t"<< n8 + n8 <<  std::endl;
-    std::cout << "n8 - n8:\t"<< n8 - n8 <<  std::endl;
-    std::cout << "n8 * n8:\t"<< n8 * n8 <<  std::endl;
-    std::cout << "n8 / n8:\t"<< n8 / n8 <<  std::endl;
-    std::cout << "n8 * n8 / n8:\t" << n8 * n8 / n8 <<  std::endl;
-    std::cout << "n8 / n8 * n8:\t" << n8 / n8 * n8 <<  std::endl;
-    std::cout << "n8 + n7:\t"<< n8 + n7 <<  std::endl;
-    std::cout << "n8 - n7:\t"<< n8 - n7 <<  std::endl;
-    std::cout << "n8 * n7:\t"<< n8 * n7 <<  std::endl;
-    std::cout << "n8 / n7:\t"<< n8 / n7 <<  std::endl;
-    std::cout << "n8 * n7 / n8:\t" << n8 * n7 / n8 <<  std::endl;
-    std::cout << "n7 * n8 / n7:\t" << n7 * n8 / n7 <<  std::endl;
+    nion<long double> n8({1, 2, 3});
+    std::cout << "n8:\t" << n8 << std::endl;
+    std::cout << "n8 + n8:\t" << n8 + n8 << std::endl;
+    std::cout << "n8 - n8:\t" << n8 - n8 << std::endl;
+    std::cout << "n8 * n8:\t" << n8 * n8 << std::endl;
+    std::cout << "n8 / n8:\t" << n8 / n8 << std::endl;
+    std::cout << "n8 * n8 / n8:\t" << n8 * n8 / n8 << std::endl;
+    std::cout << "n8 / n8 * n8:\t" << n8 / n8 * n8 << std::endl;
+    std::cout << "n8 + n7:\t" << n8 + n7 << std::endl;
+    std::cout << "n8 - n7:\t" << n8 - n7 << std::endl;
+    std::cout << "n8 * n7:\t" << n8 * n7 << std::endl;
+    std::cout << "n8 / n7:\t" << n8 / n7 << std::endl;
+    std::cout << "n8 * n7 / n8:\t" << n8 * n7 / n8 << std::endl;
+    std::cout << "n7 * n8 / n7:\t" << n7 * n8 / n7 << std::endl;
+}
+
+void writeSinData(int N) {
+    long double h = 1.0 / (N + 1);
+    std::ofstream myfile("sin_data.txt");
+    for (int i = 0; i <= N; i++) {
+        for (int j = 0; j <= N; ++j) {
+            long double x = (10 * i) * h - 5;
+            long double y = (4 * j) * h - 2;
+            myfile << sin(nion < long double > ({ x, y }))[0] << " ";
+        }
+        myfile << std::endl;
+    }
+    myfile.close();
 }
 
 int main() {
 
-    std::cout.precision(17);
+    std::cout.precision(10);
+//
 
-    int trials = 10000;
     std::cout << "nion complex number library" << std::endl;
 //    order2Test();
 //    mixedOrderTest();
+
+    int trials = 1000;
     stdComplexComparison<long double>(trials);
 //    boostQuaternionComparison<long double>(trials);
 
+    int N = 100;
+    writeSinData(100);
 
     return 0;
 }
