@@ -45,11 +45,9 @@ struct nion {
 
     /**
      * @brief Default constructor.
-     * @details Constructs a nion object with only real component with value 0.
+     * @details Constructs a null nion object.
      */
-    constexpr nion<T>() : components((T*)malloc(sizeof(T))), order(1) {
-        components[0] = 0;
-    }
+    constexpr nion<T>() : components(nullptr), order(0) {};
 
     /**
      * @brief Construct a new nion object from vector
@@ -60,7 +58,7 @@ struct nion {
 
         // check if the order is greater than zero
         if (order <= 0) {
-            throw std::invalid_argument("The order of the nions must be greater than zero.");
+            throw std::invalid_argument("The order of the nion must be greater than zero.");
         }
 
         this->components = (T*) malloc(order * sizeof(T));
@@ -73,7 +71,7 @@ struct nion {
      */
     constexpr nion<T>(const std::initializer_list<T> &components) : order(components.size()) {
         if (order <= 0) {
-            throw std::invalid_argument("The order of the nions must be greater than zero.");
+            throw std::invalid_argument("The order of the nion must be greater than zero.");
         }
         this->components = (T*) malloc(order * sizeof(T));
         std::memcpy(this->components, components.begin(), order * sizeof(T));
@@ -141,33 +139,6 @@ struct nion {
     ~nion<T>() { free(components); components = nullptr; };
 
     /**
-     * @brief get the left pair of the nion. a in (a,b)
-     * @tparam T type of the nion.
-     * @param nion The nion to get the left pair of.
-     * @return The left pair of the nion.
-     */
-    constexpr nion<T> left() const {
-        uint_fast16_t halfOrder = order / 2;
-        nion<T> a(order - halfOrder);
-        std::memcpy(a.components, components, (order - halfOrder) * sizeof(T));
-        return a;
-    };
-
-    /**
-     * @brief get the right pair of the nion. b in (a,b)
-     * @tparam T type of the nion.
-     * @param nion The nion to get the right pair of.
-     * @return The right pair of the nion.
-     */
-    constexpr nion<T> right() const {
-        uint_fast16_t halfOrder = order / 2;
-        nion<T> b(halfOrder);
-        std::memcpy(b.components, components + (order - halfOrder), halfOrder * sizeof(T));
-        return b;
-    };
-
-
-    /**
      * @brief Construct nion from half order nions. q = (a,b)
      * @param a The first half order nion in pair.
      * @param b The second half order nion in pair.
@@ -224,6 +195,7 @@ struct nion {
     template<arithmetic S>
     constexpr nion<T> &operator=(S scalar) {
         free(this->components);
+        this->components = nullptr;
         *this = nion<T>(static_cast<T>(scalar), 1);
         return *this;
     };
@@ -234,7 +206,7 @@ struct nion {
      */
     constexpr nion<T> operator-() const {
         nion<T> negated = *this;
-        #pragma simd
+        #pragma vector aligned always
         for (uint_fast16_t i = 0; i < order; i++) {
             negated[i] *= -1;
         }
@@ -259,7 +231,7 @@ struct nion {
     constexpr nion<T> conj() const {
         nion<T> conjugate = *this;
         // negate all components except the first
-        #pragma simd
+        #pragma vector aligned always
         for (uint_fast16_t i = 1; i < order; i++) {
             conjugate[i] *= -1;
         }
@@ -277,7 +249,7 @@ struct nion {
             resize(other.order);
 
         // add the components of the other nion to this nion.
-        #pragma simd
+        #pragma vector aligned always
         for (uint_fast16_t i = 0; i < other.order; i++) {
             components[i] += other[i];
         }
@@ -294,7 +266,7 @@ struct nion {
             resize(other.order);
 
         // substract the components of the other nion from this nion.
-        #pragma simd
+        #pragma vector aligned always
         for (uint_fast16_t i = 0; i < other.order; i++) {
             components[i] -= other[i];
         }
@@ -308,6 +280,7 @@ struct nion {
     constexpr void operator*=(const nion <T> &other) {
         nion<T> product = *this * other;
         free(this->components);
+        this->components = nullptr;
         *this = product;
     };
 
@@ -319,6 +292,7 @@ struct nion {
     constexpr void operator/=(const nion <T> &other) {
         nion<T> quotient = *this / other;
         free(this->components);
+        this->components = nullptr;
         *this = quotient;
     };
 
@@ -350,10 +324,8 @@ struct nion {
      * @return The product of this nion and the other nion.
      * @details The product of two nions is defined as (a,b)(c,d) = (a c - d* b, d a + b c*) = (z,w), where * is the conjugate.
      * and a, b, c, d are the nions with half the order of the original nions.
-     * @note This is only defined for nions of even order.
      * @note product has the same order as the larger order of the two nions.
      * @note This is recursive function.
-     * TODO: Replace recursion with stack based iteration.
      */
     constexpr nion<T> operator*(const nion <T> &other) const {
         // check if the orders are the same
@@ -366,23 +338,26 @@ struct nion {
 
 
             // extract the dual elements of the nions with half the order
-            nion<T> a = std::move(this->left());
-            nion<T> b = std::move(this->right());
-            nion<T> c = std::move(other.left());
-            nion<T> d = std::move(other.right());
+            uint_fast16_t half_order = order / 2;
+            nion<T> a(this->components,  half_order);
+            nion<T> b(this->components + half_order, order - half_order);
+            nion<T> c(other.components,  half_order);
+            nion<T> d(other.components + half_order, order - half_order);
+
 
             // calculate the product
-            nion<T> z = (a * c) - (d.conj() * b);
-            nion<T> w = (d * a) + (b * c.conj());
+            return nion<T>(
+                    (a * c) - (d.conj() * b),
+                    (d * a) + (b * c.conj())
+                    );
 
-            return nion<T>(z, w);
         } else { // orders are different
 
             // resize the nion with the smaller order to the order of the nion with the larger order.
             if (order > other.order) {
                 return *this * other.resize(order);
             } else {
-                return this->resize(other.order) * other;
+                return resize(other.order) * other;
             }
         }
     };
@@ -411,7 +386,7 @@ struct nion {
      */
     constexpr T dot(const nion<T> &other) const {
         T dotProduct = 0;
-        #pragma simd
+        #pragma vector aligned always
         for (uint_fast16_t i = 0; i < order; i++) {
             dotProduct += components[i] * other[i];
         }
@@ -426,7 +401,7 @@ struct nion {
     constexpr T abs() const {
         T absVal = 0;
 
-        #pragma simd
+        #pragma vector aligned always
         for (uint_fast16_t i = 0; i < order; i++) {
             absVal += components[i] * components[i];
         }
@@ -462,7 +437,7 @@ struct nion {
      */
     constexpr nion<T> imag() const {
         nion<T> imaginary = *this;
-        imaginary[0] = 0;
+        imaginary.components[0] = 0;
         return imaginary;
     }
 
@@ -495,7 +470,7 @@ struct nion {
         if (order != other.order) {
             return false;
         }
-        #pragma simd
+        #pragma vector aligned always
         for (uint_fast16_t i = 0; i < order; i++) {
             if (std::abs(components[i] - other[i]) >= epsilon) {
                 return false;
@@ -514,7 +489,7 @@ struct nion {
         if (order != other.order) {
             return true;
         }
-        #pragma simd
+        #pragma vector aligned always
         for (uint_fast16_t i = 0; i < order; i++) {
             if (std::abs(components[i] - other[i]) >= epsilon) {
                 return true;
@@ -600,7 +575,7 @@ struct nion {
     template<arithmetic S>
     constexpr nion<T> operator*(S scalar) const {
         nion<T> product = *this;
-        #pragma simd
+        #pragma vector aligned always
         for (uint_fast16_t i = 0; i < order; i++) {
             product[i] *= scalar;
         }
@@ -648,7 +623,7 @@ struct nion {
      */
     template<arithmetic S>
     constexpr void operator*=(S scalar) {
-        #pragma simd
+        #pragma vector aligned always
         for (uint_fast16_t i = 0; i < order; i++) {
             components[i] *= scalar;
         }
@@ -681,7 +656,7 @@ struct nion {
         if (real() != scalar) {
             return false;
         }
-        #pragma simd
+        #pragma vector aligned always
         for (uint_fast16_t i = 1; i < order; i++) {
             if (components[i] != 0) {
                 return false;
@@ -703,7 +678,7 @@ struct nion {
         if (real() != scalar) {
             return true;
         }
-        #pragma simd
+        #pragma vector aligned always
         for (uint_fast16_t i = 1; i < order; i++) {
             if (components[i] != 0) {
                 return true;
