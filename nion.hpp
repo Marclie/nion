@@ -163,7 +163,12 @@ struct nion {
         }
 
         this->order = other.order;
-        this->components = (T*) realloc(this->components, other.order * sizeof(T));
+        if (this->components == nullptr) {
+            this->components = (T *) malloc(other.order * sizeof(T));
+        } else {
+            this->components = (T *) realloc(this->components, other.order * sizeof(T));
+        }
+
         memcpy(this->components, other.components, order * sizeof(T));
         return *this;
     };
@@ -1431,7 +1436,7 @@ constexpr nion<T> acsc(const nion<T> &z) noexcept {
 template<arithmetic T>
 constexpr nion<T> gamma(const nion<T> &z) noexcept {
     // compute the gamma function of the nion
-    return sqrt(2 * M_PI) * exp(-z) * sqrt(1/z) * pow(1/(12 * z - 1/(10 * z)) + z, z);
+    return sqrt(2 * M_PIl) * exp(-z) * sqrt(1/z) * pow(1/(12 * z - 1/(10 * z)) + z, z);
 }
 
 #endif //NION_NION_HPP
