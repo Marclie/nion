@@ -26,6 +26,7 @@
 #include <complex>
 #include <cstring>
 
+
 /**
  * @file nion.hpp
  * @brief Templated class that implements Cayley-Dickson division algebra.
@@ -62,7 +63,7 @@ struct nion {
         }
 
         this->components = (T*) malloc(order * sizeof(T));
-        std::memcpy(this->components, components, order * sizeof(T));
+        memcpy(this->components, components, order * sizeof(T));
     };
 
     /**
@@ -74,7 +75,7 @@ struct nion {
             throw std::invalid_argument("The order of the nion must be greater than zero.");
         }
         this->components = (T*) malloc(order * sizeof(T));
-        std::memcpy(this->components, components.begin(), order * sizeof(T));
+        memcpy(this->components, components.begin(), order * sizeof(T));
     };
 
     /**
@@ -86,8 +87,7 @@ struct nion {
         if (order <= 0) {
             throw std::invalid_argument("The order of the nions must be greater than zero.");
         }
-        this->components = (T*) malloc(this->order * sizeof(T));
-        std::memset(this->components, 0, order * sizeof(T));
+        this->components = (T*) calloc(this->order, sizeof(T));
     };
 
     /**
@@ -98,7 +98,7 @@ struct nion {
      */
     constexpr nion<T>(const nion<T> &other) : order(other.order) {
         this->components = (T*) malloc(other.order * sizeof(T));
-        std::memcpy(this->components, other.components, other.order * sizeof(T));
+        memcpy(this->components, other.components, other.order * sizeof(T));
     };
 
     /**
@@ -114,8 +114,7 @@ struct nion {
         if (order <= 0) {
             throw std::invalid_argument("The order of the nions must be greater than zero.");
         }
-        this->components = (T*) malloc(order * sizeof(T));
-        std::memset(this->components, 0, order * sizeof(T));
+        this->components = (T*) calloc(order, sizeof(T));
         components[0] = realVal;
     };
 
@@ -126,8 +125,7 @@ struct nion {
      * @return nion<T> The nion object.
      */
     constexpr explicit nion<T>(std::complex<T> complex) : order(2) {
-        this->components = (T*) malloc(2 * sizeof(T));
-        memset(this->components, 0, 2 * sizeof(T));
+        this->components = (T*) calloc(2, sizeof(T));
 
         components[0] = complex.real();
         components[1] = complex.imag();
@@ -149,8 +147,8 @@ struct nion {
         this->components = (T*) malloc(order * sizeof(T));
         std::memset(this->components, 0, order * sizeof(T));
 
-        std::memcpy(this->components, a.components, a.order * sizeof(T));
-        std::memcpy(this->components + a.order, b.components, b.order * sizeof(T));
+        memcpy(this->components, a.components, a.order * sizeof(T));
+        memcpy(this->components + a.order, b.components, b.order * sizeof(T));
     };
 
     /**
@@ -163,10 +161,10 @@ struct nion {
         if (&other == this) {
             return *this;
         }
-        free(this->components);
+
         this->order = other.order;
-        this->components = (T *) malloc(order * sizeof(T));
-        std::memcpy(this->components, other.components, order * sizeof(T));
+        this->components = (T*) realloc(this->components, other.order * sizeof(T));
+        memcpy(this->components, other.components, order * sizeof(T));
         return *this;
     };
 
@@ -246,7 +244,7 @@ struct nion {
     constexpr void operator+=(const nion <T> &other) {
         // if the order is less than the other nion, resize this nion.
         if (order < other.order)
-            resize(other.order);
+            *this = resize(other.order);
 
         // add the components of the other nion to this nion.
         #pragma vector aligned
@@ -263,7 +261,7 @@ struct nion {
     constexpr void operator-=(const nion <T> &other) {
         // if the order is less than the other nion, resize this nion.
         if (this->order < other.order)
-            resize(other.order);
+            *this = resize(other.order);
 
         // substract the components of the other nion from this nion.
         #pragma vector aligned
@@ -448,8 +446,13 @@ struct nion {
             return *this;
         }
 
-        nion<T> converted(newOrder);
-        std::memcpy(converted.components, components, sizeof(T) * order);
+        nion<T> converted = *this;
+        converted.order = newOrder;
+        converted.components = (T *) realloc(converted.components, newOrder * sizeof(T));
+
+        // set the new components to zero
+        memset(converted.components + order, 0, (newOrder - order) * sizeof(T));
+
         return converted;
     };
 
