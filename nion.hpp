@@ -206,7 +206,7 @@ struct nion {
      */
     constexpr nion<T> operator-() const {
         nion<T> negated = *this;
-        #pragma vector aligned always
+        #pragma vector aligned
         for (uint_fast16_t i = 0; i < order; i++) {
             negated[i] *= -1;
         }
@@ -231,7 +231,7 @@ struct nion {
     constexpr nion<T> conj() const {
         nion<T> conjugate = *this;
         // negate all components except the first
-        #pragma vector aligned always
+        #pragma vector aligned
         for (uint_fast16_t i = 1; i < order; i++) {
             conjugate[i] *= -1;
         }
@@ -249,7 +249,7 @@ struct nion {
             resize(other.order);
 
         // add the components of the other nion to this nion.
-        #pragma vector aligned always
+        #pragma vector aligned
         for (uint_fast16_t i = 0; i < other.order; i++) {
             components[i] += other[i];
         }
@@ -266,7 +266,7 @@ struct nion {
             resize(other.order);
 
         // substract the components of the other nion from this nion.
-        #pragma vector aligned always
+        #pragma vector aligned
         for (uint_fast16_t i = 0; i < other.order; i++) {
             components[i] -= other[i];
         }
@@ -278,10 +278,7 @@ struct nion {
      * @return The product of this nion and the other nion inplace.
      */
     constexpr void operator*=(const nion <T> &other) {
-        nion<T> product = *this * other;
-        free(this->components);
-        this->components = nullptr;
-        *this = product;
+        *this = *this * other;
     };
 
     /**
@@ -290,10 +287,7 @@ struct nion {
      * @return The division of this nion and the other nion inplace.
      */
     constexpr void operator/=(const nion <T> &other) {
-        nion<T> quotient = *this / other;
-        free(this->components);
-        this->components = nullptr;
-        *this = quotient;
+        *this = *this / other;
     };
 
     /**
@@ -386,7 +380,7 @@ struct nion {
      */
     constexpr T dot(const nion<T> &other) const {
         T dotProduct = 0;
-        #pragma vector aligned always
+        #pragma vector aligned
         for (uint_fast16_t i = 0; i < order; i++) {
             dotProduct += components[i] * other[i];
         }
@@ -401,7 +395,7 @@ struct nion {
     constexpr T abs() const {
         T absVal = 0;
 
-        #pragma vector aligned always
+        #pragma vector aligned
         for (uint_fast16_t i = 0; i < order; i++) {
             absVal += components[i] * components[i];
         }
@@ -470,7 +464,7 @@ struct nion {
         if (order != other.order) {
             return false;
         }
-        #pragma vector aligned always
+        #pragma vector aligned
         for (uint_fast16_t i = 0; i < order; i++) {
             if (std::abs(components[i] - other[i]) >= epsilon) {
                 return false;
@@ -489,7 +483,7 @@ struct nion {
         if (order != other.order) {
             return true;
         }
-        #pragma vector aligned always
+        #pragma vector aligned
         for (uint_fast16_t i = 0; i < order; i++) {
             if (std::abs(components[i] - other[i]) >= epsilon) {
                 return true;
@@ -575,7 +569,7 @@ struct nion {
     template<arithmetic S>
     constexpr nion<T> operator*(S scalar) const {
         nion<T> product = *this;
-        #pragma vector aligned always
+        #pragma vector aligned
         for (uint_fast16_t i = 0; i < order; i++) {
             product[i] *= scalar;
         }
@@ -623,7 +617,7 @@ struct nion {
      */
     template<arithmetic S>
     constexpr void operator*=(S scalar) {
-        #pragma vector aligned always
+        #pragma vector aligned
         for (uint_fast16_t i = 0; i < order; i++) {
             components[i] *= scalar;
         }
@@ -637,7 +631,7 @@ struct nion {
      */
     template<arithmetic S>
     constexpr void operator/=(S scalar) {
-        # pragma simd
+        # pragma vector aligned
         for (uint_fast16_t i = 0; i < order; i++) {
             components[i] /= scalar;
         }
@@ -656,7 +650,7 @@ struct nion {
         if (real() != scalar) {
             return false;
         }
-        #pragma vector aligned always
+        #pragma vector aligned
         for (uint_fast16_t i = 1; i < order; i++) {
             if (components[i] != 0) {
                 return false;
@@ -678,7 +672,7 @@ struct nion {
         if (real() != scalar) {
             return true;
         }
-        #pragma vector aligned always
+        #pragma vector aligned
         for (uint_fast16_t i = 1; i < order; i++) {
             if (components[i] != 0) {
                 return true;
