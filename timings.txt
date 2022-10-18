@@ -3,165 +3,203 @@ nion complex number library
 
 #### Comparing std::complex with nion: 10000000 trials ####
 
-Average norm time for nion: 39.2411938 ns
-Average norm time for std::complex: 21.3815194 ns
+Average norm time for nion: 18.0860841 ns
+Average norm time for std::complex: 18.0353312 ns
+nion is 1.002814082 times SLOWER than std::complex
 Average difference between nion and std::complex: 0
 Average relative difference between nion and std::complex: 0
 
-Average addition time for nion: 39.2411938 ns
-Average addition time for std::complex: 21.3815194 ns
+Average addition time for nion: 32.5997988 ns
+Average addition time for std::complex: 17.4908269 ns
+nion is 1.863822619 times SLOWER than std::complex
 Average difference between nion and std::complex: 0
 Average relative difference between nion and std::complex: 0
 
-Average conjugate time for nion: 104.9444097 ns
-Average conjugate time for std::complex: 36.6918612 ns
+Average conjugate time for nion: 81.7294056 ns
+Average conjugate time for std::complex: 30.1225228 ns
+nion is 2.713232426 times SLOWER than std::complex
 Average difference between nion and std::complex: 0
 Average relative difference between nion and std::complex: 0
 
-Average multiplication time for nion: 288.1132608 ns
-Average multiplication time for std::complex: 24.2141909 ns
+Average multiplication time for nion: 241.6754126 ns
+Average multiplication time for std::complex: 19.4516782 ns
+nion is 12.42439907 times SLOWER than std::complex
 Average difference between nion and std::complex: 0
 Average relative difference between nion and std::complex: 0
 
-Average division time for nion: 333.3931063 ns
-Average division time for std::complex: 42.546161 ns
-Average difference between nion and std::complex: -4.837723032e-20
-Average relative difference between nion and std::complex: -4.039175349e-23
+Average division time for nion: 265.2643911 ns
+Average division time for std::complex: 33.9905621 ns
+nion is 7.804060148 times SLOWER than std::complex
+Average difference between nion and std::complex: 6.096830223e-20
+Average relative difference between nion and std::complex: 6.474092597e-24
 
-Average power time for nion: 280.9612825 ns
-Average power time for std::complex: 30.2874905 ns
-Average difference between nion and std::complex: -3.608976797e-08
-Average relative difference between nion and std::complex: -4.021138205e-19
+Average power time for nion: 223.9837807 ns
+Average power time for std::complex: 24.0878761 ns
+nion is 9.298610628 times SLOWER than std::complex
+Average difference between nion and std::complex: -1.103622935e-08
+Average relative difference between nion and std::complex: 3.382938469e-19
 
-Average exponential time for nion: 151.8756924 ns
-Average exponential time for std::complex: 284.2389519 ns
-Average difference between nion and std::complex: 1.297031869e-11
-Average relative difference between nion and std::complex: -7.105661997e-20
+Average exponential time for nion: 120.4449333 ns
+Average exponential time for std::complex: 237.5936673 ns
+nion is 1.972633143 times FASTER than std::complex
+Average difference between nion and std::complex: 2.666095543e-11
+Average relative difference between nion and std::complex: -9.485302921e-20
 
-Average logarithm time for nion: 125.3952902 ns
-Average logarithm time for std::complex: 152.9913346 ns
-Average difference between nion and std::complex: -6.724307941e-19
-Average relative difference between nion and std::complex: -5.595767342e-20
+Average logarithm time for nion: 102.1989466 ns
+Average logarithm time for std::complex: 126.0672069 ns
+nion is 1.233547029 times FASTER than std::complex
+Average difference between nion and std::complex: -1.305660649e-19
+Average relative difference between nion and std::complex: -2.039098377e-20
 
-Average sin time for nion: 179.1301758 ns
-Average sin time for std::complex: 360.5948173 ns
-Average difference between nion and std::complex: -4.034011047e-13
-Average relative difference between nion and std::complex: 2.123650965e-19
+Average sin time for nion: 142.462761 ns
+Average sin time for std::complex: 302.3860752 ns
+nion is 2.122562227 times FASTER than std::complex
+Average difference between nion and std::complex: 1.160727415e-12
+Average relative difference between nion and std::complex: 2.756036744e-19
 
-Average asin time for nion: 1270.829694 ns
-Average asin time for std::complex: 271.5644705 ns
-Average difference between nion and std::complex: -5.120219814e-19
-Average relative difference between nion and std::complex: -2.056010462e-20
+Average asin time for nion: 1030.828468 ns
+Average asin time for std::complex: 225.3411361 ns
+nion is 4.574524147 times SLOWER than std::complex
+Average difference between nion and std::complex: -2.821327718e-19
+Average relative difference between nion and std::complex: -2.796536979e-20
 
-Average cos time for nion: 198.5110626 ns
-Average cos time for std::complex: 366.4910228 ns
-Average difference between nion and std::complex: -2.403832674e-12
-Average relative difference between nion and std::complex: 2.456610649e-19
+Average cos time for nion: 164.2213985 ns
+Average cos time for std::complex: 304.5650945 ns
+nion is 1.854600541 times FASTER than std::complex
+Average difference between nion and std::complex: 7.417782087e-13
+Average relative difference between nion and std::complex: -1.287146814e-20
 
-Average acos time for nion: 1248.702088 ns
-Average acos time for std::complex: 265.0197777 ns
-Average difference between nion and std::complex: -5.285539832e-19
-Average relative difference between nion and std::complex: -1.823500516e-20
+Average acos time for nion: 1022.261326 ns
+Average acos time for std::complex: 219.2014844 ns
+nion is 4.663569357 times SLOWER than std::complex
+Average difference between nion and std::complex: -3.739177682e-19
+Average relative difference between nion and std::complex: -1.419311136e-20
 
-Average tan time for nion: 675.6759125 ns
-Average tan time for std::complex: 370.4862547 ns
-Average difference between nion and std::complex: -6.607667663e-14
-Average relative difference between nion and std::complex: -3.334590976e-20
+Average tan time for nion: 561.3424042 ns
+Average tan time for std::complex: 308.7229704 ns
+nion is 1.818272231 times SLOWER than std::complex
+Average difference between nion and std::complex: 1.924651831e-12
+Average relative difference between nion and std::complex: 2.884817849e-19
 
-Average atan time for nion: 922.4089901 ns
-Average atan time for std::complex: 128.5821401 ns
-Average difference between nion and std::complex: -4.193137449e-21
-Average relative difference between nion and std::complex: 1.495766255e-20
+Average atan time for nion: 668.7311753 ns
+Average atan time for std::complex: 106.8724542 ns
+nion is 6.257282855 times SLOWER than std::complex
+Average difference between nion and std::complex: -7.694381072e-20
+Average relative difference between nion and std::complex: -3.170010513e-20
 
-Average sinh time for nion: 333.6750029 ns
-Average sinh time for std::complex: 371.6649625 ns
-Average difference between nion and std::complex: 4.423505258e-12
-Average relative difference between nion and std::complex: -2.483709584e-19
+Average sinh time for nion: 267.6143403 ns
+Average sinh time for std::complex: 304.5133306 ns
+nion is 1.137881215 times FASTER than std::complex
+Average difference between nion and std::complex: 1.114351406e-11
+Average relative difference between nion and std::complex: -7.182124116e-20
 
-Average asinh time for nion: 680.4778272 ns
-Average asinh time for std::complex: 264.0679833 ns
-Average difference between nion and std::complex: 2.289880775e-17
-Average relative difference between nion and std::complex: 2.930951379e-18
+Average asinh time for nion: 536.788631 ns
+Average asinh time for std::complex: 219.0540395 ns
+nion is 2.450484968 times SLOWER than std::complex
+Average difference between nion and std::complex: 1.435807225e-17
+Average relative difference between nion and std::complex: 1.022071598e-18
 
-Average cosh time for nion: 324.1193467 ns
-Average cosh time for std::complex: 350.4685291 ns
-Average difference between nion and std::complex: 4.422676502e-12
-Average relative difference between nion and std::complex: -2.060810834e-19
+Average cosh time for nion: 263.1220758 ns
+Average cosh time for std::complex: 292.1540493 ns
+nion is 1.110336517 times FASTER than std::complex
+Average difference between nion and std::complex: 1.114353012e-11
+Average relative difference between nion and std::complex: -5.128498347e-20
 
-Average acosh time for nion: 943.6805309 ns
-Average acosh time for std::complex: 262.0775411 ns
-Average difference between nion and std::complex: -3.530408413e-19
-Average relative difference between nion and std::complex: -3.341463934e-20
+Average acosh time for nion: 517.6994358 ns
+Average acosh time for std::complex: 218.0358209 ns
+nion is 2.374377906 times SLOWER than std::complex
+Average difference between nion and std::complex: -6.861153809e-18
+Average relative difference between nion and std::complex: -2.189040376e-19
 
-Average tanh time for nion: 927.2364171 ns
-Average tanh time for std::complex: 366.0046807 ns
-Average difference between nion and std::complex: -5.686299056e-15
-Average relative difference between nion and std::complex: -4.223456733e-20
+Average tanh time for nion: 758.0804932 ns
+Average tanh time for std::complex: 303.6665781 ns
+nion is 2.496423867 times SLOWER than std::complex
+Average difference between nion and std::complex: -1.016864437e-14
+Average relative difference between nion and std::complex: -2.048709202e-20
 
-Average atanh time for nion: 309.2146721 ns
-Average atanh time for std::complex: 127.6462578 ns
-Average difference between nion and std::complex: 6.315850094e-22
-Average relative difference between nion and std::complex: 6.627987963e-21
+Average atanh time for nion: 261.4563889 ns
+Average atanh time for std::complex: 106.627361 ns
+nion is 2.452057206 times SLOWER than std::complex
+Average difference between nion and std::complex: -4.986146721e-20
+Average relative difference between nion and std::complex: -2.135126676e-20
 
 
 #### Comparing boost::math::quaternion with nion: 10000000 trials ####
 
-Average norm time for nion: 29.1156707 ns
-Average norm time for boost::math::quaternion: 28.0093719 ns
+Average norm time for nion: 23.242002 ns
+Average norm time for boost::math::quaternion: 23.1119573 ns
+nion is 1.005626728 times SLOWER than boost::math::quaternion
 Average norm error for nion: 0
 Average relative difference between nion and boost::math::quaternion: 0
 
-Average addition time for nion: 37.1206309 ns
-Average addition time for boost::math::quaternion: 24.6760701 ns
+Average addition time for nion: 30.100184 ns
+Average addition time for boost::math::quaternion: 20.0162723 ns
+nion is 1.503785697 times SLOWER than boost::math::quaternion
 Average addition error for nion: 0
 Average relative difference between nion and boost::math::quaternion: 0
 
-Average conjugate time for nion: 38.3285469 ns
-Average conjugate time for boost::math::quaternion: 24.0251646 ns
+Average conjugate time for nion: 30.357817 ns
+Average conjugate time for boost::math::quaternion: 20.0039172 ns
+nion is 1.517593614 times SLOWER than boost::math::quaternion
 Average conjugate error for nion: 0
 Average relative difference between nion and boost::math::quaternion: 0
 
-Average multiplication time for nion: 1232.308092 ns
-Average multiplication time for boost::math::quaternion: 33.3900073 ns
-Average multiplication error for nion: 6.065736165e-16
-Average relative difference between nion and boost::math::quaternion: 3.401984836e-20
+Average multiplication time for nion: 1012.19853 ns
+Average multiplication time for boost::math::quaternion: 27.3835366 ns
+nion is 36.963762 times SLOWER than boost::math::quaternion
+Average multiplication error for nion: 3.790596251e-17
+Average relative difference between nion and boost::math::quaternion: 3.398243403e-20
 
-Average division time for nion: 1214.413911 ns
-Average division time for boost::math::quaternion: 41.4153787 ns
-Average division error for nion: 1.134552081e-19
-Average relative difference between nion and boost::math::quaternion: 7.914993749e-20
+Average division time for nion: 998.2665524 ns
+Average division time for boost::math::quaternion: 34.1285096 ns
+nion is 29.25022405 times SLOWER than boost::math::quaternion
+Average division error for nion: 1.134350532e-19
+Average relative difference between nion and boost::math::quaternion: 7.913538751e-20
 
-Average exp time for nion: 184.4693081 ns
-Average exp time for boost::math::quaternion: 472.9453977 ns
-Average exp error for nion: 1.074223506e-08
-Average relative difference between nion and boost::math::quaternion: 4.341207525e-16
+Average exp time for nion: 144.0553992 ns
+Average exp time for boost::math::quaternion: 371.8413815 ns
+nion is 2.58123877 times FASTER than boost::math::quaternion
+Average exp error for nion: 4.678888148e-13
+Average relative difference between nion and boost::math::quaternion: 2.404092518e-16
 
-Average sin time for nion: 198.6590624 ns
-Average sin time for boost::math::quaternion: 551.1323017 ns
-Average sin error for nion: 0.0002816262148
-Average relative difference between nion and boost::math::quaternion: 7.933919735e-16
+Average pow time for nion: 265.345823 ns
+Average pow time for boost::math::quaternion: 62.9610886 ns
+nion is 4.214441473 times SLOWER than boost::math::quaternion
+Average pow error for nion: 4.159646312e-11
+Average relative difference between nion and boost::math::quaternion: 6.114163227e-16
 
-Average cos time for nion: 206.1861265 ns
-Average cos time for boost::math::quaternion: 542.1769208 ns
-Average cos error for nion: 0.0002826009298
-Average relative difference between nion and boost::math::quaternion: 7.974574162e-16
+Average sin time for nion: 158.0344615 ns
+Average sin time for boost::math::quaternion: 428.2864288 ns
+nion is 2.710082502 times FASTER than boost::math::quaternion
+Average sin error for nion: 2.976492398e-11
+Average relative difference between nion and boost::math::quaternion: 3.919631018e-16
 
-Average tan time for nion: 1627.186358 ns
-Average tan time for boost::math::quaternion: 1058.751487 ns
-Average tan error for nion: 1.423442843e-16
-Average relative difference between nion and boost::math::quaternion: 1.42285467e-16
+Average cos time for nion: 166.7374627 ns
+Average cos time for boost::math::quaternion: 426.9153157 ns
+nion is 2.560404295 times FASTER than boost::math::quaternion
+Average cos error for nion: 2.951399906e-11
+Average relative difference between nion and boost::math::quaternion: 3.872337169e-16
 
-Average sinh time for nion: 418.0714773 ns
-Average sinh time for boost::math::quaternion: 916.4737006 ns
-Average sinh error for nion: 5.367059412e-09
-Average relative difference between nion and boost::math::quaternion: 4.871569111e-16
+Average tan time for nion: 1330.249963 ns
+Average tan time for boost::math::quaternion: 828.7669614 ns
+nion is 1.60509531 times SLOWER than boost::math::quaternion
+Average tan error for nion: 1.440273433e-16
+Average relative difference between nion and boost::math::quaternion: 1.432040207e-16
 
-Average cosh time for nion: 372.0528593 ns
-Average cosh time for boost::math::quaternion: 911.4437055 ns
-Average cosh error for nion: 5.36705956e-09
-Average relative difference between nion and boost::math::quaternion: 4.835573589e-16
+Average sinh time for nion: 329.4746836 ns
+Average sinh time for boost::math::quaternion: 728.8307991 ns
+nion is 2.212099549 times FASTER than boost::math::quaternion
+Average sinh error for nion: 2.340417429e-13
+Average relative difference between nion and boost::math::quaternion: 2.854489768e-16
 
-Average tanh time for nion: 1993.669081 ns
-Average tanh time for boost::math::quaternion: 1802.011404 ns
-Average tanh error for nion: 1.817987234e-14
-Average relative difference between nion and boost::math::quaternion: 1.321149306e-16
+Average cosh time for nion: 296.763114 ns
+Average cosh time for boost::math::quaternion: 730.0586266 ns
+nion is 2.460071997 times FASTER than boost::math::quaternion
+Average cosh error for nion: 2.340267552e-13
+Average relative difference between nion and boost::math::quaternion: 2.85769841e-16
+
+Average tanh time for nion: 1606.496942 ns
+Average tanh time for boost::math::quaternion: 1447.214467 ns
+nion is 1.110061417 times SLOWER than boost::math::quaternion
+Average tanh error for nion: 2.163746093e-13
+Average relative difference between nion and boost::math::quaternion: 1.361446946e-16
