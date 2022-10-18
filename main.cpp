@@ -207,7 +207,7 @@ void order2Test() {
 
 template<typename T>
 void stdComplexComparison(int trials) {
-    std::cout << "\n\nComparing std::complex with nion: " << trials << " trials\n" << std::endl;
+    std::cout << "\n\n#### Comparing std::complex with nion: " << trials << " trials ####\n" << std::endl;
     std::default_random_engine generator(std::chrono::steady_clock::now().time_since_epoch().count());
 
     // timers for norms
@@ -783,103 +783,204 @@ void stdComplexComparison(int trials) {
     }
 
     T trialfp = static_cast<T>(trials);
-    std::cout << "Average norm time for nion: " << addNionTimer / trialfp << " ns" << std::endl;
-    std::cout << "Average norm time for std::complex: " << addStdTimer / trialfp << " ns" << std::endl;
-    std::cout << "Average difference between nion and std::complex: " << totalNetAdd / trialfp << std::endl;
-    std::cout << "Average relative difference between nion and std::complex: " << totalAdd / trialfp << std::endl;
+    T speedup;
+    std::cout << "Average norm time for nion: " << normNionTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average norm time for std::complex: " << normStdTimer / trialfp << " ns" << std::endl;
+    speedup = normStdTimer / normNionTimer;
+    if (speedup > 1.0)
+        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
+    else
+        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
+    std::cout << "Average difference between nion and std::complex: " << totalNetNorm / trialfp << std::endl;
+    std::cout << "Average relative difference between nion and std::complex: " << totalNorm / trialfp << std::endl;
 
     std::cout << "\nAverage addition time for nion: " << addNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average addition time for std::complex: " << addStdTimer / trialfp << " ns" << std::endl;
+    speedup = addStdTimer / addNionTimer;
+    if (speedup > 1.0)
+        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
+    else
+        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
     std::cout << "Average difference between nion and std::complex: " << totalNetAdd / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalAdd / trialfp << std::endl;
 
     std::cout << "\nAverage conjugate time for nion: " << conjNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average conjugate time for std::complex: " << conjStdTimer / trialfp << " ns" << std::endl;
+    speedup = conjStdTimer / conjNionTimer;
+    if (speedup > 1.0)
+        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
+    else
+        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
     std::cout << "Average difference between nion and std::complex: " << totalNetConj / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalConj / trialfp << std::endl;
 
     std::cout << "\nAverage multiplication time for nion: " << mulNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average multiplication time for std::complex: " << mulStdTimer / trialfp << " ns" << std::endl;
+    speedup = mulStdTimer / mulNionTimer;
+    if (speedup > 1.0)
+        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
+    else
+        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
     std::cout << "Average difference between nion and std::complex: " << totalNetMul / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalMul / trialfp << std::endl;
 
     std::cout << "\nAverage division time for nion: " << divNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average division time for std::complex: " << divStdTimer / trialfp << " ns" << std::endl;
+    speedup = divStdTimer / divNionTimer;
+    if (speedup > 1.0)
+        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
+    else
+        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
     std::cout << "Average difference between nion and std::complex: " << totalNetDiv / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalDiv / trialfp << std::endl;
 
     std::cout << "\nAverage power time for nion: " << powNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average power time for std::complex: " << powStdTimer / trialfp << " ns" << std::endl;
+    speedup = powStdTimer / powNionTimer;
+    if (speedup > 1.0)
+        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
+    else
+        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
     std::cout << "Average difference between nion and std::complex: " << totalNetPow / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalPow / trialfp << std::endl;
 
     std::cout << "\nAverage exponential time for nion: " << expNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average exponential time for std::complex: " << expStdTimer / trialfp << " ns" << std::endl;
+    speedup = expStdTimer / expNionTimer;
+    if (speedup > 1.0)
+        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
+    else
+        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
     std::cout << "Average difference between nion and std::complex: " << totalNetExp / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalExp / trialfp << std::endl;
 
     std::cout << "\nAverage logarithm time for nion: " << logNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average logarithm time for std::complex: " << logStdTimer / trialfp << " ns" << std::endl;
+    speedup = logStdTimer / logNionTimer;
+    if (speedup > 1.0)
+        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
+    else
+        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
     std::cout << "Average difference between nion and std::complex: " << totalNetLog / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalLog / trialfp << std::endl;
 
     std::cout << "\nAverage sin time for nion: " << sinNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average sin time for std::complex: " << sinStdTimer / trialfp << " ns" << std::endl;
+    speedup = sinStdTimer / sinNionTimer;
+    if (speedup > 1.0)
+        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
+    else
+        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
     std::cout << "Average difference between nion and std::complex: " << totalNetSin / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalSin / trialfp << std::endl;
 
     std::cout << "\nAverage asin time for nion: " << asinNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average asin time for std::complex: " << asinStdTimer / trialfp << " ns" << std::endl;
+    speedup = asinStdTimer / asinNionTimer;
+    if (speedup > 1.0)
+        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
+    else
+        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
     std::cout << "Average difference between nion and std::complex: " << totalNetAsin / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalAsin / trialfp << std::endl;
 
     std::cout << "\nAverage cos time for nion: " << cosNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average cos time for std::complex: " << cosStdTimer / trialfp << " ns" << std::endl;
+    speedup = cosStdTimer / cosNionTimer;
+    if (speedup > 1.0)
+        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
+    else
+        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
     std::cout << "Average difference between nion and std::complex: " << totalNetCos / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalCos / trialfp << std::endl;
 
     std::cout << "\nAverage acos time for nion: " << acosNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average acos time for std::complex: " << acosStdTimer / trialfp << " ns" << std::endl;
+    speedup = acosStdTimer / acosNionTimer;
+    if (speedup > 1.0)
+        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
+    else
+        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
     std::cout << "Average difference between nion and std::complex: " << totalNetAcos / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalAcos / trialfp << std::endl;
 
     std::cout << "\nAverage tan time for nion: " << tanNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average tan time for std::complex: " << tanStdTimer / trialfp << " ns" << std::endl;
+    speedup = tanStdTimer / tanNionTimer;
+    if (speedup > 1.0)
+        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
+    else
+        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
     std::cout << "Average difference between nion and std::complex: " << totalNetTan / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalTan / trialfp << std::endl;
 
     std::cout << "\nAverage atan time for nion: " << atanNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average atan time for std::complex: " << atanStdTimer / trialfp << " ns" << std::endl;
+    speedup = atanStdTimer / atanNionTimer;
+    if (speedup > 1.0)
+        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
+    else
+        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
     std::cout << "Average difference between nion and std::complex: " << totalNetAtan / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalAtan / trialfp << std::endl;
 
     std::cout << "\nAverage sinh time for nion: " << sinhNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average sinh time for std::complex: " << sinhStdTimer / trialfp << " ns" << std::endl;
+    speedup = sinhStdTimer / sinhNionTimer;
+    if (speedup > 1.0)
+        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
+    else
+        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
     std::cout << "Average difference between nion and std::complex: " << totalNetSinh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalSinh / trialfp << std::endl;
 
     std::cout << "\nAverage asinh time for nion: " << asinhNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average asinh time for std::complex: " << asinhStdTimer / trialfp << " ns" << std::endl;
+    speedup = asinhStdTimer / asinhNionTimer;
+    if (speedup > 1.0)
+        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
+    else
+        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
     std::cout << "Average difference between nion and std::complex: " << totalNetAsinh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalAsinh / trialfp << std::endl;
 
     std::cout << "\nAverage cosh time for nion: " << coshNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average cosh time for std::complex: " << coshStdTimer / trialfp << " ns" << std::endl;
+    speedup = coshStdTimer / coshNionTimer;
+    if (speedup > 1.0)
+        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
+    else
+        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
     std::cout << "Average difference between nion and std::complex: " << totalNetCosh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalCosh / trialfp << std::endl;
 
     std::cout << "\nAverage acosh time for nion: " << acoshNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average acosh time for std::complex: " << acoshStdTimer / trialfp << " ns" << std::endl;
+    speedup = acoshStdTimer / acoshNionTimer;
+    if (speedup > 1.0)
+        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
+    else
+        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
     std::cout << "Average difference between nion and std::complex: " << totalNetAcosh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalAcosh / trialfp << std::endl;
 
     std::cout << "\nAverage tanh time for nion: " << tanhNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average tanh time for std::complex: " << tanhStdTimer / trialfp << " ns" << std::endl;
+    speedup = tanhStdTimer / tanhNionTimer;
+    if (speedup > 1.0)
+        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
+    else
+        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
     std::cout << "Average difference between nion and std::complex: " << totalNetTanh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalTanh / trialfp << std::endl;
 
     std::cout << "\nAverage atanh time for nion: " << atanhNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average atanh time for std::complex: " << atanhStdTimer / trialfp << " ns" << std::endl;
+    speedup = atanhStdTimer / atanhNionTimer;
+    if (speedup > 1.0)
+        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
+    else
+        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
     std::cout << "Average difference between nion and std::complex: " << totalNetAtanh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << totalAtanh / trialfp << std::endl;
 }
@@ -982,7 +1083,7 @@ void boostQuaternionComparison(int trials) {
 
         //generate random quaternion numbers
         for (int j = 0; j < 4; ++j) {
-            std::uniform_real_distribution<T> distribution(-10, 10);
+            std::uniform_real_distribution<T> distribution(-5, 5);
             vals1[j] = distribution(generator);
             vals2[j] = distribution(generator);
         }
@@ -1230,74 +1331,146 @@ void boostQuaternionComparison(int trials) {
     delete[] vals1;
     delete[] vals2;
 
+    T speedup = 0;
     std::cout << "Average norm time for nion: " << normNionTimer / trials << " ns" << std::endl;
     std::cout << "Average norm time for boost::math::quaternion: " << normBoostTimer / trials << " ns" << std::endl;
+    speedup = normBoostTimer / normNionTimer;
+    if (speedup > 1)
+        std::cout << "nion is " << speedup << " times FASTER than boost::math::quaternion" << std::endl;
+    else
+        std::cout << "nion is " << 1 / speedup << " times SLOWER than boost::math::quaternion" << std::endl;
     std::cout << "Average norm error for nion: " << totalNetNorm / trials << std::endl;
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalNorm / trials
               << std::endl;
 
     std::cout << "\nAverage addition time for nion: " << addNionTimer / trials << " ns" << std::endl;
     std::cout << "Average addition time for boost::math::quaternion: " << addBoostTimer / trials << " ns" << std::endl;
+    speedup = addBoostTimer / addNionTimer;
+    if (speedup > 1)
+        std::cout << "nion is " << speedup << " times FASTER than boost::math::quaternion" << std::endl;
+    else
+        std::cout << "nion is " << 1 / speedup << " times SLOWER than boost::math::quaternion" << std::endl;
     std::cout << "Average addition error for nion: " << totalNetAdd / trials << std::endl;
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalAdd / trials
               << std::endl;
 
     std::cout << "\nAverage conjugate time for nion: " << conjNionTimer / trials << " ns" << std::endl;
     std::cout << "Average conjugate time for boost::math::quaternion: " << conjBoostTimer / trials << " ns" << std::endl;
+    speedup = conjBoostTimer / conjNionTimer;
+    if (speedup > 1)
+        std::cout << "nion is " << speedup << " times FASTER than boost::math::quaternion" << std::endl;
+    else
+        std::cout << "nion is " << 1 / speedup << " times SLOWER than boost::math::quaternion" << std::endl;
     std::cout << "Average conjugate error for nion: " << totalNetConj / trials << std::endl;
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalConj / trials
               << std::endl;
 
     std::cout << "\nAverage multiplication time for nion: " << mulNionTimer / trials << " ns" << std::endl;
     std::cout << "Average multiplication time for boost::math::quaternion: " << mulBoostTimer / trials << " ns" << std::endl;
+    speedup = mulBoostTimer / mulNionTimer;
+    if (speedup > 1)
+        std::cout << "nion is " << speedup << " times FASTER than boost::math::quaternion" << std::endl;
+    else
+        std::cout << "nion is " << 1 / speedup << " times SLOWER than boost::math::quaternion" << std::endl;
     std::cout << "Average multiplication error for nion: " << totalNetMul / trials << std::endl;
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalMul / trials
               << std::endl;
 
     std::cout << "\nAverage division time for nion: " << divNionTimer / trials << " ns" << std::endl;
     std::cout << "Average division time for boost::math::quaternion: " << divBoostTimer / trials << " ns" << std::endl;
+    speedup = divBoostTimer / divNionTimer;
+    if (speedup > 1)
+        std::cout << "nion is " << speedup << " times FASTER than boost::math::quaternion" << std::endl;
+    else
+        std::cout << "nion is " << 1 / speedup << " times SLOWER than boost::math::quaternion" << std::endl;
     std::cout << "Average division error for nion: " << totalNetDiv / trials << std::endl;
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalDiv / trials
               << std::endl;
 
     std::cout << "\nAverage exp time for nion: " << expNionTimer / trials << " ns" << std::endl;
     std::cout << "Average exp time for boost::math::quaternion: " << expBoostTimer / trials << " ns" << std::endl;
+    speedup = expBoostTimer / expNionTimer;
+    if (speedup > 1)
+        std::cout << "nion is " << speedup << " times FASTER than boost::math::quaternion" << std::endl;
+    else
+        std::cout << "nion is " << 1 / speedup << " times SLOWER than boost::math::quaternion" << std::endl;
     std::cout << "Average exp error for nion: " << totalNetExp / trials << std::endl;
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalExp / trials
               << std::endl;
 
+    std::cout << "\nAverage pow time for nion: " << powNionTimer / trials << " ns" << std::endl;
+    std::cout << "Average pow time for boost::math::quaternion: " << powBoostTimer / trials << " ns" << std::endl;
+    speedup = powBoostTimer / powNionTimer;
+    if (speedup > 1)
+        std::cout << "nion is " << speedup << " times FASTER than boost::math::quaternion" << std::endl;
+    else
+        std::cout << "nion is " << 1 / speedup << " times SLOWER than boost::math::quaternion" << std::endl;
+    std::cout << "Average pow error for nion: " << totalNetPow / trials << std::endl;
+    std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalPow / trials
+              << std::endl;
+
     std::cout << "\nAverage sin time for nion: " << sinNionTimer / trials << " ns" << std::endl;
     std::cout << "Average sin time for boost::math::quaternion: " << sinBoostTimer / trials << " ns" << std::endl;
+    speedup = sinBoostTimer / sinNionTimer;
+    if (speedup > 1)
+        std::cout << "nion is " << speedup << " times FASTER than boost::math::quaternion" << std::endl;
+    else
+        std::cout << "nion is " << 1 / speedup << " times SLOWER than boost::math::quaternion" << std::endl;
     std::cout << "Average sin error for nion: " << totalNetSin / trials << std::endl;
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalSin / trials
               << std::endl;
 
     std::cout << "\nAverage cos time for nion: " << cosNionTimer / trials << " ns" << std::endl;
     std::cout << "Average cos time for boost::math::quaternion: " << cosBoostTimer / trials << " ns" << std::endl;
+    speedup = cosBoostTimer / cosNionTimer;
+    if (speedup > 1)
+        std::cout << "nion is " << speedup << " times FASTER than boost::math::quaternion" << std::endl;
+    else
+        std::cout << "nion is " << 1 / speedup << " times SLOWER than boost::math::quaternion" << std::endl;
     std::cout << "Average cos error for nion: " << totalNetCos / trials << std::endl;
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalCos / trials
               << std::endl;
 
     std::cout << "\nAverage tan time for nion: " << tanNionTimer / trials << " ns" << std::endl;
     std::cout << "Average tan time for boost::math::quaternion: " << tanBoostTimer / trials << " ns" << std::endl;
+    speedup = tanBoostTimer / tanNionTimer;
+    if (speedup > 1)
+        std::cout << "nion is " << speedup << " times FASTER than boost::math::quaternion" << std::endl;
+    else
+        std::cout << "nion is " << 1 / speedup << " times SLOWER than boost::math::quaternion" << std::endl;
     std::cout << "Average tan error for nion: " << totalNetTan / trials << std::endl;
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalTan / trials
               << std::endl;
 
     std::cout << "\nAverage sinh time for nion: " << sinhNionTimer / trials << " ns" << std::endl;
     std::cout << "Average sinh time for boost::math::quaternion: " << sinhBoostTimer / trials << " ns" << std::endl;
+    speedup = sinhBoostTimer / sinhNionTimer;
+    if (speedup > 1)
+        std::cout << "nion is " << speedup << " times FASTER than boost::math::quaternion" << std::endl;
+    else
+        std::cout << "nion is " << 1 / speedup << " times SLOWER than boost::math::quaternion" << std::endl;
     std::cout << "Average sinh error for nion: " << totalNetSinh / trials << std::endl;
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalSinh / trials
               << std::endl;
 
     std::cout << "\nAverage cosh time for nion: " << coshNionTimer / trials << " ns" << std::endl;
     std::cout << "Average cosh time for boost::math::quaternion: " << coshBoostTimer / trials << " ns" << std::endl;
+    speedup = coshBoostTimer / coshNionTimer;
+    if (speedup > 1)
+        std::cout << "nion is " << speedup << " times FASTER than boost::math::quaternion" << std::endl;
+    else
+        std::cout << "nion is " << 1 / speedup << " times SLOWER than boost::math::quaternion" << std::endl;
     std::cout << "Average cosh error for nion: " << totalNetCosh / trials << std::endl;
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalCosh / trials
               << std::endl;
 
     std::cout << "\nAverage tanh time for nion: " << tanhNionTimer / trials << " ns" << std::endl;
     std::cout << "Average tanh time for boost::math::quaternion: " << tanhBoostTimer / trials << " ns" << std::endl;
+    speedup = tanhBoostTimer / tanhNionTimer;
+    if (speedup > 1)
+        std::cout << "nion is " << speedup << " times FASTER than boost::math::quaternion" << std::endl;
+    else
+        std::cout << "nion is " << 1 / speedup << " times SLOWER than boost::math::quaternion" << std::endl;
     std::cout << "Average tanh error for nion: " << totalNetTanh / trials << std::endl;
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalTanh / trials
               << std::endl;
@@ -1361,7 +1534,7 @@ int main() {
 //    order2Test();
 //    mixedOrderTest();
 
-    int trials = 100000;
+    int trials = 10000000;
     stdComplexComparison<long double>(trials);
     boostQuaternionComparison<long double>(trials);
 

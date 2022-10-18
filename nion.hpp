@@ -41,53 +41,53 @@ concept arithmetic = std::is_arithmetic<T>::value;
 template<arithmetic T>
 struct nion {
     T* components;
-    uint_fast16_t order;
+    uint_fast16_t degree;
     static constexpr T epsilon = std::numeric_limits<T>::epsilon();
 
     /**
      * @brief Default constructor.
      * @details Constructs a null nion object.
      */
-    constexpr nion<T>() : components(nullptr), order(0) {};
+    constexpr nion<T>() : components(nullptr), degree(0) {};
 
     /**
      * @brief Construct a new nion object from vector
      * @param components The components of the nion.
-     * @param order The order of the nion.
+     * @param degree The degree of the nion.
      */
-    constexpr explicit nion<T>(const T* components, uint_fast16_t order) : order(order) {
+    constexpr explicit nion<T>(const T* components, uint_fast16_t degree) : degree(degree) {
 
-        // check if the order is greater than zero
-        if (order <= 0) {
-            throw std::invalid_argument("The order of the nion must be greater than zero.");
+        // check if the degree is greater than zero
+        if (degree <= 0) {
+            throw std::invalid_argument("The degree of the nion must be greater than zero.");
         }
 
-        this->components = (T*) malloc(order * sizeof(T));
-        memcpy(this->components, components, order * sizeof(T));
+        this->components = (T*) malloc(degree * sizeof(T));
+        memcpy(this->components, components, degree * sizeof(T));
     };
 
     /**
      * @brief Construct a new nion object from brace initializer list
-     * @param order The order of the nion.
+     * @param degree The degree of the nion.
      */
-    constexpr nion<T>(const std::initializer_list<T> &components) : order(components.size()) {
-        if (order <= 0) {
-            throw std::invalid_argument("The order of the nion must be greater than zero.");
+    constexpr nion<T>(const std::initializer_list<T> &components) : degree(components.size()) {
+        if (degree <= 0) {
+            throw std::invalid_argument("The degree of the nion must be greater than zero.");
         }
-        this->components = (T*) malloc(order * sizeof(T));
-        memcpy(this->components, components.begin(), order * sizeof(T));
+        this->components = (T*) malloc(degree * sizeof(T));
+        memcpy(this->components, components.begin(), degree * sizeof(T));
     };
 
     /**
      * @brief Construct an empty nion object
-     * @param order The order of the nion.
+     * @param degree The degree of the nion.
      */
-    constexpr explicit nion<T>(uint_fast16_t order) : order(order) {
-        // check if the order is greater than zero
-        if (order <= 0) {
-            throw std::invalid_argument("The order of the nions must be greater than zero.");
+    constexpr explicit nion<T>(uint_fast16_t degree) : degree(degree) {
+        // check if the degree is greater than zero
+        if (degree <= 0) {
+            throw std::invalid_argument("The degree of the nions must be greater than zero.");
         }
-        this->components = (T*) calloc(this->order, sizeof(T));
+        this->components = (T*) calloc(this->degree, sizeof(T));
     };
 
     /**
@@ -96,35 +96,35 @@ struct nion {
      * @return A copy of the nion.
      * @note This is a deep copy.
      */
-    constexpr nion<T>(const nion<T> &other) : order(other.order) {
-        this->components = (T*) malloc(other.order * sizeof(T));
-        memcpy(this->components, other.components, other.order * sizeof(T));
+    constexpr nion<T>(const nion<T> &other) : degree(other.degree) {
+        this->components = (T*) malloc(other.degree * sizeof(T));
+        memcpy(this->components, other.components, other.degree * sizeof(T));
     };
 
     /**
      * @brief Construct a new nion object from a scalar with no imaginary components.
-     * @param order The order of the nion.
+     * @param degree The degree of the nion.
      * @param scalar The scalar value of the nion.
      * @return nion<T> The nion object.
      * @note This is a convenience function for creating a nion from a scalar.
      */
     template<arithmetic S>
-    constexpr explicit nion<T>(S realVal, uint_fast16_t order) : order(order) {
-        // check if the order is greater than zero
-        if (order <= 0) {
-            throw std::invalid_argument("The order of the nions must be greater than zero.");
+    constexpr explicit nion<T>(S realVal, uint_fast16_t degree) : degree(degree) {
+        // check if the degree is greater than zero
+        if (degree <= 0) {
+            throw std::invalid_argument("The degree of the nions must be greater than zero.");
         }
-        this->components = (T*) calloc(order, sizeof(T));
+        this->components = (T*) calloc(degree, sizeof(T));
         components[0] = realVal;
     };
 
     /**
      * @brief Construct a new nion object from std::complex
-     * @param order The order of the nion.
+     * @param degree The degree of the nion.
      * @param complex The std::complex object.
      * @return nion<T> The nion object.
      */
-    constexpr explicit nion<T>(std::complex<T> complex) : order(2) {
+    constexpr explicit nion<T>(std::complex<T> complex) : degree(2) {
         this->components = (T*) calloc(2, sizeof(T));
 
         components[0] = complex.real();
@@ -137,18 +137,18 @@ struct nion {
     ~nion<T>() { free(components); components = nullptr; };
 
     /**
-     * @brief Construct nion from half order nions. q = (a,b)
-     * @param a The first half order nion in pair.
-     * @param b The second half order nion in pair.
-     * @return The nion constructed from the half order nions.
-     * @note This is a convenience function for constructing a nion from pairing two half order nions.
+     * @brief Construct nion from half degree nions. q = (a,b)
+     * @param a The first half degree nion in pair.
+     * @param b The second half degree nion in pair.
+     * @return The nion constructed from the half degree nions.
+     * @note This is a convenience function for constructing a nion from pairing two half degree nions.
      */
-    constexpr nion<T>(const nion<T> &a, const nion<T> &b) : order(a.order + b.order) {
-        this->components = (T*) malloc(order * sizeof(T));
-        std::memset(this->components, 0, order * sizeof(T));
+    constexpr nion<T>(const nion<T> &a, const nion<T> &b) : degree(a.degree + b.degree) {
+        this->components = (T*) malloc(degree * sizeof(T));
+        std::memset(this->components, 0, degree * sizeof(T));
 
-        memcpy(this->components, a.components, a.order * sizeof(T));
-        memcpy(this->components + a.order, b.components, b.order * sizeof(T));
+        memcpy(this->components, a.components, a.degree * sizeof(T));
+        memcpy(this->components + a.degree, b.components, b.degree * sizeof(T));
     };
 
     /**
@@ -162,14 +162,14 @@ struct nion {
             return *this;
         }
 
-        this->order = other.order;
+        this->degree = other.degree;
         if (this->components == nullptr) {
-            this->components = (T *) malloc(other.order * sizeof(T));
+            this->components = (T *) malloc(other.degree * sizeof(T));
         } else {
-            this->components = (T *) realloc(this->components, other.order * sizeof(T));
+            this->components = (T *) realloc(this->components, other.degree * sizeof(T));
         }
 
-        memcpy(this->components, other.components, order * sizeof(T));
+        memcpy(this->components, other.components, degree * sizeof(T));
         return *this;
     };
 
@@ -182,7 +182,7 @@ struct nion {
     constexpr nion<T> &operator=(nion<T> &&other)  noexcept {
         if (&other != this) {
             free(this->components);
-            this->order = other.order;
+            this->degree = other.degree;
             this->components = other.components;
             other.components = nullptr;
         }
@@ -210,7 +210,7 @@ struct nion {
     constexpr nion<T> operator-() const {
         nion<T> negated = *this;
         #pragma vector aligned
-        for (uint_fast16_t i = 0; i < order; i++) {
+        for (uint_fast16_t i = 0; i < degree; i++) {
             negated[i] *= -1;
         }
         return negated;
@@ -235,7 +235,7 @@ struct nion {
         nion<T> conjugate = *this;
         // negate all components except the first
         #pragma vector aligned
-        for (uint_fast16_t i = 1; i < order; i++) {
+        for (uint_fast16_t i = 1; i < degree; i++) {
             conjugate[i] *= -1;
         }
         return conjugate;
@@ -247,13 +247,13 @@ struct nion {
      * @return The sum of this nion and the other nion inplace.
      */
     constexpr void operator+=(const nion <T> &other) {
-        // if the order is less than the other nion, resize this nion.
-        if (order < other.order)
-            *this = resize(other.order);
+        // if the degree is less than the other nion, resize this nion.
+        if (degree < other.degree)
+            *this = resize(other.degree);
 
         // add the components of the other nion to this nion.
         #pragma vector aligned
-        for (uint_fast16_t i = 0; i < other.order; i++) {
+        for (uint_fast16_t i = 0; i < other.degree; i++) {
             components[i] += other[i];
         }
     };
@@ -264,13 +264,13 @@ struct nion {
      * @return The subtraction of this nion and the other nion inplace.
      */
     constexpr void operator-=(const nion <T> &other) {
-        // if the order is less than the other nion, resize this nion.
-        if (this->order < other.order)
-            *this = resize(other.order);
+        // if the degree is less than the other nion, resize this nion.
+        if (this->degree < other.degree)
+            *this = resize(other.degree);
 
         // substract the components of the other nion from this nion.
         #pragma vector aligned
-        for (uint_fast16_t i = 0; i < other.order; i++) {
+        for (uint_fast16_t i = 0; i < other.degree; i++) {
             components[i] -= other[i];
         }
     };
@@ -320,42 +320,40 @@ struct nion {
      * @param other The nion to multiply this nion by.
      * @return The product of this nion and the other nion.
      * @details The product of two nions is defined as (a,b)(c,d) = (a c - d* b, d a + b c*) = (z,w), where * is the conjugate.
-     * and a, b, c, d are the nions with half the order of the original nions.
-     * @note product has the same order as the larger order of the two nions.
+     * and a, b, c, d are the nions with half the degree of the original nions.
+     * @note product has the same degree as the larger degree of the two nions.
      * @note This is recursive function.
      */
     constexpr nion<T> operator*(const nion <T> &other) const {
-        // check if the orders are the same
-        if (order == other.order) {
+        // check if the degrees are the same
+        if (degree == other.degree) {
 
-            // if the order is one, the product is the scalar product
-            if (order == 1) {
+            // if the degree is one, the product is the scalar product
+            if (degree == 1) {
                 return nion<T>(real() * other.real(), 1);
             }
 
 
-            // extract the dual elements of the nions with half the order
-            uint_fast16_t half_order = order / 2;
-            nion<T> a(this->components,  half_order);
-            nion<T> b(this->components + half_order, order - half_order);
-            nion<T> c(other.components,  half_order);
-            nion<T> d(other.components + half_order, order - half_order);
+            // extract the dual elements of the nions with half the degree
+            uint_fast16_t half_degree = degree / 2;
+            nion<T> a(this->components,  half_degree);
+            nion<T> b(this->components + half_degree, degree - half_degree);
+            nion<T> c(other.components,  half_degree);
+            nion<T> d(other.components + half_degree, degree - half_degree);
 
 
             // calculate the product
             return nion<T>(
-                    (a * c) - (d.conj() * b),
+                    (a * c) - (d.conj() * b), // consider adding involution parameter for sign
                     (d * a) + (b * c.conj())
                     );
-
-        } else { // orders are different
-
-            // resize the nion with the smaller order to the order of the nion with the larger order.
-            if (order > other.order) {
-                return *this * other.resize(order);
-            } else {
-                return resize(other.order) * other;
-            }
+            
+        } 
+        // if the degrees are not the same, resize the smaller nion to the larger degree and then multiply. 
+        else if (degree > other.degree) { 
+            return *this * other.resize(degree);
+        } else {
+            return resize(other.degree) * other;
         }
     };
 
@@ -384,7 +382,7 @@ struct nion {
     constexpr T dot(const nion<T> &other) const {
         T dotProduct = 0;
         #pragma vector aligned
-        for (uint_fast16_t i = 0; i < order; i++) {
+        for (uint_fast16_t i = 0; i < degree; i++) {
             dotProduct += components[i] * other[i];
         }
         return dotProduct;
@@ -399,7 +397,7 @@ struct nion {
         T absVal = 0;
 
         #pragma vector aligned
-        for (uint_fast16_t i = 0; i < order; i++) {
+        for (uint_fast16_t i = 0; i < degree; i++) {
             absVal += components[i] * components[i];
         }
 
@@ -439,24 +437,24 @@ struct nion {
     }
 
     /**
-     * @brief resize the nion to a new order.
-     * @param newOrder The new order of the nion.
-     * @return The nion converted to the new order.
-     * @note newOrder must be larger than the current order.
+     * @brief resize the nion to a new degree.
+     * @param newDegree The new degree of the nion.
+     * @return The nion converted to the new degree.
+     * @note newDegree must be larger than the current degree.
      */
-    constexpr nion<T> resize(uint_fast16_t newOrder) const {
+    constexpr nion<T> resize(uint_fast16_t newDegree) const {
 
-        // keep the same order if the new order is smaller than the current order
-        if (newOrder <= order) {
+        // keep the same degree if the new degree is smaller than the current degree
+        if (newDegree <= degree) {
             return *this;
         }
 
         nion<T> converted = *this;
-        converted.order = newOrder;
-        converted.components = (T *) realloc(converted.components, newOrder * sizeof(T));
+        converted.degree = newDegree;
+        converted.components = (T *) realloc(converted.components, newDegree * sizeof(T));
 
         // set the new components to zero
-        memset(converted.components + order, 0, (newOrder - order) * sizeof(T));
+        memset(converted.components + degree, 0, (newDegree - degree) * sizeof(T));
 
         return converted;
     };
@@ -466,14 +464,14 @@ struct nion {
      * @brief overload the == operator for nions.
      * @param other The nion to compare this nion to.
      * @return True if the nions are equal, false otherwise.
-     * @details Two nions are equal if they have the same order and the same components.
+     * @details Two nions are equal if they have the same degree and the same components.
      */
     constexpr bool operator==(const nion <T> &other) const {
-        if (order != other.order) {
+        if (degree != other.degree) {
             return false;
         }
         #pragma vector aligned
-        for (uint_fast16_t i = 0; i < order; i++) {
+        for (uint_fast16_t i = 0; i < degree; i++) {
             if (std::abs(components[i] - other[i]) >= epsilon) {
                 return false;
             }
@@ -485,14 +483,14 @@ struct nion {
      * @brief overload the != operator for nions.
      * @param other The nion to compare this nion to.
      * @return True if the nions are not equal, false otherwise.
-     * @details Two nions are equal if they have the same order and the same components.
+     * @details Two nions are equal if they have the same degree and the same components.
      */
     constexpr bool operator!=(const nion <T> &other) const {
-        if (order != other.order) {
+        if (degree != other.degree) {
             return true;
         }
         #pragma vector aligned
-        for (uint_fast16_t i = 0; i < order; i++) {
+        for (uint_fast16_t i = 0; i < degree; i++) {
             if (std::abs(components[i] - other[i]) >= epsilon) {
                 return true;
             }
@@ -504,8 +502,8 @@ struct nion {
      * @brief overload the > operator for nions.
      * @param other The nion to compare this nion to.
      * @return True if this nion is greater than the other nion, false otherwise.
-     * @details sorting is undefined for nions with orders greater than 1. However, we can still compare
-     *         nions with orders greater than 1 by comparing the projections of the nions onto the real line.
+     * @details sorting is undefined for nions with degrees greater than 1. However, we can still compare
+     *         nions with degrees greater than 1 by comparing the projections of the nions onto the real line.
      */
     constexpr bool operator>(const nion <T> &other) const {
         return proj() > other.proj();
@@ -515,8 +513,8 @@ struct nion {
      * @brief overload the < operator for nions.
      * @param other The nion to compare this nion to.
      * @return True if this nion is less than the other nion, false otherwise.
-     * @details sorting is undefined for nions with orders greater than 1. However, we can still compare
-     *         nions with orders greater than 1 by comparing the projections of the nions onto the real line.
+     * @details sorting is undefined for nions with degrees greater than 1. However, we can still compare
+     *         nions with degrees greater than 1 by comparing the projections of the nions onto the real line.
      */
     constexpr bool operator<(const nion <T> &other) const {
         return proj() < other.proj();
@@ -526,8 +524,8 @@ struct nion {
      * @brief overload the >= operator for nions.
      * @param other The nion to compare this nion to.
      * @return True if this nion is greater than or equal to the other nion, false otherwise.
-     * @details sorting is undefined for nions with orders greater than 1. However, we can still compare
-     *         nions with orders greater than 1 by comparing the projections of the nions onto the real line.
+     * @details sorting is undefined for nions with degrees greater than 1. However, we can still compare
+     *         nions with degrees greater than 1 by comparing the projections of the nions onto the real line.
      */
     constexpr bool operator>=(const nion <T> &other) const {
         return proj() >= other.proj();
@@ -537,8 +535,8 @@ struct nion {
      * @brief overload the <= operator for nions.
      * @param other The nion to compare this nion to.
      * @return True if this nion is less than or equal to the other nion, false otherwise.
-     * @details sorting is undefined for nions with orders greater than 1. However, we can still compare
-     *         nions with orders greater than 1 by comparing the projections of the nions onto the real line.
+     * @details sorting is undefined for nions with degrees greater than 1. However, we can still compare
+     *         nions with degrees greater than 1 by comparing the projections of the nions onto the real line.
      */
     constexpr bool operator<=(const nion <T> &other) const {
         return proj() <= other.proj();
@@ -578,7 +576,7 @@ struct nion {
     constexpr nion<T> operator*(S scalar) const {
         nion<T> product = *this;
         #pragma vector aligned
-        for (uint_fast16_t i = 0; i < order; i++) {
+        for (uint_fast16_t i = 0; i < degree; i++) {
             product[i] *= scalar;
         }
         return product;
@@ -626,7 +624,7 @@ struct nion {
     template<arithmetic S>
     constexpr void operator*=(S scalar) {
         #pragma vector aligned
-        for (uint_fast16_t i = 0; i < order; i++) {
+        for (uint_fast16_t i = 0; i < degree; i++) {
             components[i] *= scalar;
         }
     };
@@ -640,7 +638,7 @@ struct nion {
     template<arithmetic S>
     constexpr void operator/=(S scalar) {
         # pragma vector aligned
-        for (uint_fast16_t i = 0; i < order; i++) {
+        for (uint_fast16_t i = 0; i < degree; i++) {
             components[i] /= scalar;
         }
     };
@@ -659,7 +657,7 @@ struct nion {
             return false;
         }
         #pragma vector aligned
-        for (uint_fast16_t i = 1; i < order; i++) {
+        for (uint_fast16_t i = 1; i < degree; i++) {
             if (components[i] != 0) {
                 return false;
             }
@@ -681,7 +679,7 @@ struct nion {
             return true;
         }
         #pragma vector aligned
-        for (uint_fast16_t i = 1; i < order; i++) {
+        for (uint_fast16_t i = 1; i < degree; i++) {
             if (components[i] != 0) {
                 return true;
             }
@@ -786,7 +784,7 @@ std::ostream &operator<<(std::ostream &os, const nion<T> &z) {
     T component = z.components[0];
     os << component;
 
-    for (int i = 1; i < z.order; i++) {
+    for (int i = 1; i < z.degree; i++) {
         component = z.components[i];
         os << " + " << component << " e" << i;
     }
@@ -801,7 +799,7 @@ std::ostream &operator<<(std::ostream &os, const nion<T> &z) {
  */
 template<arithmetic T>
 std::istream &operator>>(std::istream &is, nion<T> &z) {
-    for (int i = 0; i < z.order; i++) {
+    for (int i = 0; i < z.degree; i++) {
         is >> z.components[i];
     }
     return is;
@@ -987,7 +985,7 @@ constexpr nion<T> log(const nion<T> &z) noexcept {
 template<arithmetic T, arithmetic S>
 constexpr nion<T> pow(const nion<T> &z, S power) noexcept {
     if (power == 0) {
-        return nion<T>(z.order, 1);
+        return nion<T>(z.degree, 1);
     } else if (std::abs(power - 1) <= z.epsilon) {
         return nion<T>(z);
     } else if (std::abs(power + 1) <= z.epsilon) {
@@ -1022,9 +1020,9 @@ constexpr nion<T> pow(const nion<T> &z, const nion<T> &power) noexcept {
 template<arithmetic T, arithmetic S>
 constexpr nion<T> pow(S x, const nion<T> &z) noexcept {
     if (x == 0) {
-        return nion<T>(z.order, 0);
+        return nion<T>(z.degree, 0);
     } else if (std::abs(x - 1) <= z.epsilon) {
-        return nion<T>(z.order, 1);
+        return nion<T>(z.degree, 1);
     } else {
         return exp(z * log(x));
     }
@@ -1099,11 +1097,11 @@ constexpr nion<T> tanh(const nion<T> &z) noexcept{
  * @tparam T type of the nion.
  * @param z The nion to compute the hyperbolic cotangent of.
  * @return The hyperbolic cotangent of the nion.
- * @details The hyperbolic cotangent of a nion is defined as coth(z) = cosh(z) / sinh(z).
+ * @details The hyperbolic cotangent of a nion is defined as coth(z) = 1 / tanh(z).
  */
 template<arithmetic T>
 constexpr nion<T> coth(const nion<T> &z) noexcept{
-    return cosh(z) / sinh(z);
+    return tanh(z).inv();
 }
 
 /**
@@ -1200,11 +1198,11 @@ constexpr nion<T> tan(const nion<T> &z) noexcept{
  * @tparam T type of the nion.
  * @param z The nion to compute the cotangent of.
  * @return The cotangent of the nion.
- * @details The cotangent of the nion is defined as cot(z) = cos(z) / sin(z).
+ * @details The cotangent of the nion is defined as cot(z) = 1 / tan(z).
  */
 template<arithmetic T>
 constexpr nion<T> cot(const nion<T> &z) noexcept{
-    return cos(z) / sin(z);
+    return tan(z).inv();
 }
 
 /**
@@ -1246,7 +1244,7 @@ constexpr nion<T> csc(const nion<T> &z) noexcept{
  */
 template<arithmetic T>
 constexpr nion<T> asinh(const nion<T> &z) noexcept{
-    return log(z + sqrt(1 + z*z));
+    return log(z + sqrt(1 + pow(z,2)));
 }
 
 /**
@@ -1254,13 +1252,13 @@ constexpr nion<T> asinh(const nion<T> &z) noexcept{
  * @tparam T type of the nion.
  * @param z The nion to compute the inverse hyperbolic cosine of.
  * @return The inverse hyperbolic cosine of the nion.
- * @details The inverse hyperbolic cosine of the nion is defined as acosh(z) = acosh(r + v) = ln(z + sqrt(z + 1)*sqrt(z - 1)).
+ * @details The inverse hyperbolic cosine of the nion is defined as acosh(z) = ln(z + sqrt(z + 1)*sqrt(z - 1)).
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://mathworld.wolfram.com/InverseHyperbolicCosine.html
  */
 template<arithmetic T>
 constexpr nion<T> acosh(const nion<T> &z) noexcept{
-    return log(z + sqrt(z + 1) * sqrt(z - 1));
+    return log(z + sqrt(pow(z,2) - 1));
 }
 
 /**
@@ -1302,7 +1300,7 @@ constexpr nion<T> acoth(const nion<T> &z) noexcept{
  */
 template<arithmetic T>
 constexpr nion<T> asech(const nion<T> &z) noexcept{
-    return log(sqrt(1/z - 1) * sqrt(1/z + 1) + 1/z);
+    return log(sqrt(pow(z,-2) - 1) + 1/z);
 }
 
 /**
@@ -1342,7 +1340,7 @@ constexpr nion<T> asin(const nion<T> &z) noexcept {
         v /= v_norm;
 
     // compute the inv sine of the nion
-    return v * log(sqrt(1 - z*z) - v * z);
+    return v * log(sqrt(1 - pow(z,2)) - v * z);
 }
 
 /**
@@ -1363,7 +1361,7 @@ constexpr nion<T> acos(const nion<T> &z) noexcept {
  * @tparam T type of the nion.
  * @param z The nion to compute the inverse tangent of.
  * @return The inverse tangent of the nion.
- * @details The inverse tangent of the nion is defined as atan(z) = v * atanh(-v*z);
+ * @details The inverse tangent of the nion is defined as atan(z) = v * atanh(-v*z) = -v/2 * log((v-z)/(v+z))
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Logarithmic_forms
  */
@@ -1378,7 +1376,7 @@ constexpr nion<T> atan(const nion<T> &z) noexcept {
         v /= v_norm;
 
     // compute the inv tangent of the nion
-    return v * atanh(-v*z);
+    return -0.5l * v * log((v - z) / (v + z));
 }
 
 /**
