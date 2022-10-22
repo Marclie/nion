@@ -20,13 +20,33 @@
 #include <random>
 #include <chrono>
 #include <boost/math/quaternion.hpp>
+#include <boost/math/octonion.hpp>
 #include <fstream>
 
-void stdQuaternionComparison(int trials);
+
+template<typename T>
+T getMAEcomplex(nion<T> nion, std::complex<T> compare){
+    int degree = nion.degree;
+    T mae = 0;
+    mae += std::fabs(nion[0] - compare.real());
+    mae += std::fabs(nion[1] - compare.imag());
+    return mae;
+}
+
+template<typename T>
+T getMAEboost(nion<T> nion, boost::math::quaternion<T> compare){
+    int degree = nion.degree;
+    T mae = 0;
+    mae += std::fabs(nion[0] - compare.R_component_1());
+    mae += std::fabs(nion[1] - compare.R_component_2());
+    mae += std::fabs(nion[2] - compare.R_component_3());
+    mae += std::fabs(nion[3] - compare.R_component_4());
+    return mae;
+}
 
 void order2Test() {
 
-    std::cout << "machine epsilon:\t" << nion < long double > ::epsilon << std::endl;
+    std::cout << "machine epsilon:\t" << std::numeric_limits<long double>::epsilon() << std::endl;
 
 
     nion<long double> n1({42, 69});
@@ -387,7 +407,7 @@ void stdComplexComparison(int trials) {
             addStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to total addition difference
-            diff = nionResult.abs() - norm(stdResult);
+            diff = getMAEcomplex<long double>(nionResult, stdResult);
             totalNetAdd += diff;
             diff /= norm(stdResult);
             totalAdd += diff;
@@ -417,7 +437,7 @@ void stdComplexComparison(int trials) {
             conjStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to total conjugate difference
-            diff = nionResult.abs() - norm(stdResult);
+            diff = getMAEcomplex<long double>(nionResult, stdResult);
             totalNetConj += diff;
             diff /= norm(stdResult);
             totalConj += diff;
@@ -439,10 +459,13 @@ void stdComplexComparison(int trials) {
             mulStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to total multiplication difference
-            diff = nionResult.abs() - norm(stdResult);
+            diff = getMAEcomplex<long double>(nionResult, stdResult);
             totalNetMul += diff;
             diff /= norm(stdResult);
             totalMul += diff;
+
+
+
         }
 
         /// division
@@ -460,7 +483,7 @@ void stdComplexComparison(int trials) {
             divStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to total division difference
-            diff = nionResult.abs() - norm(stdResult);
+            diff = getMAEcomplex<long double>(nionResult, stdResult);
             totalNetDiv += diff;
             diff /= norm(stdResult);
             totalDiv += diff;
@@ -481,7 +504,7 @@ void stdComplexComparison(int trials) {
             powStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to total power difference
-            diff = nionResult.abs() - norm(stdResult);
+            diff = getMAEcomplex<long double>(nionResult, stdResult);
             totalNetPow += diff;
             diff /= norm(stdResult);
             totalPow += diff;
@@ -502,7 +525,7 @@ void stdComplexComparison(int trials) {
             expStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to total exponential difference
-            diff = nionResult.abs() - norm(stdResult);
+            diff = getMAEcomplex<long double>(nionResult, stdResult);
             totalNetExp += diff;
             diff /= norm(stdResult);
             totalExp += diff;
@@ -523,7 +546,7 @@ void stdComplexComparison(int trials) {
             logStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to total logarithm difference
-            diff = nionResult.abs() - norm(stdResult);
+            diff = getMAEcomplex<long double>(nionResult, stdResult);
             totalNetLog += diff;
             diff /= norm(stdResult);
             totalLog += diff;
@@ -544,7 +567,7 @@ void stdComplexComparison(int trials) {
             sinStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to total sine difference
-            diff = nionResult.abs() - norm(stdResult);
+            diff = getMAEcomplex<long double>(nionResult, stdResult);
             totalNetSin += diff;
             diff /= norm(stdResult);
             totalSin += diff;
@@ -565,7 +588,7 @@ void stdComplexComparison(int trials) {
             asinStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to total asine difference
-            diff = nionResult.abs() - norm(stdResult);
+            diff = getMAEcomplex<long double>(nionResult, stdResult);
             totalNetAsin += diff;
             diff /= norm(stdResult);
             totalAsin += diff;
@@ -586,7 +609,7 @@ void stdComplexComparison(int trials) {
             cosStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to total cosine difference
-            diff = nionResult.abs() - norm(stdResult);
+            diff = getMAEcomplex<long double>(nionResult, stdResult);
             totalNetCos += diff;
             diff /= norm(stdResult);
             totalCos += diff;
@@ -607,7 +630,7 @@ void stdComplexComparison(int trials) {
             acosStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to total acosine difference
-            diff = nionResult.abs() - norm(stdResult);
+            diff = getMAEcomplex<long double>(nionResult, stdResult);
             totalNetAcos += diff;
             diff /= norm(stdResult);
             totalAcos += diff;
@@ -628,7 +651,7 @@ void stdComplexComparison(int trials) {
             tanStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to total tangent difference
-            diff = nionResult.abs() - norm(stdResult);
+            diff = getMAEcomplex<long double>(nionResult, stdResult);
             totalNetTan += diff;
             diff /= norm(stdResult);
             totalTan += diff;
@@ -649,7 +672,7 @@ void stdComplexComparison(int trials) {
             atanStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to total atan difference
-            diff = nionResult.abs() - norm(stdResult);
+            diff = getMAEcomplex<long double>(nionResult, stdResult);
             totalNetAtan += diff;
             diff /= norm(stdResult);
             totalAtan += diff;
@@ -670,7 +693,7 @@ void stdComplexComparison(int trials) {
             sinhStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to total hyperbolic sine difference
-            diff = nionResult.abs() - norm(stdResult);
+            diff = getMAEcomplex<long double>(nionResult, stdResult);
             totalNetSinh += diff;
             diff /= norm(stdResult);
             totalSinh += diff;
@@ -691,7 +714,7 @@ void stdComplexComparison(int trials) {
             coshStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to total hyperbolic cosine difference
-            diff = nionResult.abs() - norm(stdResult);
+            diff = getMAEcomplex<long double>(nionResult, stdResult);
             totalNetCosh += diff;
             diff /= norm(stdResult);
             totalCosh += diff;
@@ -712,7 +735,7 @@ void stdComplexComparison(int trials) {
             tanhStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to total hyperbolic tangent difference
-            diff = nionResult.abs() - norm(stdResult);
+            diff = getMAEcomplex<long double>(nionResult, stdResult);
             totalNetTanh += diff;
             diff /= norm(stdResult);
             totalTanh += diff;
@@ -733,7 +756,7 @@ void stdComplexComparison(int trials) {
             asinhStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to total hyperbolic arc sine difference
-            diff = nionResult.abs() - norm(stdResult);
+            diff = getMAEcomplex<long double>(nionResult, stdResult);
             totalNetAsinh += diff;
             diff /= norm(stdResult);
             totalAsinh += diff;
@@ -754,7 +777,7 @@ void stdComplexComparison(int trials) {
             acoshStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to total hyperbolic arc cosine difference
-            diff = nionResult.abs() - norm(stdResult);
+            diff = getMAEcomplex<long double>(nionResult, stdResult);
             totalNetAcosh += diff;
             diff /= norm(stdResult);
             totalAcosh += diff;
@@ -775,7 +798,7 @@ void stdComplexComparison(int trials) {
             atanhStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to total hyperbolic arc tangent difference
-            diff = nionResult.abs() - norm(stdResult);
+            diff = getMAEcomplex<long double>(nionResult, stdResult);
             totalNetAtanh += diff;
             diff /= norm(stdResult);
             totalAtanh += diff;
@@ -1079,11 +1102,14 @@ void boostQuaternionComparison(int trials) {
 
     T *vals1 = new T[4];
     T *vals2 = new T[4];
+    T nionNorm;
+    T boostNorm;
+    std::uniform_real_distribution<T> distribution(-10, 10);
     for (int i = 0; i < trials; ++i) {
 
         //generate random quaternion numbers
         for (int j = 0; j < 4; ++j) {
-            std::uniform_real_distribution<T> distribution(-5, 5);
+
             vals1[j] = distribution(generator);
             vals2[j] = distribution(generator);
         }
@@ -1105,10 +1131,13 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             normBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = std::abs(abs(nionResult) - boost::math::norm(boostResult));
+            nionNorm = abs(nionResult);
+            boostNorm = boost::math::norm(boostResult);
+
+            diff = nionNorm - boostNorm;
             totalNetNorm += diff;
-            diff /= boost::math::norm(boostResult);
-            totalNorm += diff;
+            totalNorm += diff / boostNorm;
+
         }
 
         // addition
@@ -1123,10 +1152,12 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             addBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = std::abs(abs(nionResult) - boost::math::norm(boostResult));
+            nionNorm = abs(nionResult);
+            boostNorm = boost::math::norm(boostResult);
+
+            diff = getMAEboost<long double>(nionResult, boostResult);
             totalNetAdd += diff;
-            diff /= boost::math::norm(boostResult);
-            totalAdd += diff;
+            totalAdd += diff / boostNorm;
         }
 
         // conjugate
@@ -1141,10 +1172,12 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             conjBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = std::abs(abs(nionResult) - boost::math::norm(boostResult));
+            nionNorm = abs(nionResult);
+            boostNorm = boost::math::norm(boostResult);
+
+            diff = getMAEboost<long double>(nionResult, boostResult);
             totalNetConj += diff;
-            diff /= boost::math::norm(boostResult);
-            totalConj += diff;
+            totalConj += diff / boostNorm;
         }
 
         // multiplication
@@ -1159,10 +1192,13 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             mulBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = std::abs(abs(nionResult) - boost::math::norm(boostResult));
+            nionNorm = abs(nionResult);
+            boostNorm = boost::math::norm(boostResult);
+
+            diff = getMAEboost<long double>(nionResult, boostResult);
             totalNetMul += diff;
-            diff /= boost::math::norm(boostResult);
-            totalMul += diff;
+            totalMul += diff / boostNorm;
+
         }
 
         // division
@@ -1177,10 +1213,12 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             divBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = std::abs(abs(nionResult) - boost::math::norm(boostResult));
+            nionNorm = abs(nionResult);
+            boostNorm = boost::math::norm(boostResult);
+
+            diff = getMAEboost<long double>(nionResult, boostResult);
             totalNetDiv += diff;
-            diff /= boost::math::norm(boostResult);
-            totalDiv += diff;
+            totalDiv += diff / boostNorm;
         }
 
         // exp
@@ -1195,10 +1233,12 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             expBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = std::abs(abs(nionResult) - boost::math::norm(boostResult));
+            nionNorm = abs(nionResult);
+            boostNorm = boost::math::norm(boostResult);
+
+            diff = getMAEboost<long double>(nionResult, boostResult);
             totalNetExp += diff;
-            diff /= boost::math::norm(boostResult);
-            totalExp += diff;
+            totalExp += diff / boostNorm;
         }
 
         // pow
@@ -1213,10 +1253,12 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             powBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = std::abs(abs(nionResult) - boost::math::norm(boostResult));
+            nionNorm = abs(nionResult);
+            boostNorm = boost::math::norm(boostResult);
+
+            diff = getMAEboost<long double>(nionResult, boostResult);
             totalNetPow += diff;
-            diff /= boost::math::norm(boostResult);
-            totalPow += diff;
+            totalPow += diff / boostNorm;
         }
 
         // sin
@@ -1231,10 +1273,12 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             sinBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = std::abs(abs(nionResult) - boost::math::norm(boostResult));
+            nionNorm = abs(nionResult);
+            boostNorm = boost::math::norm(boostResult);
+
+            diff = getMAEboost<long double>(nionResult, boostResult);
             totalNetSin += diff;
-            diff /= boost::math::norm(boostResult);
-            totalSin += diff;
+            totalSin += diff / boostNorm;
         }
 
         // cos
@@ -1249,10 +1293,12 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             cosBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = std::abs(abs(nionResult) - boost::math::norm(boostResult));
+            nionNorm = abs(nionResult);
+            boostNorm = boost::math::norm(boostResult);
+
+            diff = getMAEboost<long double>(nionResult, boostResult);
             totalNetCos += diff;
-            diff /= boost::math::norm(boostResult);
-            totalCos += diff;
+            totalCos += diff / boostNorm;
         }
 
         // tan
@@ -1267,10 +1313,12 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             tanBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = std::abs(abs(nionResult) - boost::math::norm(boostResult));
+            nionNorm = abs(nionResult);
+            boostNorm = boost::math::norm(boostResult);
+
+            diff = getMAEboost<long double>(nionResult, boostResult);
             totalNetTan += diff;
-            diff /= boost::math::norm(boostResult);
-            totalTan += diff;
+            totalTan += diff / boostNorm;
         }
 
         // sinh
@@ -1285,10 +1333,12 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             sinhBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = std::abs(abs(nionResult) - boost::math::norm(boostResult));
+            nionNorm = abs(nionResult);
+            boostNorm = boost::math::norm(boostResult);
+
+            diff = getMAEboost<long double>(nionResult, boostResult);
             totalNetSinh += diff;
-            diff /= boost::math::norm(boostResult);
-            totalSinh += diff;
+            totalSinh += diff / boostNorm;
         }
 
         // cosh
@@ -1303,10 +1353,12 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             coshBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = std::abs(abs(nionResult) - boost::math::norm(boostResult));
+            nionNorm = abs(nionResult);
+            boostNorm = boost::math::norm(boostResult);
+
+            diff = getMAEboost<long double>(nionResult, boostResult);
             totalNetCosh += diff;
-            diff /= boost::math::norm(boostResult);
-            totalCosh += diff;
+            totalCosh += diff / boostNorm;
         }
 
         // tanh
@@ -1321,10 +1373,12 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             tanhBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = std::abs(abs(nionResult) - boost::math::norm(boostResult));
+            nionNorm = abs(nionResult);
+            boostNorm = boost::math::norm(boostResult);
+
+            diff = getMAEboost<long double>(nionResult, boostResult);
             totalNetTanh += diff;
-            diff /= boost::math::norm(boostResult);
-            totalTanh += diff;
+            totalTanh += diff / boostNorm;
         }
     }
 
@@ -1343,6 +1397,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalNorm / trials
               << std::endl;
 
+
     std::cout << "\nAverage addition time for nion: " << addNionTimer / trials << " ns" << std::endl;
     std::cout << "Average addition time for boost::math::quaternion: " << addBoostTimer / trials << " ns" << std::endl;
     speedup = addBoostTimer / addNionTimer;
@@ -1353,6 +1408,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "Average addition error for nion: " << totalNetAdd / trials << std::endl;
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalAdd / trials
               << std::endl;
+
 
     std::cout << "\nAverage conjugate time for nion: " << conjNionTimer / trials << " ns" << std::endl;
     std::cout << "Average conjugate time for boost::math::quaternion: " << conjBoostTimer / trials << " ns" << std::endl;
@@ -1365,6 +1421,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalConj / trials
               << std::endl;
 
+
     std::cout << "\nAverage multiplication time for nion: " << mulNionTimer / trials << " ns" << std::endl;
     std::cout << "Average multiplication time for boost::math::quaternion: " << mulBoostTimer / trials << " ns" << std::endl;
     speedup = mulBoostTimer / mulNionTimer;
@@ -1375,6 +1432,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "Average multiplication error for nion: " << totalNetMul / trials << std::endl;
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalMul / trials
               << std::endl;
+
 
     std::cout << "\nAverage division time for nion: " << divNionTimer / trials << " ns" << std::endl;
     std::cout << "Average division time for boost::math::quaternion: " << divBoostTimer / trials << " ns" << std::endl;
@@ -1387,6 +1445,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalDiv / trials
               << std::endl;
 
+
     std::cout << "\nAverage exp time for nion: " << expNionTimer / trials << " ns" << std::endl;
     std::cout << "Average exp time for boost::math::quaternion: " << expBoostTimer / trials << " ns" << std::endl;
     speedup = expBoostTimer / expNionTimer;
@@ -1397,6 +1456,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "Average exp error for nion: " << totalNetExp / trials << std::endl;
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalExp / trials
               << std::endl;
+
 
     std::cout << "\nAverage pow time for nion: " << powNionTimer / trials << " ns" << std::endl;
     std::cout << "Average pow time for boost::math::quaternion: " << powBoostTimer / trials << " ns" << std::endl;
@@ -1409,6 +1469,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalPow / trials
               << std::endl;
 
+
     std::cout << "\nAverage sin time for nion: " << sinNionTimer / trials << " ns" << std::endl;
     std::cout << "Average sin time for boost::math::quaternion: " << sinBoostTimer / trials << " ns" << std::endl;
     speedup = sinBoostTimer / sinNionTimer;
@@ -1419,6 +1480,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "Average sin error for nion: " << totalNetSin / trials << std::endl;
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalSin / trials
               << std::endl;
+
 
     std::cout << "\nAverage cos time for nion: " << cosNionTimer / trials << " ns" << std::endl;
     std::cout << "Average cos time for boost::math::quaternion: " << cosBoostTimer / trials << " ns" << std::endl;
@@ -1431,6 +1493,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalCos / trials
               << std::endl;
 
+
     std::cout << "\nAverage tan time for nion: " << tanNionTimer / trials << " ns" << std::endl;
     std::cout << "Average tan time for boost::math::quaternion: " << tanBoostTimer / trials << " ns" << std::endl;
     speedup = tanBoostTimer / tanNionTimer;
@@ -1441,6 +1504,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "Average tan error for nion: " << totalNetTan / trials << std::endl;
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalTan / trials
               << std::endl;
+
 
     std::cout << "\nAverage sinh time for nion: " << sinhNionTimer / trials << " ns" << std::endl;
     std::cout << "Average sinh time for boost::math::quaternion: " << sinhBoostTimer / trials << " ns" << std::endl;
@@ -1453,6 +1517,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalSinh / trials
               << std::endl;
 
+
     std::cout << "\nAverage cosh time for nion: " << coshNionTimer / trials << " ns" << std::endl;
     std::cout << "Average cosh time for boost::math::quaternion: " << coshBoostTimer / trials << " ns" << std::endl;
     speedup = coshBoostTimer / coshNionTimer;
@@ -1464,6 +1529,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalCosh / trials
               << std::endl;
 
+
     std::cout << "\nAverage tanh time for nion: " << tanhNionTimer / trials << " ns" << std::endl;
     std::cout << "Average tanh time for boost::math::quaternion: " << tanhBoostTimer / trials << " ns" << std::endl;
     speedup = tanhBoostTimer / tanhNionTimer;
@@ -1474,6 +1540,120 @@ void boostQuaternionComparison(int trials) {
     std::cout << "Average tanh error for nion: " << totalNetTanh / trials << std::endl;
     std::cout << "Average relative difference between nion and boost::math::quaternion: " << totalTanh / trials
               << std::endl;
+}
+
+template <typename T>
+void boostOctonionComparison(int trials){
+
+    std::cout << "\n\n#### Comparing boost::math::octonion with nion: " << trials << " trials ####\n" << std::endl;
+    std::default_random_engine generator(std::chrono::steady_clock::now().time_since_epoch().count());
+
+    // timers for norms
+    long double normNionTimer = 0;
+    long double normBoostTimer = 0;
+    T totalNetNorm = 0;
+    T totalNorm = 0;
+
+    // timers for addition
+    long double addNionTimer = 0;
+    long double addBoostTimer = 0;
+    T totalNetAdd = 0;
+    T totalAdd = 0;
+
+    // timers for conjugate
+    long double conjNionTimer = 0;
+    long double conjBoostTimer = 0;
+    T totalNetConj = 0;
+    T totalConj = 0;
+
+    // timers for multiplication
+    long double mulNionTimer = 0;
+    long double mulBoostTimer = 0;
+    T totalNetMul = 0;
+    T totalMul = 0;
+
+    // timers for division
+    long double divNionTimer = 0;
+    long double divBoostTimer = 0;
+    T totalNetDiv = 0;
+    T totalDiv = 0;
+
+    // timers for power
+    long double powNionTimer = 0;
+    long double powBoostTimer = 0;
+    T totalNetPow = 0;
+    T totalPow = 0;
+
+    // timers for exponential
+    long double expNionTimer = 0;
+    long double expBoostTimer = 0;
+    T totalNetExp = 0;
+    T totalExp = 0;
+
+    // timers for sine
+    long double sinNionTimer = 0;
+    long double sinBoostTimer = 0;
+    T totalNetSin = 0;
+    T totalSin = 0;
+
+    // timers for cosine
+    long double cosNionTimer = 0;
+    long double cosBoostTimer = 0;
+    T totalNetCos = 0;
+    T totalCos = 0;
+
+    // timers for tangent
+    long double tanNionTimer = 0;
+    long double tanBoostTimer = 0;
+    T totalNetTan = 0;
+    T totalTan = 0;
+
+    // timers for sinh
+    long double sinhNionTimer = 0;
+    long double sinhBoostTimer = 0;
+    T totalNetSinh = 0;
+    T totalSinh = 0;
+
+    // timers for cosh
+    long double coshNionTimer = 0;
+    long double coshBoostTimer = 0;
+    T totalNetCosh = 0;
+    T totalCosh = 0;
+
+    // timers for tanh
+    long double tanhNionTimer = 0;
+    long double tanhBoostTimer = 0;
+    T totalNetTanh = 0;
+    T totalTanh = 0;
+
+    auto startNion = std::chrono::high_resolution_clock::now();
+    auto endNion = std::chrono::high_resolution_clock::now();
+    auto startBoost = std::chrono::high_resolution_clock::now();
+    auto endBoost = std::chrono::high_resolution_clock::now();
+
+    nion < T > nionResult;
+    boost::math::octonion<T> boostResult;
+    T diff;
+
+    T *vals1 = new T[8];
+    T *vals2 = new T[8];
+    for (int i = 0; i < trials; ++i) {
+
+        //generate random quaternion numbers
+        for (int j = 0; j < 8; ++j) {
+            std::uniform_real_distribution<T> distribution(-5, 5);
+            vals1[j] = distribution(generator);
+            vals2[j] = distribution(generator);
+        }
+
+        nion<T> nion1(vals1, 8);
+        nion<T> nion2(vals2, 8);
+        boost::math::octonion<T> boost1(vals1[0], vals1[1], vals1[2], vals1[3], vals1[4], vals1[5], vals1[6], vals1[7]);
+        boost::math::octonion<T> boost2(vals2[0], vals2[1], vals2[2], vals2[3], vals2[4], vals2[5], vals2[6], vals2[7]);
+    }
+
+    delete[] vals1;
+    delete[] vals2;
 }
 
 void mixedOrderTest() {
@@ -1534,12 +1714,13 @@ int main() {
 //    order2Test();
 //    mixedOrderTest();
 
-    int trials = 10000000;
+    int trials = 100000000;
     stdComplexComparison<long double>(trials);
     boostQuaternionComparison<long double>(trials);
+//    boostOctonionComparison<long double>(trials);
 
     int N = 100;
-    writeSinData(100);
+//    writeSinData(100);
 
     return 0;
 }
