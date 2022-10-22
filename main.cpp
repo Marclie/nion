@@ -28,20 +28,20 @@ template<typename T>
 T getMAEcomplex(nion<T> nion, std::complex<T> compare){
     int degree = nion.degree;
     T mae = 0;
-    mae += std::fabs(nion[0] - compare.real());
-    mae += std::fabs(nion[1] - compare.imag());
-    return mae;
+    mae += pow(nion[0] - compare.real(), 2);
+    mae += pow(nion[1] - compare.imag(), 2);
+    return sqrt(mae);
 }
 
 template<typename T>
 T getMAEboost(nion<T> nion, boost::math::quaternion<T> compare){
     int degree = nion.degree;
     T mae = 0;
-    mae += std::fabs(nion[0] - compare.R_component_1());
-    mae += std::fabs(nion[1] - compare.R_component_2());
-    mae += std::fabs(nion[2] - compare.R_component_3());
-    mae += std::fabs(nion[3] - compare.R_component_4());
-    return mae;
+    mae += pow(nion[0] - compare.R_component_1(), 2);
+    mae += pow(nion[1] - compare.R_component_2(), 2);
+    mae += pow(nion[2] - compare.R_component_3(), 2);
+    mae += pow(nion[3] - compare.R_component_4(), 2);
+    return sqrt(mae);
 }
 
 void order2Test() {

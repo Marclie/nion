@@ -27,17 +27,7 @@
 #include <cstring>
 
 
-/**
- * @file nion.hpp
- * @brief Templated class that implements Cayley-Dickson division algebra.
- * @author Marcus Dante Liebenthal
- * @version 1.0
- * @date 2022-10-08
- */
 
-// concept such that nion templates are only instantiated for arithmetic types
-template <typename T>
-concept arithmetic = std::is_arithmetic<T>::value;
 
 
 /**
@@ -49,28 +39,37 @@ concept arithmetic = std::is_arithmetic<T>::value;
  * @param epsilon tolerance
  * @return true if similar, false otherwise
  */
-template<arithmetic T, arithmetic S>
+template<typename T, typename D = uint_fast16_t, typename S = T>
 constexpr inline bool value_is_similar(const T a, const S b, const T epsilon = std::numeric_limits<T>::epsilon()) {
     return std::fabs(a - static_cast<T>(b)) <= epsilon;
 }
 
-template<arithmetic T>
+
+/**
+ * @file nion.hpp
+ * @brief Templated class that implements Cayley-Dickson division algebra.
+ * @author Marcus Dante Liebenthal
+ * @version 1.0
+ * @date 2022-10-08
+ */
+template<typename T, typename D = uint_fast16_t>
 struct nion {
     T* components;
-    uint_fast16_t degree;
+    D degree;
+    static_assert(std::is_arithmetic_v<T>, "nion only supports arithmetic types");
 
     /**
      * @brief Default constructor.
      * @details Constructs a null nion object.
      */
-    constexpr inline nion<T>() : components(nullptr), degree(0) {};
+    constexpr inline nion<T, D>() : components(nullptr), degree(0) {};
 
     /**
      * @brief Construct a new nion object from vector
      * @param components The components of the nion.
      * @param degree The degree of the nion.
      */
-    constexpr inline explicit nion<T>(const T* components, uint_fast16_t degree) : degree(degree) {
+    constexpr inline explicit nion<T, D>(T* components, D degree) : degree(degree) {
 
         // check if the degree is greater than zero
         if (degree <= 0) {
@@ -85,7 +84,7 @@ struct nion {
      * @brief Construct a new nion object from brace initializer list
      * @param degree The degree of the nion.
      */
-    constexpr inline nion<T>(const std::initializer_list<T> &components) : degree(components.size()) {
+    constexpr inline nion<T, D>(const std::initializer_list<T> &components) : degree(components.size()) {
         if (degree <= 0) {
             throw std::invalid_argument("The degree of the nion must be greater than zero.");
         }
@@ -97,7 +96,7 @@ struct nion {
      * @brief Construct an empty nion object
      * @param degree The degree of the nion.
      */
-    constexpr inline explicit nion<T>(uint_fast16_t degree) : degree(degree) {
+    constexpr inline explicit nion<T, D>(D degree) : degree(degree) {
         // check if the degree is greater than zero
         if (degree <= 0) {
             throw std::invalid_argument("The degree of the nions must be greater than zero.");
@@ -111,7 +110,7 @@ struct nion {
      * @return A copy of the nion.
      * @note This is a deep copy.
      */
-    constexpr inline nion<T>(const nion<T> &other) : degree(other.degree) {
+    constexpr inline nion<T, D>(const nion<T, D> &other) : degree(other.degree) {
         this->components = (T*) malloc(other.degree * sizeof(T));
         memcpy(this->components, other.components, other.degree * sizeof(T));
     };
@@ -120,26 +119,26 @@ struct nion {
      * @brief Construct a new nion object from a scalar with no imaginary components.
      * @param degree The degree of the nion.
      * @param scalar The scalar value of the nion.
-     * @return nion<T> The nion object.
+     * @return nion<T, D> The nion object.
      * @note This is a convenience function for creating a nion from a scalar.
      */
-    template<arithmetic S>
-    constexpr inline explicit nion<T>(S realVal, uint_fast16_t degree) : degree(degree) {
+    template<typename S = T>
+    constexpr inline explicit nion<T, D>(S realVal, D degree) : degree(degree) {
         // check if the degree is greater than zero
         if (degree <= 0) {
             throw std::invalid_argument("The degree of the nions must be greater than zero.");
         }
         this->components = (T*) calloc(degree, sizeof(T));
-        components[0] = realVal;
+        components[0] = static_cast<T>(realVal);
     };
 
     /**
      * @brief Construct a new nion object from std::complex
      * @param degree The degree of the nion.
      * @param complex The std::complex object.
-     * @return nion<T> The nion object.
+     * @return nion<T, D> The nion object.
      */
-    constexpr inline explicit nion<T>(std::complex<T> complex) : degree(2) {
+    constexpr inline explicit nion<T, D>(std::complex<T> complex) : degree(2) {
         this->components = (T*) calloc(2, sizeof(T));
 
         components[0] = complex.real();
@@ -149,7 +148,7 @@ struct nion {
     /**
      * @brief Destroy the nion object
      */
-    ~nion<T>() { free(components); components = nullptr; };
+    ~nion<T, D>() { free(components); components = nullptr; };
 
     /**
      * @brief Construct nion from half degree nions. q = (a,b)
@@ -158,7 +157,7 @@ struct nion {
      * @return The nion constructed from the half degree nions.
      * @note This is a convenience function for constructing a nion from pairing two half degree nions.
      */
-    constexpr inline nion<T>(const nion<T> &a, const nion<T> &b) : degree(a.degree + b.degree) {
+    constexpr inline nion<T, D>(const nion<T, D> &a, const nion<T, D> &b) : degree(a.degree + b.degree) {
         this->components = (T*) malloc(degree * sizeof(T));
         std::memset(this->components, 0, degree * sizeof(T));
 
@@ -172,7 +171,7 @@ struct nion {
      * @return A copy of the nion.
      * @note This is a deep copy.
      */
-    constexpr inline nion<T> &operator=(const nion<T> &other)  noexcept {
+    constexpr inline nion<T, D> &operator=(const nion<T, D> &other)  noexcept {
         if (&other == this) {
             return *this;
         }
@@ -194,7 +193,7 @@ struct nion {
      * @return A copy of the nion.
      * @note This is a shallow copy.
      */
-    constexpr inline nion<T> &operator=(nion<T> &&other)  noexcept {
+    constexpr inline nion<T, D> &operator=(nion<T, D> &&other)  noexcept {
         if (&other != this) {
             free(this->components);
             this->degree = other.degree;
@@ -210,11 +209,11 @@ struct nion {
      * @return The nion constructed from the scalar.
      * @note This is a convenience function for constructing a nion from a scalar.
      */
-    template<arithmetic S>
-    constexpr inline nion<T> &operator=(S scalar) {
+    template<typename S>
+    constexpr inline nion<T, D> &operator=(S scalar) {
         free(this->components);
         this->components = nullptr;
-        *this = nion<T>(static_cast<T>(scalar), 1);
+        *this = nion<T, D>(static_cast<T>(scalar), 1);
         return *this;
     };
 
@@ -222,11 +221,13 @@ struct nion {
      * @brief overload the - operator for a nion.
      * @return The negation of the nion.
      */
-    constexpr inline nion<T> operator-() const {
-        nion<T> negated = *this;
+    constexpr inline nion<T, D> operator-() const {
+        nion<T, D> negated;
+        negated.degree = this->degree;
+        negated.components = (T*) malloc(this->degree * sizeof(T));
 
         #pragma vector aligned
-        for (uint_fast16_t i = 0; i < degree; i++) {
+        for (D i = 0; i < degree; i++) {
             negated[i] = -components[i];
         }
 
@@ -238,7 +239,7 @@ struct nion {
      * @param index The index of the component to get.
      * @return The component at the index.
      */
-    constexpr inline T &operator[](uint_fast16_t index) const {
+    constexpr inline T &operator[](D index) const {
         return components[index];
     }
 
@@ -248,10 +249,15 @@ struct nion {
      * @detail (a,b)* = (a*,-b)
      * @note This is a recursive function.
      */
-    constexpr inline nion<T> conj() const {
-        nion<T> conjugate = *this;
+    constexpr inline nion<T, D> conj() const {
+        nion<T, D> conjugate;
+        conjugate.degree = this->degree;
+        conjugate.components = (T*) malloc(this->degree * sizeof(T));
+
+        // negate all components except the first
+        conjugate[0] = this->components[0];
         #pragma vector aligned
-        for (uint_fast16_t i = 1; i < degree; i++) {
+        for (D i = 1; i < degree; i++) {
             conjugate[i] = -components[i];
         }
 
@@ -270,7 +276,7 @@ struct nion {
 
         // add the components of the other nion to this nion.
         #pragma vector aligned
-        for (uint_fast16_t i = 0; i < other.degree; i++) {
+        for (D i = 0; i < other.degree; i++) {
             components[i] += other[i];
         }
     };
@@ -287,7 +293,7 @@ struct nion {
 
         // substract the components of the other nion from this nion.
         #pragma vector aligned
-        for (uint_fast16_t i = 0; i < other.degree; i++) {
+        for (D i = 0; i < other.degree; i++) {
             components[i] -= other[i];
         }
     };
@@ -315,8 +321,8 @@ struct nion {
      * @param other The nion to add to this nion.
      * @return The sum of this nion and the other nion.
      */
-    constexpr inline nion<T> operator+(const nion <T> &other) const {
-        nion<T> sum = *this;
+    constexpr inline nion<T, D> operator+(const nion <T> &other) const {
+        nion<T, D> sum = *this;
         sum += other;
         return sum;
     };
@@ -326,8 +332,8 @@ struct nion {
      * @param other The nion to substract this nion by.
      * @return The subtraction of this nion and the other nion.
      */
-    constexpr inline nion<T> operator-(const nion <T> &other) const {
-        nion<T> difference = *this;
+    constexpr inline nion<T, D> operator-(const nion <T> &other) const {
+        nion<T, D> difference = *this;
         difference -= other;
         return difference;
     };
@@ -342,7 +348,7 @@ struct nion {
      * @note product has the same degree as the larger degree of the two nions.
      * @note This is recursive function.
      */
-    constexpr inline nion<T> operator*(const nion <T> &other) const {
+    constexpr inline nion<T, D> operator*(const nion <T> &other) const {
 
         switch (degree){
             case 1:
@@ -351,7 +357,7 @@ struct nion {
             case 2:
                 // hard-coded traditional complex product
                 if (other.degree == 2)
-                    return nion<T>({components[0] * other[0] - components[1] * other[1],
+                    return nion<T, D>({components[0] * other[0] - components[1] * other[1],
                                     components[1] * other[0] + components[0] * other[1]});
                 break;
             default:
@@ -362,15 +368,15 @@ struct nion {
 
 
         // extract the dual elements of the nions with half the degree
-        uint_fast16_t half_degree = degree / 2;
-        nion<T> a(this->components,  half_degree);
-        nion<T> b(this->components + half_degree, degree - half_degree);
-        nion<T> c(other.components,  half_degree);
-        nion<T> d(other.components + half_degree, degree - half_degree);
+        D half_degree = degree / 2;
+        nion<T, D> a(this->components,  half_degree);
+        nion<T, D> b(this->components + half_degree, degree - half_degree);
+        nion<T, D> c(other.components,  half_degree);
+        nion<T, D> d(other.components + half_degree, degree - half_degree);
 
 
         // calculate the product
-        return nion<T>(
+        return nion<T, D>(
                 (a * c) - (d.conj() * b), // consider adding involution parameter for sign
                 (d * a) + (b * c.conj())
                 );
@@ -380,7 +386,7 @@ struct nion {
      * @brief compute the inverse of the nion.
      * @return The inverse of the nion.
      */
-    constexpr inline nion<T> inv() const {
+    constexpr inline nion<T, D> inv() const {
         return conj() / abs();
     };
 
@@ -389,7 +395,7 @@ struct nion {
      * @param other The nion to divide this nion by.
      * @return The division of this nion and the other nion.
      */
-    constexpr inline nion<T> operator/(const nion <T> &other) const {
+    constexpr inline nion<T, D> operator/(const nion <T> &other) const {
         return *this * other.inv();
     };
 
@@ -402,7 +408,7 @@ struct nion {
         T absVal = 0;
 
         #pragma vector aligned
-        for (uint_fast16_t i = 0; i < degree; i++) {
+        for (D i = 0; i < degree; i++) {
             absVal += components[i] * components[i];
         }
 
@@ -435,9 +441,16 @@ struct nion {
      * @brief Calculate the imaginary components of a nion.
      * @return The imaginary components of the nion.
      */
-    constexpr inline nion<T> imag() const {
-        nion<T> imag = *this;
+    constexpr inline nion<T, D> imag() const {
+        nion<T, D> imag;
+
+        T* imag_components = (T*) malloc(degree * sizeof(T));
+        imag.components = imag_components;
+        imag.degree = degree;
+
         imag[0] = 0;
+        memcpy(imag_components + 1, components + 1, (degree - 1) * sizeof(T));
+
         return imag;
     }
 
@@ -447,7 +460,7 @@ struct nion {
      * @return The nion converted to the new degree.
      * @note newDegree must be larger than the current degree.
      */
-    constexpr inline void resize(uint_fast16_t newDegree) {
+    constexpr inline void resize(D newDegree) {
 
         degree = newDegree;
         components = (T *) realloc(components, newDegree * sizeof(T));
@@ -468,7 +481,7 @@ struct nion {
             return false;
         }
         #pragma vector aligned
-        for (uint_fast16_t i = 0; i < degree; i++) {
+        for (D i = 0; i < degree; i++) {
             if (!value_is_similar(components[i], other[i])) {
                 return false;
             }
@@ -487,7 +500,7 @@ struct nion {
             return true;
         }
         #pragma vector aligned
-        for (uint_fast16_t i = 0; i < degree; i++) {
+        for (D i = 0; i < degree; i++) {
             if (!value_is_similar(components[i], other[i])) {
                 return true;
             }
@@ -545,10 +558,10 @@ struct nion {
      * @param scalar The scalar to add this nion by.
      * @return The sum of this nion and the scalar.
      */
-    template<arithmetic S>
-    constexpr inline nion<T> operator+(S scalar) const {
-        nion<T> sum = *this;
-        sum.components[0] += scalar;
+    template<typename S>
+    constexpr inline nion<T, D> operator+(S scalar) const {
+        nion<T, D> sum = *this;
+        sum.components[0] += static_cast<T>(scalar);
         return sum;
     };
 
@@ -558,9 +571,9 @@ struct nion {
      * @param scalar The scalar to subtract this nion by.
      * @return The subtraction of this nion and the scalar.
      */
-    template<arithmetic S>
-    constexpr inline nion<T> operator-(S scalar) const {
-        return *this + (-scalar);
+    template<typename S>
+    constexpr inline nion<T, D> operator-(S scalar) const {
+        return *this + (static_cast<T>(-scalar));
     };
 
     /**
@@ -569,12 +582,12 @@ struct nion {
      * @param scalar The scalar to multiply this nion by.
      * @return The product of this nion and the scalar.
      */
-    template<arithmetic S>
-    constexpr inline nion<T> operator*(S scalar) const {
-        nion<T> product = *this;
+    template<typename S>
+    constexpr inline nion<T, D> operator*(S scalar) const {
+        nion<T, D> product = *this;
         #pragma vector aligned
-        for (uint_fast16_t i = 0; i < degree; i++) {
-            product[i] *= scalar;
+        for (D i = 0; i < degree; i++) {
+            product[i] *= static_cast<T>(scalar);
         }
         return product;
     };
@@ -585,9 +598,9 @@ struct nion {
      * @param scalar The scalar to divide this nion by.
      * @return The division of this nion and the scalar.
      */
-    template<arithmetic S>
-    constexpr inline nion<T> operator/(S scalar) const {
-        return *this * (1.0l / scalar);
+    template<typename S>
+    constexpr inline nion<T, D> operator/(S scalar) const {
+        return *this * (static_cast<T>(1 / scalar));
     };
 
     /**
@@ -596,9 +609,9 @@ struct nion {
      * @param other The scalar to add to this nion.
      * @return The sum of this nion and the scalar inplace.
      */
-    template<arithmetic S>
+    template<typename S>
     constexpr inline void operator+=(S scalar) const {
-        components[0] += scalar;
+        components[0] += static_cast<T>(scalar);
     };
 
     /**
@@ -607,9 +620,9 @@ struct nion {
      * @param other The scalar to substract from this nion.
      * @return The subtraction of this nion and the scalar inplace.
      */
-    template<arithmetic S>
+    template<typename S>
     constexpr inline void operator-=(S scalar) const {
-        components[0] -= scalar;
+        components[0] -= static_cast<T>(scalar);
     };
 
     /**
@@ -618,11 +631,11 @@ struct nion {
      * @param scalar The scalar to multiply this nion by.
      * @return The product of this nion and the scalar inplace.
      */
-    template<arithmetic S>
+    template<typename S>
     constexpr inline void operator*=(S scalar) {
         #pragma vector aligned
-        for (uint_fast16_t i = 0; i < degree; i++) {
-            components[i] *= scalar;
+        for (D i = 0; i < degree; i++) {
+            components[i] *= static_cast<T>(scalar);
         }
     };
 
@@ -632,11 +645,11 @@ struct nion {
      * @param scalar The scalar to divide this nion by.
      * @return The division of this nion and the scalar inplace.
      */
-    template<arithmetic S>
+    template<typename S>
     constexpr inline void operator/=(S scalar) {
         # pragma vector aligned
-        for (uint_fast16_t i = 0; i < degree; i++) {
-            components[i] /= scalar;
+        for (D i = 0; i < degree; i++) {
+            components[i] /= static_cast<T>(scalar);
         }
     };
 
@@ -648,13 +661,13 @@ struct nion {
      * @details A nion is equal to a scalar if the scalar is equal to the first component of the nion
      *          and all other components are equal to zero.
      */
-    template<arithmetic S>
+    template<typename S>
     constexpr inline bool operator==(S scalar) const {
         if (!value_is_similar(real(), scalar)) {
             return false;
         }
         #pragma vector aligned
-        for (uint_fast16_t i = 1; i < degree; i++) {
+        for (D i = 1; i < degree; i++) {
             if (!value_is_similar(components[i], 0)) {
                 return false;
             }
@@ -670,13 +683,13 @@ struct nion {
      * @details A nion is equal to a scalar if the scalar is equal to the first component of the nion
      *          and all other components are equal to zero.
      */
-    template<arithmetic S>
+    template<typename S>
     constexpr inline bool operator!=(S scalar) const {
         if (!value_is_similar(real(), scalar)) {
             return true;
         }
         #pragma vector aligned
-        for (uint_fast16_t i = 1; i < degree; i++) {
+        for (D i = 1; i < degree; i++) {
             if (!value_is_similar(components[i], 0)) {
                 return true;
             }
@@ -691,7 +704,7 @@ struct nion {
      */
     constexpr inline bool is_real() const {
         #pragma vector aligned
-        for (uint_fast16_t i = 1; i < degree; i++) {
+        for (D i = 1; i < degree; i++) {
             if (!value_is_similar(components[i], 0)) {
                 return false;
             }
@@ -714,9 +727,9 @@ struct nion {
  * @param z The nion to multiply the scalar by.
  * @return
  */
-template<arithmetic T, arithmetic S>
-static constexpr inline nion<T> operator*(S scalar, const nion<T> &z) {
-    return z * scalar;
+template<typename T, typename D = uint_fast16_t, typename S = T>
+static constexpr inline nion<T, D> operator*(S scalar, const nion<T, D> &z) {
+    return z * static_cast<T>(scalar);
 }
 
 /**
@@ -727,9 +740,9 @@ static constexpr inline nion<T> operator*(S scalar, const nion<T> &z) {
  * @param z The nion to divide the scalar by.
  * @return
  */
-template<arithmetic T, arithmetic S>
-static constexpr inline nion<T> operator/(S scalar, const nion<T> &z) {
-    return z.inv() * scalar;
+template<typename T, typename D = uint_fast16_t, typename S = T>
+static constexpr inline nion<T, D> operator/(S scalar, const nion<T, D> &z) {
+    return z.inv() * static_cast<T>(scalar);
 }
 
 /**
@@ -739,9 +752,9 @@ static constexpr inline nion<T> operator/(S scalar, const nion<T> &z) {
  * @param scalar type of the scalar.
  * @param z The nion to add the scalar by.
 */
-template<arithmetic T, arithmetic S>
-static constexpr inline nion<T> operator+(S scalar, const nion<T> &z) {
-    return z + scalar;
+template<typename T, typename D = uint_fast16_t, typename S = T>
+static constexpr inline nion<T, D> operator+(S scalar, const nion<T, D> &z) {
+    return z + static_cast<T>(scalar);
 }
 
 /**
@@ -751,9 +764,9 @@ static constexpr inline nion<T> operator+(S scalar, const nion<T> &z) {
  * @param scalar type of the scalar.
  * @param z The nion to subtract the scalar by.
 */
-template<arithmetic T, arithmetic S>
-static constexpr inline nion<T> operator-(S scalar, const nion<T> &z) {
-    return -z + scalar;
+template<typename T, typename D = uint_fast16_t, typename S = T>
+static constexpr inline nion<T, D> operator-(S scalar, const nion<T, D> &z) {
+    return -z + static_cast<T>(scalar);
 }
 
 /**
@@ -766,9 +779,9 @@ static constexpr inline nion<T> operator-(S scalar, const nion<T> &z) {
  * @details A nion is equal to a scalar if the scalar is equal to the first component of the nion
  *         and all other components are equal to zero.
  */
-template<arithmetic T, arithmetic S>
-static constexpr inline bool operator==(S scalar, const nion<T> &z) {
-    return z == scalar;
+template<typename T, typename D = uint_fast16_t, typename S = T>
+static constexpr inline bool operator==(S scalar, const nion<T, D> &z) {
+    return z == static_cast<T>(scalar);
 }
 
 /**
@@ -781,9 +794,9 @@ static constexpr inline bool operator==(S scalar, const nion<T> &z) {
  * @details A nion is equal to a scalar if the scalar is equal to the first component of the nion
  *         and all other components are equal to zero.
  */
-template<arithmetic T, arithmetic S>
-static constexpr inline bool operator!=(S scalar, const nion<T> &z) {
-    return z != scalar;
+template<typename T, typename D = uint_fast16_t, typename S = T>
+static constexpr inline bool operator!=(S scalar, const nion<T, D> &z) {
+    return z != static_cast<T>(scalar);
 }
 
 /**
@@ -792,12 +805,12 @@ static constexpr inline bool operator!=(S scalar, const nion<T> &z) {
      * @param z The nion to print.
      * @return The output stream.
      */
-    template<arithmetic T>
-std::ostream &operator<<(std::ostream &os, const nion<T> &z) {
+    template<typename T, typename D = uint_fast16_t>
+std::ostream &operator<<(std::ostream &os, const nion<T, D> &z) {
     T component = z.components[0];
     os << component;
 
-    for (int i = 1; i < z.degree; i++) {
+    for (D i = 1; i < z.degree; i++) {
         component = z.components[i];
         os << " + " << component << " e" << i;
     }
@@ -810,9 +823,9 @@ std::ostream &operator<<(std::ostream &os, const nion<T> &z) {
  * @param z The nion to read into.
  * @return The input stream.
  */
-template<arithmetic T>
-std::istream &operator>>(std::istream &is, nion<T> &z) {
-    for (int i = 0; i < z.degree; i++) {
+template<typename T, typename D = uint_fast16_t>
+std::istream &operator>>(std::istream &is, nion<T, D> &z) {
+    for (D i = 0; i < z.degree; i++) {
         is >> z.components[i];
     }
     return is;
@@ -828,8 +841,8 @@ std::istream &operator>>(std::istream &is, nion<T> &z) {
  * @param z The nion to calculate the real part of.
  * @return The real part of the nion.
  */
-template<arithmetic T>
-static constexpr inline T real(const nion<T> &z) {
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline T real(const nion<T, D> &z) {
     return z.real();
 }
 
@@ -839,8 +852,8 @@ static constexpr inline T real(const nion<T> &z) {
  * @param z The nion to calculate the imaginary part of.
  * @return The imaginary part of the nion.
  */
-template<arithmetic T>
-static constexpr inline nion<T> imag(const nion<T> &z) {
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> imag(const nion<T, D> &z) {
     return z.imag();
 }
 
@@ -850,8 +863,8 @@ static constexpr inline nion<T> imag(const nion<T> &z) {
  * @param z The nion to compute the conjugate of.
  * @return The conjugate of the nion.
  */
-template<arithmetic T>
-static constexpr inline nion<T> conj(const nion<T> &z) {
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> conj(const nion<T, D> &z) {
     return z.conj();
 }
 
@@ -861,8 +874,8 @@ static constexpr inline nion<T> conj(const nion<T> &z) {
  * @param z The nion to compute the absolute value of.
  * @return The absolute value of the nion.
  */
-template<arithmetic T>
-static constexpr inline T abs(const nion<T> &z) {
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline T abs(const nion<T, D> &z) {
     return z.abs();
 }
 
@@ -872,8 +885,8 @@ static constexpr inline T abs(const nion<T> &z) {
  * @param z The nion to compute the norm of.
  * @return The norm of the nion.
  */
-template<arithmetic T>
-static constexpr inline T norm(const nion<T> &z) {
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline T norm(const nion<T, D> &z) {
     return z.norm();
 }
 
@@ -883,8 +896,8 @@ static constexpr inline T norm(const nion<T> &z) {
  * @param z The nion to compute the inverse of.
  * @return The inverse of the nion.
  */
-template<arithmetic T>
-static constexpr inline nion<T> inv(const nion<T> &z) {
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> inv(const nion<T, D> &z) {
     return z.inv();
 }
 
@@ -895,11 +908,11 @@ static constexpr inline nion<T> inv(const nion<T> &z) {
  * @param rhs The right hand side nion.
  * @return The dot product of the nions.
  */
-template<arithmetic T>
-static constexpr inline T dot(const nion<T> &lhs, const nion<T> &rhs) {
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline T dot(const nion<T, D> &lhs, const nion<T, D> &rhs) {
     T dotProduct = 0;
     #pragma vector aligned
-    for (uint_fast16_t i = 0; i < std::min(lhs.degree, rhs.degree); i++) {
+    for (D i = 0; i < std::min(lhs.degree, rhs.degree); i++) {
         dotProduct += lhs[i] * rhs[i];
     }
     return dotProduct;
@@ -912,8 +925,8 @@ static constexpr inline T dot(const nion<T> &lhs, const nion<T> &rhs) {
  * @param rhs The right hand side nion.
  * @return The cross product of the nions.
  */
-template<arithmetic T>
-static constexpr inline nion<T> cross(const nion<T> &lhs, const nion<T> &rhs); //TODO: implement cross product
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> cross(const nion<T, D> &lhs, const nion<T, D> &rhs); //TODO: implement cross product
 
 /**
  * @brief compute the wedge product of two nions.
@@ -922,8 +935,8 @@ static constexpr inline nion<T> cross(const nion<T> &lhs, const nion<T> &rhs); /
  * @param rhs The right hand side nion.
  * @return The wedge product of the nions.
  */
-template<arithmetic T>
-static constexpr inline nion<T> wedge(const nion<T> &lhs, const nion<T> &rhs); //TODO: implement wedge product
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> wedge(const nion<T, D> &lhs, const nion<T, D> &rhs); //TODO: implement wedge product
 
 /**
  * @brief compute the outer product of two nions.
@@ -932,8 +945,8 @@ static constexpr inline nion<T> wedge(const nion<T> &lhs, const nion<T> &rhs); /
  * @param rhs The right hand side nion.
  * @return The outer product of the nions.
  */
-template<arithmetic T>
-static constexpr inline nion<T> outer(const nion<T> &lhs, const nion<T> &rhs); //TODO: implement outer product
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> outer(const nion<T, D> &lhs, const nion<T, D> &rhs); //TODO: implement outer product
 
 
 /***************************
@@ -948,16 +961,16 @@ static constexpr inline nion<T> outer(const nion<T> &lhs, const nion<T> &rhs); /
  * @details The exponential of a nion is defined as e^z = e^r * (cos|v| + v/|v| * sin|v|).
  *          where a is the real component and v is the imaginary components.
  */
-template<arithmetic T>
-static constexpr inline nion<T> exp(const nion<T> &z) noexcept {
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> exp(const nion<T, D> &z) noexcept {
 
     // get polar form of nion
-    nion<T> v = z.imag();
+    nion<T, D> v = z.imag();
 
     // make unit vector
     T v_norm = v.norm();
     if (v_norm <= std::numeric_limits<T>::epsilon())
-        return nion<T>(std::exp(z[0]), z.degree);
+        return nion<T, D>(std::exp(z[0]), z.degree);
 
     // compute exponential of nion
     return (v * (std::sin(v_norm) / v_norm) + std::cos(v_norm)) * std::exp(z[0]);
@@ -971,12 +984,12 @@ static constexpr inline nion<T> exp(const nion<T> &z) noexcept {
  * @details The natural logarithm of a nion is defined as ln(z) = ln(|z|) + v/|v| * atan(|v|/r).
  *          where a is the real component and v is the imaginary components.
  */
-template<arithmetic T>
-static constexpr inline nion<T> log(const nion<T> &z) noexcept {
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> log(const nion<T, D> &z) noexcept {
 
     // get polar form of nion
     T r = z.real();
-    nion<T> v = z.imag();
+    nion<T, D> v = z.imag();
 
     // compute norms
     T z_abs = z.abs();
@@ -985,7 +998,7 @@ static constexpr inline nion<T> log(const nion<T> &z) noexcept {
     T theta = std::atan2(v_norm, r);
 
     if (v_norm <= std::numeric_limits<T>::epsilon())
-        return nion<T>(std::log(z_norm), z.degree);
+        return nion<T, D>(std::log(z_norm), z.degree);
 
     // compute natural logarithm of nion
     return v * (theta / v_norm) + std::log(z_norm);
@@ -1000,11 +1013,12 @@ static constexpr inline nion<T> log(const nion<T> &z) noexcept {
  * @return The power of the nion.
  * @details The power of a nion is defined as z^p = e^(p * ln(z)).
  */
-template<arithmetic T, arithmetic S>
-static constexpr inline nion<T> pow(const nion<T> &z, S power) noexcept {
+template<typename T, typename D = uint_fast16_t, typename S = T>
+static constexpr inline nion<T, D> pow(const nion<T, D> &z, S power) noexcept {
     // get polar form of nion
     T r = z.real();
-    nion<T> v = z.imag();
+    nion<T, D> v = z.imag();
+    T powa = static_cast<T>(power);
 
     // compute norms
     T z_abs = z.abs();
@@ -1013,10 +1027,10 @@ static constexpr inline nion<T> pow(const nion<T> &z, S power) noexcept {
     T theta = std::atan2(v_norm, r);
 
     if (v_norm <= std::numeric_limits<T>::epsilon())
-        return nion<T>(std::pow(r, power), z.degree);
+        return nion<T, D>(std::pow(r, powa), z.degree);
 
     // compute power of nion
-    return pow(z_norm, power) * (cos(theta * power) + v * (sin(theta * power) / v_norm));
+    return pow(z_norm, powa) * (cos(theta * powa) + v * (sin(theta * powa) / v_norm));
 }
 
 /**
@@ -1027,8 +1041,8 @@ static constexpr inline nion<T> pow(const nion<T> &z, S power) noexcept {
  * @return The power of the nion.
  * @details The power of a nion is defined as z^p = e^(p * ln(z)).
  */
-template<arithmetic T>
-static constexpr inline nion<T> pow(const nion<T> &z, const nion<T> &power) noexcept {
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> pow(const nion<T, D> &z, const nion<T, D> &power) noexcept {
     return exp(power * log(z));
 }
 
@@ -1041,9 +1055,9 @@ static constexpr inline nion<T> pow(const nion<T> &z, const nion<T> &power) noex
  * @return The power of the nion.
  * @details The power of with a nion is defined as x^z = e^(z * ln(x)).
  */
-template<arithmetic T, arithmetic S>
-static constexpr inline nion<T> pow(S x, const nion<T> &z) noexcept {
-    return exp(z * log(x));
+template<typename T, typename D = uint_fast16_t, typename S = T>
+static constexpr inline nion<T, D> pow(S x, const nion<T, D> &z) noexcept {
+    return exp(z * log(static_cast<T>(x)));
 }
 
 /**
@@ -1053,8 +1067,8 @@ static constexpr inline nion<T> pow(S x, const nion<T> &z) noexcept {
  * @return The square root of the nion.
  * @details The square root of a nion is defined as sqrt(z) = z^(1/2).
  */
-template<arithmetic T>
-static constexpr inline nion<T> sqrt(const nion<T> &z) noexcept{
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> sqrt(const nion<T, D> &z) noexcept{
     return pow(z, 0.5l);
 }
 
@@ -1065,8 +1079,8 @@ static constexpr inline nion<T> sqrt(const nion<T> &z) noexcept{
  * @return The cube root of the nion.
  * @details The cube root of a nion is defined as cbrt(z) = z^(1/3).
  */
-template<arithmetic T>
-static constexpr inline nion<T> cbrt(const nion<T> &z) noexcept{
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> cbrt(const nion<T, D> &z) noexcept{
     return pow(z, 1.0/3.0f);
 }
 
@@ -1081,21 +1095,21 @@ static constexpr inline nion<T> cbrt(const nion<T> &z) noexcept{
  * @return The hyperbolic sine of the nion.
  * @details The hyperbolic sine of a nion is defined as sinh(z) = (e^z - e^-z) / 2.
  */
-template<arithmetic T>
-static constexpr inline nion<T> sinh(const nion<T> &z) noexcept{
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> sinh(const nion<T, D> &z) noexcept{
     // get polar form of nion
-    nion<T> v = z.imag();
+    nion<T, D> v = z.imag();
 
     // make unit vector
     T v_norm = v.norm();
     if (v_norm <= std::numeric_limits<T>::epsilon())
-        return nion<T>(std::exp(z[0]), z.degree);
+        return nion<T, D>(std::exp(z[0]), z.degree);
 
     T e_z = std::exp(z[0]) / static_cast<T>(2);
     T e_mz = std::exp(-z[0]) / static_cast<T>(2);
 
     // compute exponential of nion
-    nion<T> sin_nion = v * (( e_z + e_mz) * std::sin(v_norm) / v_norm);
+    nion<T, D> sin_nion = v * (( e_z + e_mz) * std::sin(v_norm) / v_norm);
     sin_nion += std::cos(v_norm) * (e_z - e_mz);
     return sin_nion;
 }
@@ -1107,21 +1121,21 @@ static constexpr inline nion<T> sinh(const nion<T> &z) noexcept{
  * @return The hyperbolic cosine of the nion.
  * @details The hyperbolic cosine of a nion is defined as cosh(z) = (e^z + e^-z) / 2.
  */
-template<arithmetic T>
-static constexpr inline nion<T> cosh(const nion<T> &z) noexcept{
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> cosh(const nion<T, D> &z) noexcept{
     // get polar form of nion
-    nion<T> v = z.imag();
+    nion<T, D> v = z.imag();
 
     // make unit vector
     T v_norm = v.norm();
     if (v_norm <= std::numeric_limits<T>::epsilon())
-        return nion<T>(std::exp(z[0]), z.degree);
+        return nion<T, D>(std::exp(z[0]), z.degree);
 
     T e_z = std::exp(z[0]) / static_cast<T>(2);
     T e_mz = std::exp(-z[0]) / static_cast<T>(2);
 
     // compute exponential of nion
-    nion<T> cos_nion = v * (( e_z - e_mz) * std::sin(v_norm) / v_norm);
+    nion<T, D> cos_nion = v * (( e_z - e_mz) * std::sin(v_norm) / v_norm);
     cos_nion += std::cos(v_norm) * (e_z + e_mz);
     return cos_nion;
 }
@@ -1133,8 +1147,8 @@ static constexpr inline nion<T> cosh(const nion<T> &z) noexcept{
  * @return The hyperbolic tangent of the nion.
  * @details The hyperbolic tangent of a nion is defined as tanh(z) = sinh(z) / cosh(z).
  */
-template<arithmetic T>
-static constexpr inline nion<T> tanh(const nion<T> &z) noexcept{
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> tanh(const nion<T, D> &z) noexcept{
     return sinh(z) / cosh(z);
 }
 
@@ -1145,8 +1159,8 @@ static constexpr inline nion<T> tanh(const nion<T> &z) noexcept{
  * @return The hyperbolic cotangent of the nion.
  * @details The hyperbolic cotangent of a nion is defined as coth(z) = 1 / tanh(z).
  */
-template<arithmetic T>
-static constexpr inline nion<T> coth(const nion<T> &z) noexcept{
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> coth(const nion<T, D> &z) noexcept{
     return tanh(z).inv();
 }
 
@@ -1157,8 +1171,8 @@ static constexpr inline nion<T> coth(const nion<T> &z) noexcept{
  * @return The hyperbolic secant of the nion.
  * @details The hyperbolic secant of a nion is defined as sech(z) = 1 / cosh(z).
  */
-template<arithmetic T>
-static constexpr inline nion<T> sech(const nion<T> &z) noexcept{
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> sech(const nion<T, D> &z) noexcept{
     return cosh(z).inv();
 }
 
@@ -1169,8 +1183,8 @@ static constexpr inline nion<T> sech(const nion<T> &z) noexcept{
  * @return The hyperbolic cosecant of the nion.
  * @details The hyperbolic cosecant of a nion is defined as csch(z) = 1 / sinh(z).
  */
-template<arithmetic T>
-static constexpr inline nion<T> csch(const nion<T> &z) noexcept{
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> csch(const nion<T, D> &z) noexcept{
     return sinh(z).inv();
 }
 
@@ -1188,16 +1202,16 @@ static constexpr inline nion<T> csch(const nion<T> &z) noexcept{
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://en.wikipedia.org/wiki/Sine_and_cosine#Relationship_to_complex_numbers
  */
-template<arithmetic T>
-static constexpr inline nion<T> sin(const nion<T> &z) noexcept{
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> sin(const nion<T, D> &z) noexcept{
     // get the polar form of the nion
     T r = real(z);
-    nion<T> v = imag(z);
+    nion<T, D> v = imag(z);
 
     // make unit vector
     T v_norm = v.norm();
     if (v_norm <= std::numeric_limits<T>::epsilon())
-        return nion<T>(sin(r), z.degree);
+        return nion<T, D>(sin(r), z.degree);
 
     // compute the sine of the nion
     return v * (sinh(v_norm) * cos(r) / v_norm) + sin(r) * cosh(v_norm);
@@ -1212,16 +1226,16 @@ static constexpr inline nion<T> sin(const nion<T> &z) noexcept{
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://en.wikipedia.org/wiki/Sine_and_cosine#Relationship_to_complex_numbers
  */
-template<arithmetic T>
-static constexpr inline nion<T> cos(const nion<T> &z) noexcept{
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> cos(const nion<T, D> &z) noexcept{
     // get the polar form of the nion
     T r = real(z);
-    nion<T> v = imag(z);
+    nion<T, D> v = imag(z);
 
     // make unit vector
     T v_norm = v.norm();
     if (v_norm <= std::numeric_limits<T>::epsilon())
-        return nion<T>(cos(r), z.degree);
+        return nion<T, D>(cos(r), z.degree);
 
 
     // compute the cosine of the nion
@@ -1237,16 +1251,16 @@ static constexpr inline nion<T> cos(const nion<T> &z) noexcept{
  * tan(z) = tan(a + bi) = (tan(a) + tanh(b)i) / (1 - tan(a) * tanh(b) i).
  * @see https://en.wikipedia.org/wiki/Proofs_of_trigonometric_identities#Angle_sum_identities
  */
-template<arithmetic T>
-static constexpr inline nion<T> tan(const nion<T> &z) noexcept{
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> tan(const nion<T, D> &z) noexcept{
     // get the polar form of the nion
     T r = real(z);
-    nion<T> v = imag(z);
+    nion<T, D> v = imag(z);
 
     // make unit vector
     T v_norm = v.norm();
     if (v_norm <= std::numeric_limits<T>::epsilon())
-        return nion<T>(tan(r), z.degree);
+        return nion<T, D>(tan(r), z.degree);
 
     // compute the tangent of the nion
     return (tan(r) + v * (tanh(v_norm) / v_norm)) / (1 - v*(tan(r) / v_norm * tanh(v_norm)));
@@ -1259,8 +1273,8 @@ static constexpr inline nion<T> tan(const nion<T> &z) noexcept{
  * @return The cotangent of the nion.
  * @details The cotangent of the nion is defined as cot(z) = 1 / tan(z).
  */
-template<arithmetic T>
-static constexpr inline nion<T> cot(const nion<T> &z) noexcept{
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> cot(const nion<T, D> &z) noexcept{
     return tan(z).inv();
 }
 
@@ -1271,8 +1285,8 @@ static constexpr inline nion<T> cot(const nion<T> &z) noexcept{
  * @return The secant of the nion.
  * @details The secant of the nion is defined as sec(z) = 1 / cos(z).
  */
-template<arithmetic T>
-static constexpr inline nion<T> sec(const nion<T> &z) noexcept{
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> sec(const nion<T, D> &z) noexcept{
     return cos(z).inv();
 }
 
@@ -1283,8 +1297,8 @@ static constexpr inline nion<T> sec(const nion<T> &z) noexcept{
  * @return The cosecant of the nion.
  * @details The cosecant of the nion is defined as csc(z) = 1 / sin(z).
  */
-template<arithmetic T>
-static constexpr inline nion<T> csc(const nion<T> &z) noexcept{
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> csc(const nion<T, D> &z) noexcept{
     return sin(z).inv();
 }
 
@@ -1301,8 +1315,8 @@ static constexpr inline nion<T> csc(const nion<T> &z) noexcept{
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://mathworld.wolfram.com/InverseHyperbolicSine.html
  */
-template<arithmetic T>
-static constexpr inline nion<T> asinh(const nion<T> &z) noexcept{
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> asinh(const nion<T, D> &z) noexcept{
     return log(z + sqrt(1 + pow(z,2)));
 }
 
@@ -1315,8 +1329,8 @@ static constexpr inline nion<T> asinh(const nion<T> &z) noexcept{
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://mathworld.wolfram.com/InverseHyperbolicCosine.html
  */
-template<arithmetic T>
-static constexpr inline nion<T> acosh(const nion<T> &z) noexcept{
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> acosh(const nion<T, D> &z) noexcept{
     return log(z + sqrt(z + 1) * sqrt(z - 1));
 }
 
@@ -1329,8 +1343,8 @@ static constexpr inline nion<T> acosh(const nion<T> &z) noexcept{
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://mathworld.wolfram.com/InverseHyperbolicTangent.html
  */
-template<arithmetic T>
-static constexpr inline nion<T> atanh(const nion<T> &z) noexcept{
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> atanh(const nion<T, D> &z) noexcept{
     return (log(1 + z) - log(1 - z)) * 0.5l;
 }
 
@@ -1343,8 +1357,8 @@ static constexpr inline nion<T> atanh(const nion<T> &z) noexcept{
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://mathworld.wolfram.com/InverseHyperbolicCotangent.html
  */
-template<arithmetic T>
-static constexpr inline nion<T> acoth(const nion<T> &z) noexcept{
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> acoth(const nion<T, D> &z) noexcept{
     return (log(1 + inv(z)) - log(1 - inv(z))) * 0.5l;
 }
 
@@ -1357,8 +1371,8 @@ static constexpr inline nion<T> acoth(const nion<T> &z) noexcept{
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://mathworld.wolfram.com/InverseHyperbolicSecant.html
  */
-template<arithmetic T>
-static constexpr inline nion<T> asech(const nion<T> &z) noexcept{
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> asech(const nion<T, D> &z) noexcept{
     return log(sqrt(pow(z,-2) - 1) + inv(z));
 }
 
@@ -1371,8 +1385,8 @@ static constexpr inline nion<T> asech(const nion<T> &z) noexcept{
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://mathworld.wolfram.com/InverseHyperbolicCosecant.html
  */
-template<arithmetic T>
-static constexpr inline nion<T> acsch(const nion<T> &z) noexcept{
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> acsch(const nion<T, D> &z) noexcept{
     return log(sqrt(1 + pow(z,-2)) + inv(z));
 }
 
@@ -1388,15 +1402,15 @@ static constexpr inline nion<T> acsch(const nion<T> &z) noexcept{
  * @details The inverse sine of the nion is defined as asin(z) = asin(r + v) = v/|v| * ln(sqrt(1 - z^2) - v/|v| * z).
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Logarithmic_forms
  */
-template<arithmetic T>
-static constexpr inline nion<T> asin(const nion<T> &z) noexcept {
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> asin(const nion<T, D> &z) noexcept {
     // get the polar form of the nion
-    nion<T> v = z.imag();
+    nion<T, D> v = z.imag();
 
     // make unit vector
     T v_norm = v.norm();
     if (v_norm == 0)
-        return nion<T>(asin(z.real()), z.degree);
+        return nion<T, D>(asin(z.real()), z.degree);
     v /= v_norm;
 
 
@@ -1412,8 +1426,8 @@ static constexpr inline nion<T> asin(const nion<T> &z) noexcept {
  * @details The inverse cosine of the nion is defined as acos(z) = pi/2 - asin(z).
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_complex_plane
  */
-template<arithmetic T>
-static constexpr inline nion<T> acos(const nion<T> &z) noexcept {
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> acos(const nion<T, D> &z) noexcept {
     return M_PI_2l - asin(z);
 }
 
@@ -1426,15 +1440,15 @@ static constexpr inline nion<T> acos(const nion<T> &z) noexcept {
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Logarithmic_forms
  */
-template<arithmetic T>
-static constexpr inline nion<T> atan(const nion<T> &z) noexcept {
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> atan(const nion<T, D> &z) noexcept {
     // get the polar form of the nion
-    nion<T> v = z.imag();
+    nion<T, D> v = z.imag();
 
     // make unit vector
     T v_norm = v.norm();
     if (v_norm == 0)
-        return nion<T>(atan(z.real()), z.degree);
+        return nion<T, D>(atan(z.real()), z.degree);
     v /= v_norm;
 
     // compute the inv tangent of the nion
@@ -1449,8 +1463,8 @@ static constexpr inline nion<T> atan(const nion<T> &z) noexcept {
  * @details The inverse cotangent of the nion is defined as acot(z) = pi/2 - atan(z).
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_complex_plane
  */
-template<arithmetic T>
-static constexpr inline nion<T> acot(const nion<T> &z) noexcept {
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> acot(const nion<T, D> &z) noexcept {
     return M_PI_2l - atan(z);
 }
 
@@ -1462,8 +1476,8 @@ static constexpr inline nion<T> acot(const nion<T> &z) noexcept {
  * @details The inverse secant of the nion is defined as asec(z) = acos(1/z).
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_complex_plane
  */
-template<arithmetic T>
-static constexpr inline nion<T> asec(const nion<T> &z) noexcept {
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> asec(const nion<T, D> &z) noexcept {
     return acos(inv(z));
 }
 
@@ -1475,8 +1489,8 @@ static constexpr inline nion<T> asec(const nion<T> &z) noexcept {
  * @details The inverse cosecant of the nion is defined as acsc(z) = asin(1/z).
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_complex_plane
  */
-template<arithmetic T>
-static constexpr inline nion<T> acsc(const nion<T> &z) noexcept {
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> acsc(const nion<T, D> &z) noexcept {
     return asin(inv(z));
 }
 
@@ -1493,8 +1507,8 @@ static constexpr inline nion<T> acsc(const nion<T> &z) noexcept {
  *     gamma(z) ≈ sqrt(2 π) e^(-z) sqrt(1/(z)) (1/(12 (z) - 1/(10 (z))) + z)^(z)
  * @see https://www.wolframalpha.com/input?i=gamma%28a+%2B+b+i%29
  */
-template<arithmetic T>
-static constexpr inline nion<T> gamma(const nion<T> &z) noexcept {
+template<typename T, typename D = uint_fast16_t>
+static constexpr inline nion<T, D> gamma(const nion<T, D> &z) noexcept {
     // compute the gamma function of the nion
     return exp(-z) * sqrt(inv(z)) * pow(1/(12 * z - inv(10 * z)) + z, z) * sqrt(2 * M_PIl);
 }
