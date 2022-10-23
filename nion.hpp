@@ -360,19 +360,18 @@ struct nion {
                     return nion<T, D>({components[0] * other[0] - components[1] * other[1],
                                     components[1] * other[0] + components[0] * other[1]});
                 break;
-            default:
-                if (other.degree == 1) // if the degree is 1, then the product is just the scalar product.
-                    return *this * other[0];
-                break;
         }
+        if (other.degree == 1) // if the degree is 1, then the product is just the scalar product.
+            return *this * other[0];
 
 
         // extract the dual elements of the nions with half the degree
-        D half_degree = degree / 2;
-        nion<T, D> a(this->components,  half_degree);
-        nion<T, D> b(this->components + half_degree, degree - half_degree);
-        nion<T, D> c(other.components,  half_degree);
-        nion<T, D> d(other.components + half_degree, degree - half_degree);
+        D this_half_degree = degree / 2;
+        D other_half_degree = other.degree / 2;
+        nion<T, D> a(this->components,  this_half_degree);
+        nion<T, D> b(this->components + this_half_degree, degree - this_half_degree);
+        nion<T, D> c(other.components,  other_half_degree);
+        nion<T, D> d(other.components + other_half_degree, other.degree - other_half_degree);
 
 
         // calculate the product
@@ -449,7 +448,8 @@ struct nion {
         imag.degree = degree;
 
         imag[0] = 0;
-        memcpy(imag_components + 1, components + 1, (degree - 1) * sizeof(T));
+        if (degree > 1)
+            memcpy(imag_components + 1, components + 1, (degree - 1) * sizeof(T));
 
         return imag;
     }
@@ -461,12 +461,10 @@ struct nion {
      * @note newDegree must be larger than the current degree.
      */
     constexpr inline void resize(D newDegree) {
-
-        degree = newDegree;
         components = (T *) realloc(components, newDegree * sizeof(T));
-
-        // set the new components to zero
-        memset(components + degree, 0, (newDegree - degree) * sizeof(T));
+        if (newDegree > degree)
+            memset(components + degree, 0, (newDegree - degree) * sizeof(T));
+        degree = newDegree;
     };
 
 
@@ -808,12 +806,13 @@ static constexpr inline bool operator!=(S scalar, const nion<T, D> &z) {
     template<typename T, typename D = uint_fast16_t>
 std::ostream &operator<<(std::ostream &os, const nion<T, D> &z) {
     T component = z.components[0];
-    os << component;
+    os << "(" << component;
 
     for (D i = 1; i < z.degree; i++) {
         component = z.components[i];
-        os << " + " << component << " e" << i;
+        os << "," << component;
     }
+    os << ")";
     return os;
 }
 
@@ -1112,6 +1111,7 @@ static constexpr inline nion<T, D> sinh(const nion<T, D> &z) noexcept{
     nion<T, D> sin_nion = v * (( e_z + e_mz) * std::sin(v_norm) / v_norm);
     sin_nion += std::cos(v_norm) * (e_z - e_mz);
     return sin_nion;
+
 }
 
 /**
