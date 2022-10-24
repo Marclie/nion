@@ -25,6 +25,20 @@
 #include <iostream>
 
 template<typename T>
+void printSpeedupComplex(const T& niontime, const T& othertime) {
+    // ANSI escape codes for colors
+    const std::string red = "\033[0;31m";
+    const std::string green = "\033[0;32m";
+    const std::string reset = "\033[0m";
+
+    T speedup = static_cast<T>(niontime) / static_cast<T>(othertime);
+    if (speedup < 1)
+        std::cout << "nion is " << green << 1 / speedup << " times FASTER" << reset << std::endl;
+    else
+        std::cout << "nion is " << red << speedup << " times SLOWER" << reset << std::endl;
+}
+
+template<typename T>
 T getMAEcomplex(nion<T> nion, std::complex<T> compare){
     int degree = nion.degree;
     T mae = 0;
@@ -294,7 +308,7 @@ void stdComplexComparison(int trials) {
             normStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to MAE_ normdifference
-            diff = fabs(nionNorm - stdNorm);
+            diff = std::abs(nionNorm - stdNorm);
             MRE_Norm += diff;
             diff /= stdNorm;
             MAE_Norm += diff;
@@ -881,17 +895,12 @@ void stdComplexComparison(int trials) {
     }
 
     T trialfp = static_cast<T>(trials);
-    T speedup;
 
     /*** norm ***/
     std::cout << "----> Norm <---- " << std::endl;
     std::cout << "Average norm time for nion: " << normNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average norm time for std::complex: " << normStdTimer / trialfp << " ns" << std::endl;
-    speedup = normStdTimer / normNionTimer;
-    if (speedup > 1.0)
-        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
-    else
-        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
+    printSpeedupComplex(normNionTimer, normStdTimer);
     std::cout << "Average difference between nion and std::complex: " << MRE_Norm / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << MAE_Norm / trialfp << std::endl;
     std::cout << "\nMaximum difference between nion and std::complex: " << MAX_Norm << std::endl;
@@ -903,11 +912,7 @@ void stdComplexComparison(int trials) {
     std::cout << "\n\n---> Addition <--- " << std::endl;
     std::cout << "Average addition time for nion: " << addNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average addition time for std::complex: " << addStdTimer / trialfp << " ns" << std::endl;
-    speedup = addStdTimer / addNionTimer;
-    if (speedup > 1.0)
-        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
-    else
-        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
+    printSpeedupComplex(addNionTimer, addStdTimer);
     std::cout << "Average difference between nion and std::complex: " << MRE_Add / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << MAE_Add/ trialfp << std::endl;
     std::cout << "\nMaximum difference between nion and std::complex: " << MAX_Add << std::endl;
@@ -919,11 +924,7 @@ void stdComplexComparison(int trials) {
     std::cout << "\n\n---> Conjugate <--- " << std::endl;
     std::cout << "Average conjugate time for nion: " << conjNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average conjugate time for std::complex: " << conjStdTimer / trialfp << " ns" << std::endl;
-    speedup = conjStdTimer / conjNionTimer;
-    if (speedup > 1.0)
-        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
-    else
-        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
+    printSpeedupComplex(conjNionTimer, conjStdTimer);
     std::cout << "Average difference between nion and std::complex: " << MRE_Conj / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << MAE_Conj/ trialfp << std::endl;
     std::cout << "\nMaximum difference between nion and std::complex: " << MAX_Conj << std::endl;
@@ -935,11 +936,7 @@ void stdComplexComparison(int trials) {
     std::cout << "\n\n---> Multiplication <--- " << std::endl;
     std::cout << "Average multiplication time for nion: " << mulNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average multiplication time for std::complex: " << mulStdTimer / trialfp << " ns" << std::endl;
-    speedup = mulStdTimer / mulNionTimer;
-    if (speedup > 1.0)
-        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
-    else
-        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
+    printSpeedupComplex(mulNionTimer, mulStdTimer);
     std::cout << "Average difference between nion and std::complex: " << MRE_Mul / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << MAE_Mul/ trialfp << std::endl;
     std::cout << "\nMaximum difference between nion and std::complex: " << MAX_Mul << std::endl;
@@ -951,11 +948,7 @@ void stdComplexComparison(int trials) {
     std::cout << "\n\n---> Division <--- " << std::endl;
     std::cout << "Average division time for nion: " << divNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average division time for std::complex: " << divStdTimer / trialfp << " ns" << std::endl;
-    speedup = divStdTimer / divNionTimer;
-    if (speedup > 1.0)
-        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
-    else
-        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
+    printSpeedupComplex(divNionTimer, divStdTimer);
     std::cout << "Average difference between nion and std::complex: " << MRE_Div / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << MAE_Div/ trialfp << std::endl;
     std::cout << "\nMaximum difference between nion and std::complex: " << MAX_Div << std::endl;
@@ -967,11 +960,7 @@ void stdComplexComparison(int trials) {
     std::cout << "\n\n---> Power <--- " << std::endl;
     std::cout << "Average power time for nion: " << powNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average power time for std::complex: " << powStdTimer / trialfp << " ns" << std::endl;
-    speedup = powStdTimer / powNionTimer;
-    if (speedup > 1.0)
-        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
-    else
-        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
+    printSpeedupComplex(powNionTimer, powStdTimer);
     std::cout << "Average difference between nion and std::complex: " << MRE_Pow / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << MAE_Pow/ trialfp << std::endl;
     std::cout << "\nMaximum difference between nion and std::complex: " << MAX_Pow << std::endl;
@@ -983,11 +972,7 @@ void stdComplexComparison(int trials) {
     std::cout << "\n\n---> Exponential <--- " << std::endl;
     std::cout << "Average exponential time for nion: " << expNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average exponential time for std::complex: " << expStdTimer / trialfp << " ns" << std::endl;
-    speedup = expStdTimer / expNionTimer;
-    if (speedup > 1.0)
-        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
-    else
-        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
+    printSpeedupComplex(expNionTimer, expStdTimer);
     std::cout << "Average difference between nion and std::complex: " << MRE_Exp / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << MAE_Exp/ trialfp << std::endl;
     std::cout << "\nMaximum difference between nion and std::complex: " << MAX_Exp << std::endl;
@@ -999,11 +984,7 @@ void stdComplexComparison(int trials) {
     std::cout << "\n\n---> Logarithm <--- " << std::endl;
     std::cout << "Average logarithm time for nion: " << logNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average logarithm time for std::complex: " << logStdTimer / trialfp << " ns" << std::endl;
-    speedup = logStdTimer / logNionTimer;
-    if (speedup > 1.0)
-        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
-    else
-        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
+    printSpeedupComplex(logNionTimer, logStdTimer);
     std::cout << "Average difference between nion and std::complex: " << MRE_Log / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << MAE_Log/ trialfp << std::endl;
     std::cout << "\nMaximum difference between nion and std::complex: " << MAX_Log << std::endl;
@@ -1015,11 +996,7 @@ void stdComplexComparison(int trials) {
     std::cout << "\n\n---> Sine <--- " << std::endl;
     std::cout << "Average sin time for nion: " << sinNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average sin time for std::complex: " << sinStdTimer / trialfp << " ns" << std::endl;
-    speedup = sinStdTimer / sinNionTimer;
-    if (speedup > 1.0)
-        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
-    else
-        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
+    printSpeedupComplex(sinNionTimer, sinStdTimer);
     std::cout << "Average difference between nion and std::complex: " << MRE_Sin / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << MAE_Sin/ trialfp << std::endl;
     std::cout << "\nMaximum difference between nion and std::complex: " << MAX_Sin << std::endl;
@@ -1031,11 +1008,7 @@ void stdComplexComparison(int trials) {
     std::cout << "\n\n---> Inverse Sine <--- " << std::endl;
     std::cout << "Average asin time for nion: " << asinNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average asin time for std::complex: " << asinStdTimer / trialfp << " ns" << std::endl;
-    speedup = asinStdTimer / asinNionTimer;
-    if (speedup > 1.0)
-        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
-    else
-        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
+    printSpeedupComplex(asinNionTimer, asinStdTimer);
     std::cout << "Average difference between nion and std::complex: " << MRE_Asin / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << MAE_Asin/ trialfp << std::endl;
     std::cout << "\nMaximum difference between nion and std::complex: " << MAX_Asin << std::endl;
@@ -1047,11 +1020,7 @@ void stdComplexComparison(int trials) {
     std::cout << "\n\n---> Cosine <--- " << std::endl;
     std::cout << "Average cos time for nion: " << cosNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average cos time for std::complex: " << cosStdTimer / trialfp << " ns" << std::endl;
-    speedup = cosStdTimer / cosNionTimer;
-    if (speedup > 1.0)
-        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
-    else
-        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
+    printSpeedupComplex(cosNionTimer, cosStdTimer);
     std::cout << "Average difference between nion and std::complex: " << MRE_Cos / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << MAE_Cos/ trialfp << std::endl;
     std::cout << "\nMaximum difference between nion and std::complex: " << MAX_Cos << std::endl;
@@ -1063,11 +1032,7 @@ void stdComplexComparison(int trials) {
     std::cout << "\n\n---> Inverse Cosine <--- " << std::endl;
     std::cout << "Average acos time for nion: " << acosNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average acos time for std::complex: " << acosStdTimer / trialfp << " ns" << std::endl;
-    speedup = acosStdTimer / acosNionTimer;
-    if (speedup > 1.0)
-        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
-    else
-        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
+    printSpeedupComplex(acosNionTimer, acosStdTimer);
     std::cout << "Average difference between nion and std::complex: " << MRE_Acos / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << MAE_Acos/ trialfp << std::endl;
     std::cout << "\nMaximum difference between nion and std::complex: " << MAX_Acos << std::endl;
@@ -1079,11 +1044,7 @@ void stdComplexComparison(int trials) {
     std::cout << "\n\n---> Tangent <--- " << std::endl;
     std::cout << "Average tan time for nion: " << tanNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average tan time for std::complex: " << tanStdTimer / trialfp << " ns" << std::endl;
-    speedup = tanStdTimer / tanNionTimer;
-    if (speedup > 1.0)
-        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
-    else
-        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
+    printSpeedupComplex(tanNionTimer, tanStdTimer);
     std::cout << "Average difference between nion and std::complex: " << MRE_Tan / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << MAE_Tan/ trialfp << std::endl;
     std::cout << "\nMaximum difference between nion and std::complex: " << MAX_Tan << std::endl;
@@ -1095,11 +1056,7 @@ void stdComplexComparison(int trials) {
     std::cout << "\n\n---> Inverse Tangent <--- " << std::endl;
     std::cout << "Average atan time for nion: " << atanNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average atan time for std::complex: " << atanStdTimer / trialfp << " ns" << std::endl;
-    speedup = atanStdTimer / atanNionTimer;
-    if (speedup > 1.0)
-        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
-    else
-        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
+    printSpeedupComplex(atanNionTimer, atanStdTimer);
     std::cout << "Average difference between nion and std::complex: " << MRE_Atan / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << MAE_Atan/ trialfp << std::endl;
     std::cout << "\nMaximum difference between nion and std::complex: " << MAX_Atan << std::endl;
@@ -1111,11 +1068,7 @@ void stdComplexComparison(int trials) {
     std::cout << "\n\n---> Hyperbolic Sine <--- " << std::endl;
     std::cout << "Average sinh time for nion: " << sinhNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average sinh time for std::complex: " << sinhStdTimer / trialfp << " ns" << std::endl;
-    speedup = sinhStdTimer / sinhNionTimer;
-    if (speedup > 1.0)
-        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
-    else
-        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
+    printSpeedupComplex(sinhNionTimer, sinhStdTimer);
     std::cout << "Average difference between nion and std::complex: " << MRE_Sinh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << MAE_Sinh/ trialfp << std::endl;
     std::cout << "\nMaximum difference between nion and std::complex: " << MAX_Sinh << std::endl;
@@ -1127,11 +1080,7 @@ void stdComplexComparison(int trials) {
     std::cout << "\n\n---> Inverse Hyperbolic Sine <--- " << std::endl;
     std::cout << "Average asinh time for nion: " << asinhNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average asinh time for std::complex: " << asinhStdTimer / trialfp << " ns" << std::endl;
-    speedup = asinhStdTimer / asinhNionTimer;
-    if (speedup > 1.0)
-        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
-    else
-        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
+    printSpeedupComplex(asinhNionTimer, asinhStdTimer);
     std::cout << "Average difference between nion and std::complex: " << MRE_Asinh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << MAE_Asinh/ trialfp << std::endl;
     std::cout << "\nMaximum difference between nion and std::complex: " << MAX_Asinh << std::endl;
@@ -1143,11 +1092,7 @@ void stdComplexComparison(int trials) {
     std::cout << "\n\n---> Hyperbolic Cosine <--- " << std::endl;
     std::cout << "Average cosh time for nion: " << coshNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average cosh time for std::complex: " << coshStdTimer / trialfp << " ns" << std::endl;
-    speedup = coshStdTimer / coshNionTimer;
-    if (speedup > 1.0)
-        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
-    else
-        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
+    printSpeedupComplex(coshNionTimer, coshStdTimer);
     std::cout << "Average difference between nion and std::complex: " << MRE_Cosh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << MAE_Cosh/ trialfp << std::endl;
     std::cout << "\nMaximum difference between nion and std::complex: " << MAX_Cosh << std::endl;
@@ -1159,11 +1104,7 @@ void stdComplexComparison(int trials) {
     std::cout << "\n\n---> Inverse Hyperbolic Cosine <--- " << std::endl;
     std::cout << "Average acosh time for nion: " << acoshNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average acosh time for std::complex: " << acoshStdTimer / trialfp << " ns" << std::endl;
-    speedup = acoshStdTimer / acoshNionTimer;
-    if (speedup > 1.0)
-        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
-    else
-        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
+    printSpeedupComplex(acoshNionTimer, acoshStdTimer);
     std::cout << "Average difference between nion and std::complex: " << MRE_Acosh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << MAE_Acosh/ trialfp << std::endl;
     std::cout << "\nMaximum difference between nion and std::complex: " << MAX_Acosh << std::endl;
@@ -1175,11 +1116,7 @@ void stdComplexComparison(int trials) {
     std::cout << "\n\n---> Hyperbolic Tangent <--- " << std::endl;
     std::cout << "Average tanh time for nion: " << tanhNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average tanh time for std::complex: " << tanhStdTimer / trialfp << " ns" << std::endl;
-    speedup = tanhStdTimer / tanhNionTimer;
-    if (speedup > 1.0)
-        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
-    else
-        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
+    printSpeedupComplex(tanhNionTimer, tanhStdTimer);
     std::cout << "Average difference between nion and std::complex: " << MRE_Tanh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << MAE_Tanh/ trialfp << std::endl;
     std::cout << "\nMaximum difference between nion and std::complex: " << MAX_Tanh << std::endl;
@@ -1191,11 +1128,7 @@ void stdComplexComparison(int trials) {
     std::cout << "\n\n---> Inverse Hyperbolic Tangent <--- " << std::endl;
     std::cout << "Average atanh time for nion: " << atanhNionTimer / trialfp << " ns" << std::endl;
     std::cout << "Average atanh time for std::complex: " << atanhStdTimer / trialfp << " ns" << std::endl;
-    speedup = atanhStdTimer / atanhNionTimer;
-    if (speedup > 1.0)
-        std::cout << "nion is " << speedup << " times FASTER than std::complex" << std::endl;
-    else
-        std::cout << "nion is " << 1.0 / speedup << " times SLOWER than std::complex" << std::endl;
+    printSpeedupComplex(atanhNionTimer, atanhStdTimer);
     std::cout << "Average difference between nion and std::complex: " << MRE_Atanh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and std::complex: " << MAE_Atanh/ trialfp << std::endl;
     std::cout << "\nMaximum difference between nion and std::complex: " << MAX_Atanh << std::endl;

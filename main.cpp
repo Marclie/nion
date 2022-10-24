@@ -17,8 +17,14 @@
 #include <iostream>
 #include "nion.hpp"
 #include "complexTest.hpp"
-#include "quaternionTest.hpp"
-#include "octonionTest.hpp"
+#include "boostQuaternionTest.hpp"
+#include "boostOctonionTest.hpp"
+
+#if TEST_LARGE_DEGREE  == ON
+#include "sedenionTest.hpp"
+#endif
+
+#include <chrono>
 #include <complex>
 
 
@@ -222,20 +228,74 @@ void mixedOrderTest() {
     std::cout << "n7 * n6 / n7:\t" << n7 * n6 / n7 << std::endl;
 
     std::cout << "\n\t non 2 power order test\n" << std::endl;
+
     nion<long double> n8({1, 2, 3});
+    nion<long double> n9({1, 2, 3, 0});
     std::cout << "n8:\t" << n8 << std::endl;
-    std::cout << "n8 + n8:\t" << n8 + n8 << std::endl;
-    std::cout << "n8 - n8:\t" << n8 - n8 << std::endl;
+    std::cout << "n9:\t" << n9 << std::endl << std::endl;
+
+    std::cout << "n9 + n8:\t" << n9 + n8 << std::endl;
+    std::cout << "n9 - n8:\t" << n9 - n8 << std::endl;
+
     std::cout << "n8 * n8:\t" << n8 * n8 << std::endl;
     std::cout << "n8 / n8:\t" << n8 / n8 << std::endl;
+    std::cout << "n9 * n9:\t" << n9 * n9 << std::endl;
+    std::cout << "n9 / n9:\t" << n9 / n9 << std::endl << std::endl;
+
+    std::cout << "n9 * n8:\t" << n9 * n8 << std::endl;
+    std::cout << "n8 * n9:\t" << n8 * n9 << std::endl << std::endl;
+    std::cout << "n9 / n8:\t" << n9 / n8 << std::endl;
+    std::cout << "n8 / n9:\t" << n8 / n9 << std::endl << std::endl;
+
+
     std::cout << "n8 * n8 / n8:\t" << n8 * n8 / n8 << std::endl;
     std::cout << "n8 / n8 * n8:\t" << n8 / n8 * n8 << std::endl;
-    std::cout << "n8 + n7:\t" << n8 + n7 << std::endl;
-    std::cout << "n8 - n7:\t" << n8 - n7 << std::endl;
-    std::cout << "n8 * n7:\t" << n8 * n7 << std::endl;
-    std::cout << "n8 / n7:\t" << n8 / n7 << std::endl;
-    std::cout << "n8 * n7 / n8:\t" << n8 * n7 / n8 << std::endl;
-    std::cout << "n7 * n8 / n7:\t" << n7 * n8 / n7 << std::endl;
+    std::cout << "n9 * n9 / n9:\t" << n9 * n9 / n9 << std::endl;
+    std::cout << "n9 / n9 * n9:\t" << n9 / n9 * n9 << std::endl << std::endl;
+
+    std::cout << "n9 * n8 / n8:\t" << n9 * n8 / n8 << std::endl;
+    std::cout << "n8 * n9 / n9:\t" << n8 * n9 / n9 << std::endl;
+    std::cout << "n9 / n8 * n8:\t" << n9 / n8 * n8 << std::endl;
+    std::cout << "n8 / n9 * n9:\t" << n8 / n9 * n9 << std::endl << std::endl;
+
+    nion<long double> n10({1, 2, 3, 4, 5});
+    nion<long double> n11({1, 2, 3, 4, 5, 0, 0, 0});
+    std::cout << "\nn10:\t" << n10 << std::endl;
+    std::cout << "n11:\t" << n11 << std::endl << std::endl;
+
+    std::cout << "n10 + n11:\t" << n10 + n11 << std::endl;
+    std::cout << "n11 + n10:\t" << n11 + n10 << std::endl << std::endl;
+
+    std::cout << "n11 - n10:\t" << n11 - n10 << std::endl;
+    std::cout << "n10 - n11:\t" << n10 - n11 << std::endl << std::endl;
+
+    std::cout << "n10 * n10:\t" << n10 * n10 << std::endl;
+    std::cout << "n11 * n11:\t" << n11 * n11 << std::endl;
+    std::cout << "n11 * n10:\t" << n11 * n10 << std::endl;
+    std::cout << "n10 * n11:\t" << n10 * n11 << std::endl << std::endl;
+
+    std::cout << "n10 / n10:\t" << n10 / n10 << std::endl;
+    std::cout << "n11 / n11:\t" << n11 / n11 << std::endl << std::endl;
+    std::cout << "n11 / n10:\t" << n11 / n10 << std::endl;
+    std::cout << "n10 / n11:\t" << n10 / n11 << std::endl << std::endl;
+
+    std::cout << "n10 * n10 / n10:\t" << n10 * n10 / n10 << std::endl;
+    std::cout << "n11 * n11 / n11:\t" << n11 * n11 / n11 << std::endl;
+
+    std::cout << "n10 / n10 * n10:\t" << n10 / n10 * n10 << std::endl;
+    std::cout << "n11 / n11 * n11:\t" << n11 / n11 * n11 << std::endl;
+
+    std::cout << "n10 * n11 / n10:\t" << n10 * n11 / n10 << std::endl;
+    std::cout << "n11 * n10 / n11:\t" << n11 * n10 / n11 << std::endl;
+
+    std::cout << "n10 / n11 * n10:\t" << n10 / n11 * n10 << std::endl;
+    std::cout << "n11 / n10 * n11:\t" << n11 / n10 * n11 << std::endl;
+
+    nion<long double> n12({1, 2, 3, 4, 5, 6});
+
+    std::cout << "\nn12:\t" << n12 << std::endl;
+    std::cout << "n12 * n12:\t" << n12 * n12 << std::endl;
+    std::cout << "n12 / n12:\t" << n12 / n12 << std::endl;
 }
 
 void writeSinData(int N) {
@@ -261,14 +321,41 @@ int main() {
     order2Test();
     mixedOrderTest();
 
-    int trials = 100000000;
+    int trials = 10000;
+    long double start;
+    long double end;
+
+    long double totalTime = 0;
+    start = clock();
     stdComplexComparison<long double>(trials);
+    end = clock();
+    totalTime += (end - start) / CLOCKS_PER_SEC;
+    std::cout << "\n --> complex comparison took " << (end - start) / CLOCKS_PER_SEC << " seconds" << std::endl;
+
+    start = clock();
     boostQuaternionComparison<long double>(trials);
+    end = clock();
+    totalTime += (end - start) / CLOCKS_PER_SEC;
+    std::cout << "\n --> quaternion comparison took " << (end - start) / CLOCKS_PER_SEC << " seconds" << std::endl;
+
+    start = clock();
     boostOctonionComparison<long double>(trials);
+    end = clock();
+    totalTime += (end - start) / CLOCKS_PER_SEC;
+    std::cout << "\n --> octonion comparison took " << (end - start) / CLOCKS_PER_SEC << " seconds" << std::endl;
+
+#if TEST_LARGE_DEGREE == ON
+    start = clock();
+    SedenionComparison<long double>(trials);
+    end = clock();
+    totalTime += (end - start) / CLOCKS_PER_SEC;
+    std::cout << "\n --> sedenion comparison took " << (end - start) / CLOCKS_PER_SEC << " seconds" << std::endl;
+#endif
 
     std::cout << "\n\n%%%%%%%%%%%%%%%%%%%%%%%%%% nion complex number library benchmarks %%%%%%%%%%%%%%%%%%%%%%%%%%\n" << std::endl;
+    std::cout << " --> total time: " << totalTime << " seconds" << std::endl;
 
-    int N = 100;
+//    int N = 100;
 //    writeSinData(100);
 
     return 0;

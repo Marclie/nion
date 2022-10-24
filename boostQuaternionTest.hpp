@@ -14,8 +14,8 @@
    limitations under the License.
 */
 
-#ifndef NION_QUATERNIONTEST_HPP
-#define NION_QUATERNIONTEST_HPP
+#ifndef NION_BOOSTQUATERNIONTEST_HPP
+#define NION_BOOSTQUATERNIONTEST_HPP
 
 #include <fstream>
 #include <boost/math/quaternion.hpp>
@@ -23,6 +23,20 @@
 #include <random>
 #include "nion.hpp"
 #include <iostream>
+
+template<typename T>
+void printSpeedupQuaternion(const T& niontime, const T& othertime) {
+    // ANSI escape codes for colors
+    const std::string red = "\033[0;31m";
+    const std::string green = "\033[0;32m";
+    const std::string reset = "\033[0m";
+
+    T speedup = static_cast<T>(niontime) / static_cast<T>(othertime);
+    if (speedup < 1)
+        std::cout << "nion is " << green << 1 / speedup << " times FASTER" << reset << std::endl;
+    else
+        std::cout << "nion is " << red << speedup << " times SLOWER" << reset << std::endl;
+}
 
 template<typename T>
 T getMAEquaternion(nion<T> nion, boost::math::quaternion<T> compare){
@@ -537,14 +551,9 @@ void boostQuaternionComparison(int trials) {
 
     /*** Norm ***/
     std::cout << "\n\n ---> Norm <---" << std::endl;
-    T speedup = 0;
     std::cout << "Average norm time for nion: " << normNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average norm time for quaternion: " << normBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = normBoostTimer / normNionTimer;
-    if (speedup > 1)
-        std::cout << "nion is " << speedup << " times FASTER than quaternion" << std::endl;
-    else
-        std::cout << "nion is " << 1 / speedup << " times SLOWER than quaternion" << std::endl;
+    printSpeedupQuaternion(normNionTimer, normBoostTimer);
     std::cout << "Average norm error for nion: " << MRE_Norm / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and quaternion: " << MAE_Norm / static_cast<T>(trials)
               << std::endl;
@@ -557,11 +566,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "\n\n ---> Conjugation <---" << std::endl;
     std::cout << "Average conjugate time for nion: " << conjNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average conjugate time for quaternion: " << conjBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = conjBoostTimer / conjNionTimer;
-    if (speedup > 1)
-        std::cout << "nion is " << speedup << " times FASTER than quaternion" << std::endl;
-    else
-        std::cout << "nion is " << 1 / speedup << " times SLOWER than quaternion" << std::endl;
+    printSpeedupQuaternion(conjNionTimer, conjBoostTimer);
     std::cout << "Average conjugate error for nion: " << MRE_Conj / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and quaternion: " << MAE_Conj/ static_cast<T>(trials)
               << std::endl;
@@ -574,11 +579,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "\n\n ---> Addition <---" << std::endl;
     std::cout << "Average addition time for nion: " << addNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average addition time for quaternion: " << addBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = addBoostTimer / addNionTimer;
-    if (speedup > 1)
-        std::cout << "nion is " << speedup << " times FASTER than quaternion" << std::endl;
-    else
-        std::cout << "nion is " << 1 / speedup << " times SLOWER than quaternion" << std::endl;
+    printSpeedupQuaternion(addNionTimer, addBoostTimer);
     std::cout << "Average addition error for nion: " << MRE_Add / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and quaternion: " << MAE_Add/ static_cast<T>(trials)
               << std::endl;
@@ -592,11 +593,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "\n\n ---> Multiplication <---" << std::endl;
     std::cout << "Average multiplication time for nion: " << mulNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average multiplication time for quaternion: " << mulBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = mulBoostTimer / mulNionTimer;
-    if (speedup > 1)
-        std::cout << "nion is " << speedup << " times FASTER than quaternion" << std::endl;
-    else
-        std::cout << "nion is " << 1 / speedup << " times SLOWER than quaternion" << std::endl;
+    printSpeedupQuaternion(mulNionTimer, mulBoostTimer);
     std::cout << "Average multiplication error for nion: " << MRE_Mul / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and quaternion: " << MAE_Mul/ static_cast<T>(trials)
               << std::endl;
@@ -610,11 +607,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "\n\n ---> Division <---" << std::endl;
     std::cout << "Average division time for nion: " << divNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average division time for quaternion: " << divBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = divBoostTimer / divNionTimer;
-    if (speedup > 1)
-        std::cout << "nion is " << speedup << " times FASTER than quaternion" << std::endl;
-    else
-        std::cout << "nion is " << 1 / speedup << " times SLOWER than quaternion" << std::endl;
+    printSpeedupQuaternion(divNionTimer, divBoostTimer);
     std::cout << "Average division error for nion: " << MRE_Div / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and quaternion: " << MAE_Div/ static_cast<T>(trials)
               << std::endl;
@@ -628,11 +621,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "\n\n ---> Exponential <---" << std::endl;
     std::cout << "Average exp time for nion: " << expNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average exp time for quaternion: " << expBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = expBoostTimer / expNionTimer;
-    if (speedup > 1)
-        std::cout << "nion is " << speedup << " times FASTER than quaternion" << std::endl;
-    else
-        std::cout << "nion is " << 1 / speedup << " times SLOWER than quaternion" << std::endl;
+    printSpeedupQuaternion(expNionTimer, expBoostTimer);
     std::cout << "Average exp error for nion: " << MRE_Exp / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and quaternion: " << MAE_Exp/ static_cast<T>(trials)
               << std::endl;
@@ -645,11 +634,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "\n\n ---> Power <---" << std::endl;
     std::cout << "Average pow time for nion: " << powNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average pow time for quaternion: " << powBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = powBoostTimer / powNionTimer;
-    if (speedup > 1)
-        std::cout << "nion is " << speedup << " times FASTER than quaternion" << std::endl;
-    else
-        std::cout << "nion is " << 1 / speedup << " times SLOWER than quaternion" << std::endl;
+    printSpeedupQuaternion(powNionTimer, powBoostTimer);
     std::cout << "Average pow error for nion: " << MRE_Pow / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and quaternion: " << MAE_Pow/ static_cast<T>(trials)
               << std::endl;
@@ -662,11 +647,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "\n\n ---> Sine <---" << std::endl;
     std::cout << "Average sin time for nion: " << sinNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average sin time for quaternion: " << sinBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = sinBoostTimer / sinNionTimer;
-    if (speedup > 1)
-        std::cout << "nion is " << speedup << " times FASTER than quaternion" << std::endl;
-    else
-        std::cout << "nion is " << 1 / speedup << " times SLOWER than quaternion" << std::endl;
+    printSpeedupQuaternion(sinNionTimer, sinBoostTimer);
     std::cout << "Average sin error for nion: " << MRE_Sin / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and quaternion: " << MAE_Sin/ static_cast<T>(trials)
               << std::endl;
@@ -679,11 +660,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "\n\n ---> Cosine <---" << std::endl;
     std::cout << "Average cos time for nion: " << cosNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average cos time for quaternion: " << cosBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = cosBoostTimer / cosNionTimer;
-    if (speedup > 1)
-        std::cout << "nion is " << speedup << " times FASTER than quaternion" << std::endl;
-    else
-        std::cout << "nion is " << 1 / speedup << " times SLOWER than quaternion" << std::endl;
+    printSpeedupQuaternion(cosNionTimer, cosBoostTimer);
     std::cout << "Average cos error for nion: " << MRE_Cos / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and quaternion: " << MAE_Cos/ static_cast<T>(trials)
               << std::endl;
@@ -696,11 +673,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "\n\n ---> Tangent <---" << std::endl;
     std::cout << "Average tan time for nion: " << tanNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average tan time for quaternion: " << tanBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = tanBoostTimer / tanNionTimer;
-    if (speedup > 1)
-        std::cout << "nion is " << speedup << " times FASTER than quaternion" << std::endl;
-    else
-        std::cout << "nion is " << 1 / speedup << " times SLOWER than quaternion" << std::endl;
+    printSpeedupQuaternion(tanNionTimer, tanBoostTimer);
     std::cout << "Average tan error for nion: " << MRE_Tan / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and quaternion: " << MAE_Tan/ static_cast<T>(trials)
               << std::endl;
@@ -713,11 +686,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "\n\n ---> Hyperbolic Sine <---" << std::endl;
     std::cout << "Average sinh time for nion: " << sinhNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average sinh time for quaternion: " << sinhBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = sinhBoostTimer / sinhNionTimer;
-    if (speedup > 1)
-        std::cout << "nion is " << speedup << " times FASTER than quaternion" << std::endl;
-    else
-        std::cout << "nion is " << 1 / speedup << " times SLOWER than quaternion" << std::endl;
+    printSpeedupQuaternion(sinhNionTimer, sinhBoostTimer);
     std::cout << "Average sinh error for nion: " << MRE_Sinh / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and quaternion: " << MAE_Sinh/ static_cast<T>(trials)
               << std::endl;
@@ -730,11 +699,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "\n\n ---> Hyperbolic Cosine <---" << std::endl;
     std::cout << "Average cosh time for nion: " << coshNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average cosh time for quaternion: " << coshBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = coshBoostTimer / coshNionTimer;
-    if (speedup > 1)
-        std::cout << "nion is " << speedup << " times FASTER than quaternion" << std::endl;
-    else
-        std::cout << "nion is " << 1 / speedup << " times SLOWER than quaternion" << std::endl;
+    printSpeedupQuaternion(coshNionTimer, coshBoostTimer);
     std::cout << "Average cosh error for nion: " << MRE_Cosh / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and quaternion: " << MAE_Cosh/ static_cast<T>(trials)
               << std::endl;
@@ -747,11 +712,7 @@ void boostQuaternionComparison(int trials) {
     std::cout << "\n\n ---> Hyperbolic Tangent <---" << std::endl;
     std::cout << "Average tanh time for nion: " << tanhNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average tanh time for quaternion: " << tanhBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = tanhBoostTimer / tanhNionTimer;
-    if (speedup > 1)
-        std::cout << "nion is " << speedup << " times FASTER than quaternion" << std::endl;
-    else
-        std::cout << "nion is " << 1 / speedup << " times SLOWER than quaternion" << std::endl;
+    printSpeedupQuaternion(tanhNionTimer, tanhBoostTimer);
     std::cout << "Average tanh error for nion: " << MRE_Tanh / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and quaternion: " << MAE_Tanh/ static_cast<T>(trials)
               << std::endl;
@@ -760,4 +721,4 @@ void boostQuaternionComparison(int trials) {
     std::cout << "input: " << max1valueTanh << std::endl;
 }
 
-#endif //NION_QUATERNIONTEST_HPP
+#endif //NION_BOOSTQUATERNIONTEST_HPP

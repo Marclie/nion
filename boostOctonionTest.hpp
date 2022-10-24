@@ -14,8 +14,8 @@
    limitations under the License.
 */
 
-#ifndef NION_OCTONIONTEST_HPP
-#define NION_OCTONIONTEST_HPP
+#ifndef NION_BOOSTOCTONIONTEST_HPP
+#define NION_BOOSTOCTONIONTEST_HPP
 
 #include <fstream>
 #include <chrono>
@@ -23,6 +23,20 @@
 #include <boost/math/octonion.hpp>
 #include "nion.hpp"
 #include <iostream>
+
+template<typename T>
+void printSpeedupOctonion(const T& niontime, const T& othertime) {
+    // ANSI escape codes for colors
+    const std::string red = "\033[0;31m";
+    const std::string green = "\033[0;32m";
+    const std::string reset = "\033[0m";
+
+    T speedup = static_cast<T>(niontime) / static_cast<T>(othertime);
+    if (speedup < 1)
+        std::cout << "nion is " << green << 1 / speedup << " times FASTER" << reset << std::endl;
+    else
+        std::cout << "nion is " << red << speedup << " times SLOWER" << reset << std::endl;
+}
 
 template<typename T>
 T getMAEoctonion(nion<T> nion, boost::math::octonion<T> compare){
@@ -521,16 +535,11 @@ void boostOctonionComparison(int trials){
     delete[] vals1;
     delete[] vals2;
 
-    T speedup;
     /*** Norm ***/
     std::cout << "\n\n ---> Norm <---" << std::endl;
     std::cout << "Average norm time for nion: " << normNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average norm time for octonion: " << normBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = static_cast<T>(normNionTimer) / static_cast<T>(normBoostTimer);
-    if (speedup < 1)
-        std::cout << "nion is " << 1 / speedup << " times FASTER than octonion" << std::endl;
-    else
-        std::cout << "nion is " << speedup << " times SLOWER than octonion" << std::endl;
+    printSpeedupOctonion(normNionTimer, normBoostTimer);
     std::cout << "Average norm error for nion: " << MAE_Norm / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and octonion: " << MRE_Norm / static_cast<T>(trials)
               << std::endl;
@@ -542,11 +551,7 @@ void boostOctonionComparison(int trials){
     std::cout << "\n\n ---> Conjugation <---" << std::endl;
     std::cout << "Average conjugation time for nion: " << conjNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average conjugation time for octonion: " << conjBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = static_cast<T>(conjNionTimer) / static_cast<T>(conjBoostTimer);
-    if (speedup < 1)
-        std::cout << "nion is " << 1 / speedup << " times FASTER than octonion" << std::endl;
-    else
-        std::cout << "nion is " << speedup << " times SLOWER than octonion" << std::endl;
+    printSpeedupOctonion(conjNionTimer, conjBoostTimer);
     std::cout << "Average conjugation error for nion: " << MAE_Conj / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and octonion: " << MRE_Conj / static_cast<T>(trials)
               << std::endl;
@@ -558,11 +563,7 @@ void boostOctonionComparison(int trials){
     std::cout << "\n\n ---> Addition <---" << std::endl;
     std::cout << "Average addition time for nion: " << addNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average addition time for octonion: " << addBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = static_cast<T>(addNionTimer) / static_cast<T>(addBoostTimer);
-    if (speedup < 1)
-        std::cout << "nion is " << 1 / speedup << " times FASTER than octonion" << std::endl;
-    else
-        std::cout << "nion is " << speedup << " times SLOWER than octonion" << std::endl;
+    printSpeedupOctonion(addNionTimer, addBoostTimer);
     std::cout << "Average addition error for nion: " << MAE_Add / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and octonion: " << MRE_Add / static_cast<T>(trials)
               << std::endl;
@@ -575,11 +576,7 @@ void boostOctonionComparison(int trials){
     std::cout << "\n\n ---> Multiplication <---" << std::endl;
     std::cout << "Average multiplication time for nion: " << mulNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average multiplication time for octonion: " << mulBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = static_cast<T>(mulNionTimer) / static_cast<T>(mulBoostTimer);
-    if (speedup < 1)
-        std::cout << "nion is " << 1 / speedup << " times FASTER than octonion" << std::endl;
-    else
-        std::cout << "nion is " << speedup << " times SLOWER than octonion" << std::endl;
+    printSpeedupOctonion(mulNionTimer, mulBoostTimer);
     std::cout << "Average multiplication error for nion: " << MAE_Mul / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and octonion: " << MRE_Mul / static_cast<T>(trials)
               << std::endl;
@@ -592,11 +589,7 @@ void boostOctonionComparison(int trials){
     std::cout << "\n\n ---> Division <---" << std::endl;
     std::cout << "Average division time for nion: " << divNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average division time for octonion: " << divBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = static_cast<T>(divNionTimer) / static_cast<T>(divBoostTimer);
-    if (speedup < 1)
-        std::cout << "nion is " << 1 / speedup << " times FASTER than octonion" << std::endl;
-    else
-        std::cout << "nion is " << speedup << " times SLOWER than octonion" << std::endl;
+    printSpeedupOctonion(divNionTimer, divBoostTimer);
     std::cout << "Average division error for nion: " << MAE_Div / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and octonion: " << MRE_Div / static_cast<T>(trials)
               << std::endl;
@@ -609,11 +602,7 @@ void boostOctonionComparison(int trials){
     std::cout << "\n\n ---> Exponential <---" << std::endl;
     std::cout << "Average exponential time for nion: " << expNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average exponential time for octonion: " << expBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = static_cast<T>(expNionTimer) / static_cast<T>(expBoostTimer);
-    if (speedup < 1)
-        std::cout << "nion is " << 1 / speedup << " times FASTER than octonion" << std::endl;
-    else
-        std::cout << "nion is " << speedup << " times SLOWER than octonion" << std::endl;
+    printSpeedupOctonion(expNionTimer, expBoostTimer);
     std::cout << "Average exponential error for nion: " << MAE_Exp / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and octonion: " << MRE_Exp / static_cast<T>(trials)
               << std::endl;
@@ -625,11 +614,7 @@ void boostOctonionComparison(int trials){
     std::cout << "\n\n ---> Power <---" << std::endl;
     std::cout << "Average power time for nion: " << powNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average power time for octonion: " << powBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = static_cast<T>(powNionTimer) / static_cast<T>(powBoostTimer);
-    if (speedup < 1)
-        std::cout << "nion is " << 1 / speedup << " times FASTER than octonion" << std::endl;
-    else
-        std::cout << "nion is " << speedup << " times SLOWER than octonion" << std::endl;
+    printSpeedupOctonion(powNionTimer, powBoostTimer);
     std::cout << "Average power error for nion: " << MAE_Pow / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and octonion: " << MRE_Pow / static_cast<T>(trials)
               << std::endl;
@@ -641,11 +626,7 @@ void boostOctonionComparison(int trials){
     std::cout << "\n\n ---> Sine <---" << std::endl;
     std::cout << "Average sine time for nion: " << sinNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average sine time for octonion: " << sinBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = static_cast<T>(sinNionTimer) / static_cast<T>(sinBoostTimer);
-    if (speedup < 1)
-        std::cout << "nion is " << 1 / speedup << " times FASTER than octonion" << std::endl;
-    else
-        std::cout << "nion is " << speedup << " times SLOWER than octonion" << std::endl;
+    printSpeedupOctonion(sinNionTimer, sinBoostTimer);
     std::cout << "Average sine error for nion: " << MAE_Sin / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and octonion: " << MRE_Sin / static_cast<T>(trials)
               << std::endl;
@@ -657,11 +638,7 @@ void boostOctonionComparison(int trials){
     std::cout << "\n\n ---> Cosine <---" << std::endl;
     std::cout << "Average cosine time for nion: " << cosNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average cosine time for octonion: " << cosBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = static_cast<T>(cosNionTimer) / static_cast<T>(cosBoostTimer);
-    if (speedup < 1)
-        std::cout << "nion is " << 1 / speedup << " times FASTER than octonion" << std::endl;
-    else
-        std::cout << "nion is " << speedup << " times SLOWER than octonion" << std::endl;
+    printSpeedupOctonion(cosNionTimer, cosBoostTimer);
     std::cout << "Average cosine error for nion: " << MAE_Cos / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and octonion: " << MRE_Cos / static_cast<T>(trials)
               << std::endl;
@@ -673,11 +650,7 @@ void boostOctonionComparison(int trials){
     std::cout << "\n\n ---> Tangent <---" << std::endl;
     std::cout << "Average tangent time for nion: " << tanNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average tangent time for octonion: " << tanBoostTimer / static_cast<T>(trials) << " ns" << std::endl;
-    speedup = static_cast<T>(tanNionTimer) / static_cast<T>(tanBoostTimer);
-    if (speedup < 1)
-        std::cout << "nion is " << 1 / speedup << " times FASTER than octonion" << std::endl;
-    else
-        std::cout << "nion is " << speedup << " times SLOWER than octonion" << std::endl;
+    printSpeedupOctonion(tanNionTimer, tanBoostTimer);
     std::cout << "Average tangent error for nion: " << MAE_Tan / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and octonion: " << MRE_Tan / static_cast<T>(trials)
               << std::endl;
@@ -690,11 +663,7 @@ void boostOctonionComparison(int trials){
     std::cout << "Average hyperbolic sine time for nion: " << sinhNionTimer / static_cast<T>(trials) << " ns" << std::endl;
     std::cout << "Average hyperbolic sine time for octonion: " << sinhBoostTimer / static_cast<T>(trials) << " ns"
               << std::endl;
-    speedup = static_cast<T>(sinhNionTimer) / static_cast<T>(sinhBoostTimer);
-    if (speedup < 1)
-        std::cout << "nion is " << 1 / speedup << " times FASTER than octonion" << std::endl;
-    else
-        std::cout << "nion is " << speedup << " times SLOWER than octonion" << std::endl;
+    printSpeedupOctonion(sinhNionTimer, sinhBoostTimer);
     std::cout << "Average hyperbolic sine error for nion: " << MAE_Sinh / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and octonion: " << MRE_Sinh / static_cast<T>(trials)
               << std::endl;
@@ -708,11 +677,7 @@ void boostOctonionComparison(int trials){
               << std::endl;
     std::cout << "Average hyperbolic cosine time for octonion: " << coshBoostTimer / static_cast<T>(trials) << " ns"
                 << std::endl;
-    speedup = static_cast<T>(coshNionTimer) / static_cast<T>(coshBoostTimer);
-    if (speedup < 1)
-        std::cout << "nion is " << 1 / speedup << " times FASTER than octonion" << std::endl;
-    else
-        std::cout << "nion is " << speedup << " times SLOWER than octonion" << std::endl;
+    printSpeedupOctonion(coshNionTimer, coshBoostTimer);
     std::cout << "Average hyperbolic cosine error for nion: " << MAE_Cosh / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and octonion: " << MRE_Cosh / static_cast<T>(trials)
               << std::endl;
@@ -726,11 +691,7 @@ void boostOctonionComparison(int trials){
               << std::endl;
     std::cout << "Average hyperbolic tangent time for octonion: " << tanhBoostTimer / static_cast<T>(trials) << " ns"
               << std::endl;
-    speedup = static_cast<T>(tanhNionTimer) / static_cast<T>(tanhBoostTimer);
-    if (speedup < 1)
-        std::cout << "nion is " << 1 / speedup << " times FASTER than octonion" << std::endl;
-    else
-        std::cout << "nion is " << speedup << " times SLOWER than octonion" << std::endl;
+    printSpeedupOctonion(tanhNionTimer, tanhBoostTimer);
     std::cout << "Average hyperbolic tangent error for nion: " << MAE_Tanh / static_cast<T>(trials) << std::endl;
     std::cout << "Average relative difference between nion and octonion: " << MRE_Tanh / static_cast<T>(trials)
               << std::endl;
@@ -799,4 +760,4 @@ void boostOctonionComparison(int trials){
 
 }
 
-#endif //NION_OCTONIONTEST_HPP
+#endif //NION_BOOSTOCTONIONTEST_HPP
