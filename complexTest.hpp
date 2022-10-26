@@ -24,6 +24,8 @@
 #include "nion.hpp"
 #include <iostream>
 
+using Nion::nion;
+
 template<typename T>
 void printSpeedupComplex(const T& niontime, const T& othertime) {
     // ANSI escape codes for colors
@@ -53,8 +55,8 @@ void stdComplexComparison(int trials) {
     std::default_random_engine generator(std::chrono::steady_clock::now().time_since_epoch().count());
 
     // timers for norms
-    long double normNionTimer = 0;
-    long double normStdTimer = 0;
+    T normNionTimer = 0;
+    T normStdTimer = 0;
     T MAE_Norm = 0;
     T MRE_Norm = 0;
     T MAX_Norm = -1;
@@ -64,8 +66,8 @@ void stdComplexComparison(int trials) {
 
 
     // timers for addition
-    long double addNionTimer = 0;
-    long double addStdTimer = 0;
+    T addNionTimer = 0;
+    T addStdTimer = 0;
     T MAE_Add= 0;
     T MRE_Add = 0;
     T MAX_Add = -1;
@@ -75,8 +77,8 @@ void stdComplexComparison(int trials) {
     std::complex<T> max2valueAdd;
 
     // timers for conjugate
-    long double conjNionTimer = 0;
-    long double conjStdTimer = 0;
+    T conjNionTimer = 0;
+    T conjStdTimer = 0;
     T MAE_Conj= 0;
     T MRE_Conj = 0;
     T MAX_Conj = -1;
@@ -86,8 +88,8 @@ void stdComplexComparison(int trials) {
     std::complex<T> max2valueConj;
 
     // timers for multiplication
-    long double mulNionTimer = 0;
-    long double mulStdTimer = 0;
+    T mulNionTimer = 0;
+    T mulStdTimer = 0;
     T MAE_Mul= 0;
     T MRE_Mul = 0;
     T MAX_Mul = -1;
@@ -97,8 +99,8 @@ void stdComplexComparison(int trials) {
     std::complex<T> max2valueMul;
 
     // timers for division
-    long double divNionTimer = 0;
-    long double divStdTimer = 0;
+    T divNionTimer = 0;
+    T divStdTimer = 0;
     T MAE_Div= 0;
     T MRE_Div = 0;
     T MAX_Div = -1;
@@ -108,8 +110,8 @@ void stdComplexComparison(int trials) {
     std::complex<T> max2valueDiv;
 
     // timers for power
-    long double powNionTimer = 0;
-    long double powStdTimer = 0;
+    T powNionTimer = 0;
+    T powStdTimer = 0;
     T MAE_Pow= 0;
     T MRE_Pow = 0;
     T MAX_Pow = -1;
@@ -119,8 +121,8 @@ void stdComplexComparison(int trials) {
     std::complex<T> max2valuePow;
 
     // timers for exponential
-    long double expNionTimer = 0;
-    long double expStdTimer = 0;
+    T expNionTimer = 0;
+    T expStdTimer = 0;
     T MAE_Exp= 0;
     T MRE_Exp = 0;
     T MAX_Exp = -1;
@@ -130,8 +132,8 @@ void stdComplexComparison(int trials) {
     std::complex<T> max2valueExp;
 
     // timers for logarithm
-    long double logNionTimer = 0;
-    long double logStdTimer = 0;
+    T logNionTimer = 0;
+    T logStdTimer = 0;
     T MAE_Log= 0;
     T MRE_Log = 0;
     T MAX_Log = -1;
@@ -141,8 +143,8 @@ void stdComplexComparison(int trials) {
     std::complex<T> max2valueLog;
 
     // timers for sin
-    long double sinNionTimer = 0;
-    long double sinStdTimer = 0;
+    T sinNionTimer = 0;
+    T sinStdTimer = 0;
     T MAE_Sin= 0;
     T MRE_Sin = 0;
     T MAX_Sin = -1;
@@ -152,8 +154,8 @@ void stdComplexComparison(int trials) {
     std::complex<T> max2valueSin;
 
     // timers for asin
-    long double asinNionTimer = 0;
-    long double asinStdTimer = 0;
+    T asinNionTimer = 0;
+    T asinStdTimer = 0;
     T MAE_Asin= 0;
     T MRE_Asin = 0;
     T MAX_Asin = -1;
@@ -163,8 +165,8 @@ void stdComplexComparison(int trials) {
     std::complex<T> max2valueAsin;
 
     // timers for cos
-    long double cosNionTimer = 0;
-    long double cosStdTimer = 0;
+    T cosNionTimer = 0;
+    T cosStdTimer = 0;
     T MAE_Cos= 0;
     T MRE_Cos = 0;
     T MAX_Cos = -1;
@@ -174,8 +176,8 @@ void stdComplexComparison(int trials) {
     std::complex<T> max2valueCos;
 
     // timers for acos
-    long double acosNionTimer = 0;
-    long double acosStdTimer = 0;
+    T acosNionTimer = 0;
+    T acosStdTimer = 0;
     T MAE_Acos= 0;
     T MRE_Acos = 0;
     T MAX_Acos = -1;
@@ -185,8 +187,8 @@ void stdComplexComparison(int trials) {
     std::complex<T> max2valueAcos;
 
     // timers for tan
-    long double tanNionTimer = 0;
-    long double tanStdTimer = 0;
+    T tanNionTimer = 0;
+    T tanStdTimer = 0;
     T MAE_Tan= 0;
     T MRE_Tan = 0;
     T MAX_Tan = -1;
@@ -196,8 +198,8 @@ void stdComplexComparison(int trials) {
     std::complex<T> max2valueTan;
 
     // timers for atan
-    long double atanNionTimer = 0;
-    long double atanStdTimer = 0;
+    T atanNionTimer = 0;
+    T atanStdTimer = 0;
     T MAE_Atan= 0;
     T MRE_Atan = 0;
     T MAX_Atan = -1;
@@ -207,8 +209,8 @@ void stdComplexComparison(int trials) {
     std::complex<T> max2valueAtan;
 
     // timers for sinh
-    long double sinhNionTimer = 0;
-    long double sinhStdTimer = 0;
+    T sinhNionTimer = 0;
+    T sinhStdTimer = 0;
     T MAE_Sinh= 0;
     T MRE_Sinh = 0;
     T MAX_Sinh = -1;
@@ -218,8 +220,8 @@ void stdComplexComparison(int trials) {
     std::complex<T> max2valueSinh;
 
     // timers for asinh
-    long double asinhNionTimer = 0;
-    long double asinhStdTimer = 0;
+    T asinhNionTimer = 0;
+    T asinhStdTimer = 0;
     T MAE_Asinh= 0;
     T MRE_Asinh = 0;
     T MAX_Asinh = -1;
@@ -229,8 +231,8 @@ void stdComplexComparison(int trials) {
     std::complex<T> max2valueAsinh;
 
     // timers for cosh
-    long double coshNionTimer = 0;
-    long double coshStdTimer = 0;
+    T coshNionTimer = 0;
+    T coshStdTimer = 0;
     T MAE_Cosh= 0;
     T MRE_Cosh = 0;
     T MAX_Cosh = -1;
@@ -240,8 +242,8 @@ void stdComplexComparison(int trials) {
     std::complex<T> max2valueCosh;
 
     // timers for acosh
-    long double acoshNionTimer = 0;
-    long double acoshStdTimer = 0;
+    T acoshNionTimer = 0;
+    T acoshStdTimer = 0;
     T MAE_Acosh= 0;
     T MRE_Acosh = 0;
     T MAX_Acosh = -1;
@@ -251,8 +253,8 @@ void stdComplexComparison(int trials) {
     std::complex<T> max2valueAcosh;
 
     // timers for tanh
-    long double tanhNionTimer = 0;
-    long double tanhStdTimer = 0;
+    T tanhNionTimer = 0;
+    T tanhStdTimer = 0;
     T MAE_Tanh= 0;
     T MRE_Tanh = 0;
     T MAX_Tanh = -1;
@@ -262,8 +264,8 @@ void stdComplexComparison(int trials) {
     std::complex<T> max2valueTanh;
 
     // timers for atanh
-    long double atanhNionTimer = 0;
-    long double atanhStdTimer = 0;
+    T atanhNionTimer = 0;
+    T atanhStdTimer = 0;
     T MAE_Atanh= 0;
     T MRE_Atanh = 0;
     T MAX_Atanh = -1;
@@ -284,13 +286,18 @@ void stdComplexComparison(int trials) {
 
     std::uniform_real_distribution<T> distribution(-10.0, 10.0);
     for (int i = 0; i < trials; ++i) {
+        T val1_r = distribution(generator);
+        T val2_r = distribution(generator);
+        T val1_i = distribution(generator);
+        T val2_i = distribution(generator);
+
         // get random std::complex number
-        std::complex<T> complex1(distribution(generator), distribution(generator));
-        std::complex<T> complex2(distribution(generator), distribution(generator));
+        std::complex<T> complex1(val1_r, val1_i);
+        std::complex<T> complex2(val2_r, val2_i);
 
         // assign std::complex to nion
-        nion < T > nion_complex1(complex1);
-        nion < T > nion_complex2(complex2);
+        nion < T > nion_complex1({val1_r, val1_i});
+        nion < T > nion_complex2({val2_r, val2_i});
 
 
         // norm
@@ -337,7 +344,7 @@ void stdComplexComparison(int trials) {
             addStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to MAE_ additiondifference
-            diff = getMAEcomplex<long double>(nionResult, stdResult);
+            diff = getMAEcomplex<T>(nionResult, stdResult);
             MRE_Add += diff;
             diff /= norm(stdResult);
             MAE_Add+= diff;
@@ -366,7 +373,7 @@ void stdComplexComparison(int trials) {
             conjStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to MAE_ conjugatedifference
-            diff = getMAEcomplex<long double>(nionResult, stdResult);
+            diff = getMAEcomplex<T>(nionResult, stdResult);
             MRE_Conj += diff;
             diff /= norm(stdResult);
             MAE_Conj+= diff;
@@ -397,7 +404,7 @@ void stdComplexComparison(int trials) {
             mulStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to MAE_ multiplicationdifference
-            diff = getMAEcomplex<long double>(nionResult, stdResult);
+            diff = getMAEcomplex<T>(nionResult, stdResult);
             MRE_Mul += diff;
             diff /= norm(stdResult);
             MAE_Mul+= diff;
@@ -428,7 +435,7 @@ void stdComplexComparison(int trials) {
             divStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to MAE_ divisiondifference
-            diff = getMAEcomplex<long double>(nionResult, stdResult);
+            diff = getMAEcomplex<T>(nionResult, stdResult);
             MRE_Div += diff;
             diff /= norm(stdResult);
             MAE_Div+= diff;
@@ -458,7 +465,7 @@ void stdComplexComparison(int trials) {
             powStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to MAE_ powerdifference
-            diff = getMAEcomplex<long double>(nionResult, stdResult);
+            diff = getMAEcomplex<T>(nionResult, stdResult);
             MRE_Pow += diff;
             diff /= norm(stdResult);
             MAE_Pow+= diff;
@@ -488,7 +495,7 @@ void stdComplexComparison(int trials) {
             expStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to MAE_ exponentialdifference
-            diff = getMAEcomplex<long double>(nionResult, stdResult);
+            diff = getMAEcomplex<T>(nionResult, stdResult);
             MRE_Exp += diff;
             diff /= norm(stdResult);
             MAE_Exp+= diff;
@@ -518,7 +525,7 @@ void stdComplexComparison(int trials) {
             logStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to MAE_ logarithmdifference
-            diff = getMAEcomplex<long double>(nionResult, stdResult);
+            diff = getMAEcomplex<T>(nionResult, stdResult);
             MRE_Log += diff;
             diff /= norm(stdResult);
             MAE_Log+= diff;
@@ -548,7 +555,7 @@ void stdComplexComparison(int trials) {
             sinStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to MAE_ sinedifference
-            diff = getMAEcomplex<long double>(nionResult, stdResult);
+            diff = getMAEcomplex<T>(nionResult, stdResult);
             MRE_Sin += diff;
             diff /= norm(stdResult);
             MAE_Sin+= diff;
@@ -578,7 +585,7 @@ void stdComplexComparison(int trials) {
             asinStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to MAE_ asinedifference
-            diff = getMAEcomplex<long double>(nionResult, stdResult);
+            diff = getMAEcomplex<T>(nionResult, stdResult);
             MRE_Asin += diff;
             diff /= norm(stdResult);
             MAE_Asin+= diff;
@@ -608,7 +615,7 @@ void stdComplexComparison(int trials) {
             cosStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to MAE_ cosinedifference
-            diff = getMAEcomplex<long double>(nionResult, stdResult);
+            diff = getMAEcomplex<T>(nionResult, stdResult);
             MRE_Cos += diff;
             diff /= norm(stdResult);
             MAE_Cos+= diff;
@@ -638,7 +645,7 @@ void stdComplexComparison(int trials) {
             acosStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to MAE_ acosinedifference
-            diff = getMAEcomplex<long double>(nionResult, stdResult);
+            diff = getMAEcomplex<T>(nionResult, stdResult);
             MRE_Acos += diff;
             diff /= norm(stdResult);
             MAE_Acos+= diff;
@@ -668,7 +675,7 @@ void stdComplexComparison(int trials) {
             tanStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to MAE_ tangentdifference
-            diff = getMAEcomplex<long double>(nionResult, stdResult);
+            diff = getMAEcomplex<T>(nionResult, stdResult);
             MRE_Tan += diff;
             diff /= norm(stdResult);
             MAE_Tan+= diff;
@@ -698,7 +705,7 @@ void stdComplexComparison(int trials) {
             atanStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to MAE_ atandifference
-            diff = getMAEcomplex<long double>(nionResult, stdResult);
+            diff = getMAEcomplex<T>(nionResult, stdResult);
             MRE_Atan += diff;
             diff /= norm(stdResult);
             MAE_Atan+= diff;
@@ -728,7 +735,7 @@ void stdComplexComparison(int trials) {
             sinhStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to MAE_ hyperbolicsine difference
-            diff = getMAEcomplex<long double>(nionResult, stdResult);
+            diff = getMAEcomplex<T>(nionResult, stdResult);
             MRE_Sinh += diff;
             diff /= norm(stdResult);
             MAE_Sinh+= diff;
@@ -758,7 +765,7 @@ void stdComplexComparison(int trials) {
             coshStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to MAE_ hyperboliccosine difference
-            diff = getMAEcomplex<long double>(nionResult, stdResult);
+            diff = getMAEcomplex<T>(nionResult, stdResult);
             MRE_Cosh += diff;
             diff /= norm(stdResult);
             MAE_Cosh+= diff;
@@ -788,7 +795,7 @@ void stdComplexComparison(int trials) {
             tanhStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to MAE_ hyperbolictangent difference
-            diff = getMAEcomplex<long double>(nionResult, stdResult);
+            diff = getMAEcomplex<T>(nionResult, stdResult);
             MRE_Tanh += diff;
             diff /= norm(stdResult);
             MAE_Tanh+= diff;
@@ -818,7 +825,7 @@ void stdComplexComparison(int trials) {
             asinhStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to MAE_ hyperbolicarc sine difference
-            diff = getMAEcomplex<long double>(nionResult, stdResult);
+            diff = getMAEcomplex<T>(nionResult, stdResult);
             MRE_Asinh += diff;
             diff /= norm(stdResult);
             MAE_Asinh+= diff;
@@ -848,7 +855,7 @@ void stdComplexComparison(int trials) {
             acoshStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to MAE_ hyperbolicarc cosine difference
-            diff = getMAEcomplex<long double>(nionResult, stdResult);
+            diff = getMAEcomplex<T>(nionResult, stdResult);
             MRE_Acosh += diff;
             diff /= norm(stdResult);
             MAE_Acosh+= diff;
@@ -878,7 +885,7 @@ void stdComplexComparison(int trials) {
             atanhStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
             // get difference between nion and std::complex norms. Add to MAE_ hyperbolicarc tangent difference
-            diff = getMAEcomplex<long double>(nionResult, stdResult);
+            diff = getMAEcomplex<T>(nionResult, stdResult);
             MRE_Atanh += diff;
             diff /= norm(stdResult);
             MAE_Atanh+= diff;
