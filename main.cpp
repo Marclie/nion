@@ -22,11 +22,14 @@
 
 #if TEST_LARGE_DEGREE  == ON
 #include "sedenionTest.hpp"
+#include "trigintaduonionTest.hpp"
 #endif
 
 #include <chrono>
 #include <complex>
+#include "nion.hpp"
 
+using Nion::nion;
 
 void order2Test() {
 
@@ -321,7 +324,7 @@ int main() {
     order2Test();
     mixedOrderTest();
 
-    int trials = 10000;
+    int trials = 100;
     long double start;
     long double end;
 
@@ -350,6 +353,12 @@ int main() {
     end = clock();
     totalTime += (end - start) / CLOCKS_PER_SEC;
     std::cout << "\n --> sedenion comparison took " << (end - start) / CLOCKS_PER_SEC << " seconds" << std::endl;
+
+    start = clock();
+    TrigintaduonionComparison<long double>(trials);
+    end = clock();
+    totalTime += (end - start) / CLOCKS_PER_SEC;
+    std::cout << "\n --> trigintaduonion comparison took " << (end - start) / CLOCKS_PER_SEC << " seconds" << std::endl;
 #endif
 
     std::cout << "\n\n%%%%%%%%%%%%%%%%%%%%%%%%%% nion complex number library benchmarks %%%%%%%%%%%%%%%%%%%%%%%%%%\n" << std::endl;
