@@ -11,7 +11,6 @@ if ( TEST_LARGE_DEGREE )
     FetchContent_Declare(
             numbersystems
             URL https://ece.uwaterloo.ca/~dwharder/C++/CQOST/src/NumberSystems.zip
-            URL_HASH SHA256=79bd34b3270b5bed04d99635596bac97d3844084836ba96e5347ee2a0a53c659
             DOWNLOAD_EXTRACT_TIMESTAMP NEW
     )
 
@@ -21,7 +20,7 @@ if ( TEST_LARGE_DEGREE )
     endif()
 endif()
 
-add_executable(nion main.cpp nion.hpp)
+add_executable(nion nion.hpp main.cpp)
 
 if ( TEST_LARGE_DEGREE )
     target_include_directories(nion PRIVATE ${numbersystems_SOURCE_DIR})
