@@ -24,6 +24,8 @@
 #include "nion.hpp"
 #include <iostream>
 
+using Nion::nion;
+
 template<typename T>
 void printSpeedupQuaternion(const T& niontime, const T& othertime) {
     // ANSI escape codes for colors
@@ -55,8 +57,8 @@ void boostQuaternionComparison(int trials) {
     std::default_random_engine generator(std::chrono::steady_clock::now().time_since_epoch().count());
 
     // timers for norms
-    long double normNionTimer = 0;
-    long double normBoostTimer = 0;
+    T normNionTimer = 0;
+    T normBoostTimer = 0;
     T MRE_Norm = 0;
     T MAE_Norm = 0;
     T MAX_Norm = -1;
@@ -66,8 +68,8 @@ void boostQuaternionComparison(int trials) {
     boost::math::quaternion<T> max2value;
 
     // timers for addition
-    long double addNionTimer = 0;
-    long double addBoostTimer = 0;
+    T addNionTimer = 0;
+    T addBoostTimer = 0;
     T MRE_Add = 0;
     T MAE_Add= 0;
     T MAX_Add = -1;
@@ -77,8 +79,8 @@ void boostQuaternionComparison(int trials) {
     boost::math::quaternion<T> max2valueAdd;
 
     // timers for conjugate
-    long double conjNionTimer = 0;
-    long double conjBoostTimer = 0;
+    T conjNionTimer = 0;
+    T conjBoostTimer = 0;
     T MRE_Conj = 0;
     T MAE_Conj= 0;
     T MAX_Conj = -1;
@@ -88,8 +90,8 @@ void boostQuaternionComparison(int trials) {
     boost::math::quaternion<T> max2valueConj;
 
     // timers for multiplication
-    long double mulNionTimer = 0;
-    long double mulBoostTimer = 0;
+    T mulNionTimer = 0;
+    T mulBoostTimer = 0;
     T MRE_Mul = 0;
     T MAE_Mul= 0;
     T MAX_Mul = -1;
@@ -99,8 +101,8 @@ void boostQuaternionComparison(int trials) {
     boost::math::quaternion<T> max2valueMul;
 
     // timers for division
-    long double divNionTimer = 0;
-    long double divBoostTimer = 0;
+    T divNionTimer = 0;
+    T divBoostTimer = 0;
     T MRE_Div = 0;
     T MAE_Div= 0;
     T MAX_Div = -1;
@@ -110,8 +112,8 @@ void boostQuaternionComparison(int trials) {
     boost::math::quaternion<T> max2valueDiv;
 
     // timers for power
-    long double powNionTimer = 0;
-    long double powBoostTimer = 0;
+    T powNionTimer = 0;
+    T powBoostTimer = 0;
     T MRE_Pow = 0;
     T MAE_Pow= 0;
     T MAX_Pow = -1;
@@ -121,8 +123,8 @@ void boostQuaternionComparison(int trials) {
     boost::math::quaternion<T> max2valuePow;
 
     // timers for exponential
-    long double expNionTimer = 0;
-    long double expBoostTimer = 0;
+    T expNionTimer = 0;
+    T expBoostTimer = 0;
     T MRE_Exp = 0;
     T MAE_Exp= 0;
     T MAX_Exp = -1;
@@ -132,8 +134,8 @@ void boostQuaternionComparison(int trials) {
     boost::math::quaternion<T> max2valueExp;
 
     // timers for sine
-    long double sinNionTimer = 0;
-    long double sinBoostTimer = 0;
+    T sinNionTimer = 0;
+    T sinBoostTimer = 0;
     T MRE_Sin = 0;
     T MAE_Sin= 0;
     T MAX_Sin = -1;
@@ -143,8 +145,8 @@ void boostQuaternionComparison(int trials) {
     boost::math::quaternion<T> max2valueSin;
 
     // timers for cosine
-    long double cosNionTimer = 0;
-    long double cosBoostTimer = 0;
+    T cosNionTimer = 0;
+    T cosBoostTimer = 0;
     T MRE_Cos = 0;
     T MAE_Cos= 0;
     T MAX_Cos = -1;
@@ -154,8 +156,8 @@ void boostQuaternionComparison(int trials) {
     boost::math::quaternion<T> max2valueCos;
 
     // timers for tangent
-    long double tanNionTimer = 0;
-    long double tanBoostTimer = 0;
+    T tanNionTimer = 0;
+    T tanBoostTimer = 0;
     T MRE_Tan = 0;
     T MAE_Tan= 0;
     T MAX_Tan = -1;
@@ -165,8 +167,8 @@ void boostQuaternionComparison(int trials) {
     boost::math::quaternion<T> max2valueTan;
 
     // timers for sinh
-    long double sinhNionTimer = 0;
-    long double sinhBoostTimer = 0;
+    T sinhNionTimer = 0;
+    T sinhBoostTimer = 0;
     T MRE_Sinh = 0;
     T MAE_Sinh= 0;
     T MAX_Sinh = -1;
@@ -176,8 +178,8 @@ void boostQuaternionComparison(int trials) {
     boost::math::quaternion<T> max2valueSinh;
 
     // timers for cosh
-    long double coshNionTimer = 0;
-    long double coshBoostTimer = 0;
+    T coshNionTimer = 0;
+    T coshBoostTimer = 0;
     T MRE_Cosh = 0;
     T MAE_Cosh= 0;
     T MAX_Cosh = -1;
@@ -187,8 +189,8 @@ void boostQuaternionComparison(int trials) {
     boost::math::quaternion<T> max2valueCosh;
 
     // timers for tanh
-    long double tanhNionTimer = 0;
-    long double tanhBoostTimer = 0;
+    T tanhNionTimer = 0;
+    T tanhBoostTimer = 0;
     T MRE_Tanh = 0;
     T MAE_Tanh= 0;
     T MAX_Tanh = -1;
@@ -265,7 +267,7 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             addBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = getMAEquaternion<long double>(nionResult, boostResult);
+            diff = getMAEquaternion<T>(nionResult, boostResult);
             MRE_Add += diff;
             MAE_Add+= diff / boostNorm;
 
@@ -290,7 +292,7 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             conjBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = getMAEquaternion<long double>(nionResult, boostResult);
+            diff = getMAEquaternion<T>(nionResult, boostResult);
             MRE_Conj += diff;
             MAE_Conj+= diff / boostNorm;
 
@@ -314,7 +316,7 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             mulBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = getMAEquaternion<long double>(nionResult, boostResult);
+            diff = getMAEquaternion<T>(nionResult, boostResult);
             MRE_Mul += diff;
             MAE_Mul+= diff / boostNorm;
 
@@ -339,7 +341,7 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             divBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = getMAEquaternion<long double>(nionResult, boostResult);
+            diff = getMAEquaternion<T>(nionResult, boostResult);
             MRE_Div += diff;
             MAE_Div+= diff / boostNorm;
 
@@ -364,7 +366,7 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             expBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = getMAEquaternion<long double>(nionResult, boostResult);
+            diff = getMAEquaternion<T>(nionResult, boostResult);
             MRE_Exp += diff;
             MAE_Exp+= diff / boostNorm;
 
@@ -388,7 +390,7 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             powBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = getMAEquaternion<long double>(nionResult, boostResult);
+            diff = getMAEquaternion<T>(nionResult, boostResult);
             MRE_Pow += diff;
             MAE_Pow+= diff / boostNorm;
 
@@ -412,7 +414,7 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             sinBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = getMAEquaternion<long double>(nionResult, boostResult);
+            diff = getMAEquaternion<T>(nionResult, boostResult);
             MRE_Sin += diff;
             MAE_Sin+= diff / boostNorm;
 
@@ -436,7 +438,7 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             cosBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = getMAEquaternion<long double>(nionResult, boostResult);
+            diff = getMAEquaternion<T>(nionResult, boostResult);
             MRE_Cos += diff;
             MAE_Cos+= diff / boostNorm;
 
@@ -460,7 +462,7 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             tanBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = getMAEquaternion<long double>(nionResult, boostResult);
+            diff = getMAEquaternion<T>(nionResult, boostResult);
             MRE_Tan += diff;
             MAE_Tan+= diff / boostNorm;
 
@@ -484,7 +486,7 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             sinhBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = getMAEquaternion<long double>(nionResult, boostResult);
+            diff = getMAEquaternion<T>(nionResult, boostResult);
             MRE_Sinh += diff;
             MAE_Sinh+= diff / boostNorm;
 
@@ -508,7 +510,7 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             coshBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = getMAEquaternion<long double>(nionResult, boostResult);
+            diff = getMAEquaternion<T>(nionResult, boostResult);
             MRE_Cosh += diff;
             MAE_Cosh+= diff / boostNorm;
 
@@ -532,7 +534,7 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             tanhBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            diff = getMAEquaternion<long double>(nionResult, boostResult);
+            diff = getMAEquaternion<T>(nionResult, boostResult);
             MRE_Tanh += diff;
             MAE_Tanh+= diff / boostNorm;
 
