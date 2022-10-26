@@ -946,9 +946,9 @@ namespace Nion {
  * @tparam T type of the nion.
  * @param z The nion to compute the inverse hyperbolic sine of.
  * @return The inverse hyperbolic sine of the nion.
- * @details The inverse hyperbolic sine of the nion is defined as asinh(z) = asinh(r + v) = ln(z + sqrt(1 + z^2)).
+ * @details The inverse hyperbolic sine of the nion is defined as asinh(z) = ln(z + sqrt(z^2 + 1)).
  * @note where r is the real part of z and v is the complex components of z in polar form.
- * @see https://mathworld.wolfram.com/InverseHyperbolicSine.html
+ * @see https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions#Principal_values_in_the_complex_plane
  */
     template<typename T, typename D = std::size_t>
     static constexpr inline nion<T, D> asinh(const nion<T, D> &z) noexcept;
@@ -958,7 +958,7 @@ namespace Nion {
  * @tparam T type of the nion.
  * @param z The nion to compute the inverse hyperbolic cosine of.
  * @return The inverse hyperbolic cosine of the nion.
- * @details The inverse hyperbolic cosine of the nion is defined as acosh(z) = ln(z + sqrt(z + 1)*sqrt(z - 1)).
+ * @details The inverse hyperbolic cosine of the nion is defined as acosh(z) = sqrt(z-1) / sqrt(1-z) * acos(z).
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://mathworld.wolfram.com/InverseHyperbolicCosine.html
  */
