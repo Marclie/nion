@@ -299,6 +299,11 @@ void mixedOrderTest() {
     std::cout << "\nn12:\t" << n12 << std::endl;
     std::cout << "n12 * n12:\t" << n12 * n12 << std::endl;
     std::cout << "n12 / n12:\t" << n12 / n12 << std::endl;
+
+    nion<long double> n13({1, 2, 3, 4, 5, 6, 7, 8, 9});
+    std::cout << "\nn13:\t" << n13 << std::endl;
+    std::cout << "n13 * n13:\t" << n13 * n13 << std::endl;
+    std::cout << "n13 / n13:\t" << n13 / n13 << std::endl;
 }
 
 void writeSinData(int N) {
@@ -322,9 +327,9 @@ int main() {
 
     std::cout << "%%%%%%%%%%%%%%%%%%%%%%%%%% nion complex number library benchmarks %%%%%%%%%%%%%%%%%%%%%%%%%%\n\n" << std::endl;
     order2Test();
-    mixedOrderTest();
+    mixedOrderTest();    
 
-    int trials = 100;
+    int trials = 1000000;
     long double start;
     long double end;
 

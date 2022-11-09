@@ -123,6 +123,17 @@ void TrigintaduonionComparison(int trials) {
     Trigintaduonion<T> max1valuePow;
     Trigintaduonion<T> max2valuePow;
 
+    // timers for square
+    T SqNionTimer = 0;
+    T SqTrigintaduonionTimer = 0;
+    T MAE_Sq = 0;
+    T MRE_Sq = 0;
+    T MAX_Sq = -1;
+    nion<T> maxSqNion;
+    Trigintaduonion<T> maxSqTrigintaduonion;
+    Trigintaduonion<T> max1valueSq;
+    Trigintaduonion<T> max2valueSq;
+
     // timers for exponential
     T expNionTimer = 0;
     T expTrigintaduonionTimer = 0;
@@ -480,6 +491,36 @@ void TrigintaduonionComparison(int trials) {
                 maxPowTrigintaduonion = trigintaduonion_result;
                 max1valuePow = trigintaduonion1;
                 max2valuePow = trigintaduonion2;
+            }
+        }
+
+        /// square
+        {
+            // evaluate nion square, and time
+            startNion = std::chrono::high_resolution_clock::now();
+            nionResult = sqr(nion1);
+            endNion = std::chrono::high_resolution_clock::now();
+            SqNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
+
+            // evaluate Trigintaduonion square, and time
+            startTrigintaduonion = std::chrono::high_resolution_clock::now();
+            trigintaduonion_result = sqr(trigintaduonion1);
+            endTrigintaduonion = std::chrono::high_resolution_clock::now();
+            SqTrigintaduonionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endTrigintaduonion - startTrigintaduonion).count();
+
+            // get difference between nion and Trigintaduonion norms. Add to MAE_ squaredifference
+            diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
+            MRE_Sq += diff;
+            diff /= norm(trigintaduonion_result);
+            MAE_Sq += diff;
+
+            // get max difference between nion and Trigintaduonion square
+            if (diff > MAX_Sq) {
+                MAX_Sq = diff;
+                maxSqNion = nionResult;
+                maxSqTrigintaduonion = trigintaduonion_result;
+                max1valueSq = trigintaduonion1;
+                max2valueSq = trigintaduonion2;
             }
         }
 
@@ -978,6 +1019,17 @@ void TrigintaduonionComparison(int trials) {
     std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Pow << std::endl;
     std::cout << "nion: " << maxPowNion << "\nTrigintaduonion: " << maxPowTrigintaduonion << std::endl;
     std::cout << "input1: " << max1valuePow << "\ninput2: " << max2valuePow << std::endl;
+
+    /*** square ***/
+    std::cout << "\n\n---> Square <--- " << std::endl;
+    std::cout << "Average square time for nion: " << SqNionTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average square time for Trigintaduonion: " << SqTrigintaduonionTimer / trialfp << " ns" << std::endl;
+    printSpeedupComplex(SqNionTimer, SqTrigintaduonionTimer);
+    std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Sq / trialfp << std::endl;
+    std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Sq / trialfp << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Sq << std::endl;
+    std::cout << "nion: " << maxSqNion << "\nTrigintaduonion: " << maxSqTrigintaduonion << std::endl;
+    std::cout << "input: " << max1valueSq << std::endl;
 
 
     /*** exponential ***/

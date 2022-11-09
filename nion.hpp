@@ -46,11 +46,14 @@ namespace Nion {
  * @version 1.0
  * @date 2022-10-08
  */
-    template<typename T, typename D = std::size_t>
+    template<typename T, // type of the coefficients
+             typename D = std::size_t> // type of the degree
     struct nion {
         T *components;
         D degree;
-        static_assert(std::is_arithmetic_v<T>, "nion only supports arithmetic types");
+
+        static_assert(std::is_arithmetic_v<T>, "nion values only supports arithmetic types");
+        static_assert(std::is_integral_v<D>, "nion degrees only supports integral types");
 
         /***************************
         *  NION CONSTRUCTORS
@@ -431,7 +434,7 @@ namespace Nion {
          */
         template<typename S>
         constexpr inline bool operator!=(S scalar) const;
-        
+
         /**
          * @brief overload the > operator for nions with scalars.
          * @tparam S type of the scalar.
@@ -440,7 +443,7 @@ namespace Nion {
          */
         template<typename S>
         constexpr inline bool operator>(S scalar) const;
-        
+
         /**
          * @brief overload the < operator for nions with scalars.
          * @tparam S type of the scalar.
@@ -449,7 +452,7 @@ namespace Nion {
          */
         template<typename S>
         constexpr inline bool operator<(S scalar) const;
-        
+
         /**
          * @brief overload the >= operator for nions with scalars.
          * @tparam S type of the scalar.
@@ -458,7 +461,7 @@ namespace Nion {
          */
         template<typename S>
         constexpr inline bool operator>=(S scalar) const;
-        
+
         /**
          * @brief overload the <= operator for nions with scalars.
          * @tparam S type of the scalar.
@@ -467,7 +470,7 @@ namespace Nion {
          */
         template<typename S>
         constexpr inline bool operator<=(S scalar) const;
-        
+
 
         /**
          * @brief comparison if nion is a real number.
@@ -481,6 +484,14 @@ namespace Nion {
         * @return The string representation of the nion.
         */
         inline std::string to_string() const;
+
+    private:
+        /**
+         * @brief computes size of alignment.
+         * @param degree The degree of the nion.
+         * @return The size of the alignment.
+         */
+        constexpr inline static size_t alignSize(D degree);
     };
 
 /***************************
@@ -554,7 +565,7 @@ namespace Nion {
  */
     template<typename T, typename D = std::size_t, typename S = T>
     static constexpr inline bool operator!=(S scalar, const nion<T, D> &z);
-    
+
 /**
  * @brief overload the > operator for lhs scalars and rhs nions.
  * @tparam S type of the scalar.
@@ -565,7 +576,7 @@ namespace Nion {
  */
     template<typename T, typename D = std::size_t, typename S = T>
     static constexpr inline bool operator>(S scalar, const nion<T, D> &z);
-    
+
 /**
  * @brief overload the < operator for lhs scalars and rhs nions.
  * @tparam S type of the scalar.
@@ -576,7 +587,7 @@ namespace Nion {
  */
     template<typename T, typename D = std::size_t, typename S = T>
     static constexpr inline bool operator<(S scalar, const nion<T, D> &z);
-    
+
 /**
  * @brief overload the >= operator for lhs scalars and rhs nions.
  * @tparam S type of the scalar.
@@ -587,7 +598,7 @@ namespace Nion {
  */
     template<typename T, typename D = std::size_t, typename S = T>
     static constexpr inline bool operator>=(S scalar, const nion<T, D> &z);
-    
+
 /**
  * @brief overload the <= operator for lhs scalars and rhs nions.
  * @tparam S type of the scalar.
@@ -781,6 +792,14 @@ namespace Nion {
     template<typename T, typename D = std::size_t, typename S = T>
     static constexpr inline nion<T, D> pow(S base, const nion<T, D> &power) noexcept;
 
+/**
+ * @brief compute the square of a nion.
+ * @tparam T type of the nion.
+ * @param z The nion to compute the square  of.
+ * @return The square of the nion.
+ */
+    template<typename T, typename D = std::size_t>
+    static constexpr inline nion<T, D> sqr(const nion<T, D> &z) noexcept;
 
 /**
  * @brief compute the square root of a nion.
@@ -1083,6 +1102,15 @@ namespace Nion {
  */
     template<typename T, typename D = std::size_t>
     static constexpr inline nion<T, D> acsc(const nion<T, D> &z) noexcept;
+
+/**
+ * @brief return atan2 between real and imaginary axis.
+ * @tparam T type of the nion.
+ * @param z The nion to compute the atan2 of.
+ * @return The atan2 of the nion.
+ */
+    template<typename T, typename D = std::size_t>
+    static constexpr inline nion<T, D> atan2(const nion<T, D> &y, const nion<T, D> &x) noexcept;
 
 /***************************
     *  NION GAMMA FUNCTION *
