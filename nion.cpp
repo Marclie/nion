@@ -466,14 +466,18 @@ namespace Nion {
     constexpr inline nion<T, D> nion<T, D>::inv() const {
         constexpr T epsilon = std::numeric_limits<T>::epsilon();
 
-        nion<T, D> inverse = *this;
+
         T absolute = abs();
         if (absolute < epsilon) {
             // if the absolute value is zero, then use the product definition of the absolute value.
             // zero divisors are possible in nions with degree >= 16, so we need to check for them.
-            absolute = (*this * this->conj()).real();
+
+            // q* / |q| = q* / sqrt(q * q*)
+            nion<T, D> inverse = this->conj() * pow((*this * this->conj()), static_cast<T>(-0.5)).real();
+            return inverse;
         }
 
+        nion<T, D> inverse = *this;
         inverse[0] /= absolute;
         #pragma vector aligned
         for (D i = 1; i < degree; i++) {
