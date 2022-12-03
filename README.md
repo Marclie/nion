@@ -18,18 +18,18 @@ The nion is defined as a Cayley-Dickson construction.
 A nion of degree n is defined as the pairing of two nions of degree n-1.
 Each degree doubles the number of dimensions and removes symmetries from the algebra.
 
-- The reals are a nion of degree 1, which is a single real number.
+- The reals are a nion of degree 0, which is a single real number.
 
-- Complex numbers are a nion of degree 2, which is the pairing of two reals.
+- Complex numbers are a nion of degree 1, which is the pairing of two reals.
   - Complex numbers are no longer an ordered field.
 
-- The quaternions are a nion of degree 3, which is the pairing of two complex numbers.
+- The quaternions are a nion of degree 2, which is the pairing of two complex numbers.
   - Quaternions lose the commutative property of multiplication.
 
-- The octonions are a nion of degree 4, which is the pairing of two quaternions.
+- The octonions are a nion of degree 3, which is the pairing of two quaternions.
   - Octonions lose the associative property of multiplication.
 
-- The sedenions are a nion of degree 5, which is the pairing of two octonions
+- The sedenions are a nion of degree 4, which is the pairing of two octonions
   - Sedenions (and higher order nions) lose the alternating property of multiplication and can have zero divisors.
 
 The nions have the following properties:
