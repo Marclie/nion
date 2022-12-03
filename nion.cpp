@@ -63,7 +63,7 @@ namespace Nion {
     }
 
     template<typename T, typename D>
-    constexpr inline nion<T, D>(nion<T, D> &&other) noexcept{
+    constexpr inline nion<T, D>::nion(nion<T, D> &&other) noexcept{
         this->degree = other.degree;
         this->components = other.components;
         other.components = nullptr;
@@ -110,6 +110,14 @@ namespace Nion {
         }
 
         memcpy(this->components, other.components, degree * sizeof(T));
+        return *this;
+    }
+
+    template<typename T, typename D>
+    constexpr nion<T, D> &Nion::nion<T, D>::operator=(const std::initializer_list<T> &vals) {
+        free(this->components);
+        this->components = nullptr;
+        *this = nion<T, D>(vals);
         return *this;
     }
 

@@ -96,7 +96,6 @@ and to [accomplish tasks that cannot be done with real or complex numbers]().
 * `nion.imag`
 * `nion.resize`
 * `nion.is_real`
-* `nion.to_string`
 
 ### Algebraic Functions
 [Algebraic Functions]: #algebraic-functions
@@ -132,67 +131,53 @@ and to [accomplish tasks that cannot be done with real or complex numbers]().
 * Addition
 
 ```
-nion<float> a = {1, 2};
-nion<float> b = {3, 4};
+nion<float> a = {1, 2, 3, 4};
+nion<float> b = {5, 6, 7, 8};
 nion<float> c = a + b;
-std::cout << c.to_string() << std::endl;
-// 4 6
+std::cout << "a + b = " << c << std::endl; // (6,8,10,12)
 ```
 
 * Subtraction
 
 ```
-nion<float> a = {1, 2};
-nion<float> b = {3, 4};
+nion<float> a = {1, 2, 3, 4};
+nion<float> b = {5, 6, 7, 8};
 nion<float> c = a - b;
-std::cout << c.to_string() << std::endl;
-// -2 -2
+std::cout << "a - b = " << c << std::endl; // (-4,-4,-4,-4)
 ```
 
 * Multiplication
 
 ```
-nion<float> a = {1, 2};
-nion<float> b = {3, 4};
+nion<float> a = {1, 2, 3, 4};
+nion<float> b = {5, 6, 7, 8};
 nion<float> c = a * b;
-std::cout << c.to_string() << std::endl;
-// -5 10
+std::cout << "a * b = " << c << std::endl; // (-60,12,30,24)
 ```
 
 * Division
 
 ```
-nion<float> a = {1, 2};
-nion<float> b = {3, 4};
+nion<float> a = {1, 2, 3, 4};
+nion<float> b = {5, 6, 7, 8};
 nion<float> c = a / b;
-std::cout << c.to_string() << std::endl;
-// 0.44 0.08
+std::cout << "a / b = " << c << std::endl; // (0.402299,0.045977,0,0.091954)
 ```
 
 * Increment
 
 ```
-nion<float> a = {1, 2};
-nion<float> b = a++;
-std::cout << b.to_string() << std::endl;
-// 2 2
-
-b = ++a;
-std::cout << b.to_string() << std::endl;
-// 4 2
+nion<float> a = {1, 2, 3, 4};
+nion<float> b = ++a;
+std::cout << "++a = " << b << std::endl; // (2,2,3,4)
 ```
 
 * Decrement
 
 ```
-nion<float> a = {1, 2};
-nion<float> b = a--;
-std::cout << b.to_string() << std::endl;
-// 0 2
-
-b = --a;
-std::cout << b.to_string() << std::endl;
-// -2 2
+nion<float> a = {1, 2, 3, 4};
+nion<float> b = --a;
+std::cout << "--a = " << b << std::endl; // (0,2,3,4)
 ```
 
 ### Nion Functions
@@ -200,129 +185,116 @@ std::cout << b.to_string() << std::endl;
 * Conjugation
 
 ```
-nion<float> a = {1, 2};
+nion<float> a = {1, 2, 3, 4};
 nion<float> b = a.conj();
-std::cout << b.to_string() << std::endl;
-// 1 -2
+std::cout << "a.conj() = " << b << std::endl; // (1,-2,-3,-4)
 ```
 
 * Inversion
 
 ```
-nion<float> a = {1, 2};
+nion<float> a = {1, 2, 3, 4};
 nion<float> b = a.inv();
-std::cout << b.to_string() << std::endl;
-// 0.2 -0.4
+std::cout << "a.inv() = " << b << std::endl; // (0.0333333,-0.0666667,-0.1,-0.133333)
 ```
 
 * Absolute Value
 
 ```
-nion<float> a = {1, 2};
-nion<float> b = a.abs();
-std::cout << b.to_string() << std::endl;
-// 2.24 2
+nion<float> a = {1, 2, 3, 4};
+float b = a.abs();
+std::cout << "a.abs() = " << b << std::endl; // 30
 ```
 
 * Norm
 
 ```
-nion<float> a = {1, 2};
-nion<float> b = a.norm();
-std::cout << b.to_string() << std::endl;
-// 5 2
+nion<float> a = {1, 2, 3, 4};
+float b = a.norm();
+std::cout << "a.norm() = " << b << std::endl; // 5.47723
 ```
 
 * Real Component
 
 ```
-nion<float> a = {1, 2};
+nion<float> a = {1, 2, 3, 4};
 float b = a.real();
-std::cout << b.to_string() << std::endl;
-// 1
+std::cout << "a.real() = " << b << std::endl; // 1
 ```
 
 * Imaginary Component
 
 ```
-nion<float> a = {1, 2};
+nion<float> a = {1, 2, 3, 4};
 nion<float> b = a.imag();
-std::cout << b.to_string() << std::endl;
-// 0 2
+std::cout << "a.imag() = " << b << std::endl; // (0,2,3,4)
 ```
 
 * Resize
 
 ```
-nion<float> a = {1, 2};
-nion<float> b = a.resize(4);
-std::cout << b.to_string() << std::endl;
-// 1 2 0 0
+nion<float> a = {1, 2, 3, 4};
+nion<float> b = a.resize(8);
+std::cout << "a.resize(8) = " << b << std::endl; // (1,2,3,4,0,0,0,0)
 ```
 
 * Is Real
 
 ```
-nion<float> a = {1, 2};
+nion<float> a = {1, 2, 3, 4};
 nion<float> b = {2, 0};
-std::cout << a.is_real() << std::endl; // false
-std::cout << b.is_real() << std::endl; // true
+std::cout << "a.is_real() = " << a.is_real() << std::endl; // false
+std::cout << "b.is_real() = " << b.is_real() << std::endl; // true
 ```
 
 ### Algebraic Functions
 * Exponential
 
 ```
-nion<float> a = {1, 2};
+nion<float> a = {1, 2, 3, 4};
 nion<float> b = exp(a);
-std::cout << b.to_string() << std::endl;
-// 2.21 -0.47
+std::cout << "exp(a) = " << b << std::endl; // (1.69392,-0.78956,-1.18434,-1.57912)
 ```
 
 * Logarithm
 
 ```
-nion<float> a = {1, 2};
+nion<float> a = {1, 2, 3, 4};
 nion<float> b = log(a);
-std::cout << b.to_string() << std::endl;
-// 0.69 -1.11
+std::cout << "log(a) = " << b << std::endl; // (1.7006,0.51519,0.772785,1.03038)
 ```
 
 * Power
 
 ```
-nion<float> a = {1, 2};
+nion<float> a = {1, 2, 3, 4};
 nion<float> b = pow(a, -2);
-std::cout << b.to_string() << std::endl;
-// -3 -4
+std::cout << "pow(a, -2) = " << b << std::endl; // (-0.0311111,-0.00444444,-0.00666667,-0.00888889)
 ```
 
 ### Trigonometric Functions
 * Sine
 
 ```
-nion<float> a = {1, 2};
+nion<float> a = {1, 2, 3, 4};
 nion<float> b = sin(a);
-std::cout << b.to_string() << std::endl;
-// 2.1 0.6
+std::cout << "sin(a) = " << b << std::endl; // (91.7837,21.8865,32.8297,43.773)
 ```
 
 * Cosine
 
 ```
-nion<float> a = {1, 2};
+nion<float> a = {1, 2, 3, 4};
 nion<float> b = cos(a);
-std::cout << b.to_string() << std::endl;
-// -0.4 2.4
+std::cout << "cos(a) = " << b << std::endl; // (58.9336,-34.0862,-51.1293,-68.1724)
 ```
 
 * Tangent
 
 ```
-nion<float> a = {1, 2};
+nion<float> a = {1, 2, 3, 4};
 nion<float> b = tan(a);
-std::cout << b.to_string() << std::endl;
-// -5.2 -0.1
+std::cout << "tan(a) = " << b << std::endl; // (3.82662e-05,0.371397,0.557096,0.742794)
 ```
 
 

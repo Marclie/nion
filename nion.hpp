@@ -138,6 +138,13 @@ namespace Nion {
         constexpr inline nion<T, D> &operator=(const nion<T, D> &other) noexcept;
 
         /**
+         * @brief assignment operator from initializer list
+         * @param vals The initializer list to copy.
+         * @return A nion with the values of the initializer list.
+         */
+        constexpr inline nion<T, D> &operator=(const std::initializer_list<T> &vals);
+
+        /**
          * @brief override move assignment operator
          * @param other The nion to move.
          * @return A copy of the nion.
