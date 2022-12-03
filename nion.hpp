@@ -93,6 +93,14 @@ namespace Nion {
         constexpr inline nion<T, D>(const nion<T, D> &other);
 
         /**
+         * @brief move constructor
+         * @param other The nion to copy.
+         * @return A copy of the nion.
+         * @note This is a deep copy.
+         */
+        constexpr inline nion<T, D>(nion<T, D> &&other) noexcept;
+
+        /**
          * @brief Construct a new nion object from a scalar with no imaginary components.
          * @param degree The degree of the nion.
          * @param scalar The scalar value of the nion.

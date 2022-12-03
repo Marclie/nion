@@ -63,6 +63,13 @@ namespace Nion {
     }
 
     template<typename T, typename D>
+    constexpr inline nion<T, D>(nion<T, D> &&other) noexcept{
+        this->degree = other.degree;
+        this->components = other.components;
+        other.components = nullptr;
+    }
+
+    template<typename T, typename D>
     template<typename S>
     constexpr inline nion<T, D>::nion(S realVal, D degree) : degree(degree) {
         // check if the degree is greater than zero
@@ -449,9 +456,16 @@ namespace Nion {
     
     template<typename T, typename D>
     constexpr inline nion<T, D> nion<T, D>::inv() const {
-        nion<T, D> inverse = *this;
+        constexpr T epsilon = std::numeric_limits<T>::epsilon();
 
+        nion<T, D> inverse = *this;
         T absolute = abs();
+        if (absolute < epsilon) {
+            // if the absolute value is zero, then use the product definition of the absolute value.
+            // zero divisors are possible in nions with degree >= 16, so we need to check for them.
+            absolute = (*this * this->conj()).real();
+        }
+
         inverse[0] /= absolute;
         #pragma vector aligned
         for (D i = 1; i < degree; i++) {
