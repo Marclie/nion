@@ -21,7 +21,7 @@
 #include <chrono>
 #include <random>
 #include <complex>
-#include "nion.hpp"
+#include "../nion.hpp"
 #include <iostream>
 
 using Nion::nion;

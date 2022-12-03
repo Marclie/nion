@@ -20,7 +20,7 @@ if ( TEST_LARGE_DEGREE )
     endif()
 endif()
 
-add_executable(nion nion.hpp main.cpp)
+add_executable(nion nion.hpp Tests/main.cpp)
 
 if ( TEST_LARGE_DEGREE )
     target_include_directories(nion PRIVATE ${numbersystems_SOURCE_DIR})

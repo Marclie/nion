@@ -8,7 +8,8 @@
 [Nion]: #nion---a-library-for-hyper-complex-arithmetic
 
 Nion is a library for hyper-complex arithmetic. It is written in C++ and
-is designed to be portable and fast.
+is designed to be portable and fast. It is a header-only library, so
+there is no need to compile it. It is licensed under the Apache License.
 
 The [nion] is a generalization of complex numbers to higher degrees.
 Nions form a [division algebra](https://en.wikipedia.org/wiki/Division_algebra).

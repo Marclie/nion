@@ -21,7 +21,7 @@
 #include <chrono>
 #include <random>
 #include <boost/math/octonion.hpp>
-#include "nion.hpp"
+#include "../nion.hpp"
 #include <iostream>
 
 using Nion::nion;

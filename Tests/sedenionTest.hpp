@@ -27,7 +27,7 @@ limitations under the License.
 #include <chrono>
 #include <random>
 #include "Sedenion.h"
-#include "nion.hpp"
+#include "../nion.hpp"
 #include <iostream>
 
 

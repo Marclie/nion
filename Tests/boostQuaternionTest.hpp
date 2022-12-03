@@ -21,7 +21,7 @@
 #include <boost/math/quaternion.hpp>
 #include <chrono>
 #include <random>
-#include "nion.hpp"
+#include "../nion.hpp"
 #include <iostream>
 
 using Nion::nion;

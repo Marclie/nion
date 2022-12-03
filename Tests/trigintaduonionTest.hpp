@@ -22,7 +22,7 @@ limitations under the License.
 #include <chrono>
 #include <random>
 #include "Trigintaduonion.h"
-#include "nion.hpp"
+#include "../nion.hpp"
 #include <iostream>
 
 using Nion::nion;

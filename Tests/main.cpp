@@ -15,7 +15,7 @@
 */
 
 #include <iostream>
-#include "nion.hpp"
+#include "../nion.hpp"
 #include "complexTest.hpp"
 #include "boostQuaternionTest.hpp"
 #include "boostOctonionTest.hpp"
@@ -27,7 +27,7 @@
 
 #include <chrono>
 #include <complex>
-#include "nion.hpp"
+#include "../nion.hpp"
 
 using Nion::nion;
 
