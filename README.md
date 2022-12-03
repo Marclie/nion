@@ -15,35 +15,32 @@ Nions form a [division algebra](https://en.wikipedia.org/wiki/Division_algebra).
 
 The nion is defined as a Cayley-Dickson construction.
 A nion of degree n is defined as the pairing of two nions of degree n-1.
-Each degree doubles the number of dimensions and removes symmetries from the algebra. 
+Each degree doubles the number of dimensions and removes symmetries from the algebra.
 
 - The reals are a nion of degree 1, which is a single real number.
 
 - Complex numbers are a nion of degree 2, which is the pairing of two reals.
   - Complex numbers are no longer an ordered field.
-  
+
 - The quaternions are a nion of degree 3, which is the pairing of two complex numbers.
   - Quaternions lose the commutative property of multiplication.
-  
+
 - The octonions are a nion of degree 4, which is the pairing of two quaternions.
   - Octonions lose the associative property of multiplication.
-  
+
 - The sedenions are a nion of degree 5, which is the pairing of two octonions
   - Sedenions (and higher order nions) lose the alternating property of multiplication and can have zero divisors.
-
-Like the quaternions, the octonions and the sedenions are not commutative.
-Unlike the quaternions and octonions, the sedenions are not associative.
 
 The nions have the following properties:
 
 * They form a [division algebra]. That is they have the following properties:
-    * Every nion has an inverse.
-    * The product of two nions is a nion.
-    * The product of a nion and its inverse is a real number.
+  * Every nion has an inverse.
+  * The product of two nions is a nion.
+  * The product of a nion and its inverse is a real number.
 * They are a [Frobenius Algebra] and an [Algebraic Group].
 
-Nions can be used to [accelerate machine learning](),
-and to [accomplish tasks that cannot be done with real or complex numbers]().
+Nions can be used to [improve the accuracy and efficiency of machine learning](https://arxiv.org/abs/1903.08478),
+and to [accomplish tasks that cannot be done with real or complex numbers](https://pages.uoregon.edu/soper/QuantumMechanics/spin.pdf).
 
 
 
@@ -51,13 +48,14 @@ and to [accomplish tasks that cannot be done with real or complex numbers]().
 
 - [Nion] - A Library for Hyper-Complex Arithmetic
 - [Usage]
-    - [Operations]
-    - [Functions]
-      - [Algebraic Functions]
-      - [Trigonometric Functions] 
+  - [Operations]
+  - [Functions]
+    - [Algebraic Functions]
+    - [Trigonometric Functions]
 - [Examples]
 - [Contributing]
 - [License]
+- [How to Cite]
 - [References]
 - [More Information]
 
@@ -116,13 +114,13 @@ and to [accomplish tasks that cannot be done with real or complex numbers]().
 * `sec(nion)`    `sech(nion)`
 * `csc(nion)`    `csch(nion)`
 
-#### Inverse Trigonometric / Hyperbolic Functions 
+#### Inverse Trigonometric / Hyperbolic Functions
 * `asin(nion)`   `asinh(nion)`
 * `acos(nion)`   `acosh(nion)`
 * `atan(nion)`   `atanh(nion)`
 * `acot(nion)`   `acoth(nion)`
 * `asec(nion)`   `asech(nion)`
-* `acsc(nion)`   `acsch(nion)` 
+* `acsc(nion)`   `acsch(nion)`
 
 
 ## Examples
