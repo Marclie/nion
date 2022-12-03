@@ -377,71 +377,58 @@ void ReadMeExamples(){
     nion<float> b = {5, 6, 7, 8};
     nion<float> c = a + b;
     std::cout << "a + b = " << c << std::endl;
-// 4 6
 
     a = {1, 2, 3, 4};
     b = {5, 6, 7, 8};
     c = a - b;
     std::cout << "a - b = " << c << std::endl;
-// -2 -2
 
     a = {1, 2, 3, 4};
     b = {5, 6, 7, 8};
     c = a * b;
     std::cout << "a * b = " << c << std::endl;
-// -5 10
 
     a = {1, 2, 3, 4};
     b = {5, 6, 7, 8};
     c = a / b;
     std::cout << "a / b = " << c << std::endl;
-// 0.44 0.08
 
     a = {1, 2, 3, 4};
     b = ++a;
     std::cout << "++a = " << b << std::endl;
-// 2 2
 
 
     a = {1, 2, 3, 4};
     b = --a;
     std::cout << "--a = " << b << std::endl;
-// 0 2
 
     a = {1, 2, 3, 4};
     b = a.conj();
     std::cout << "conj(a) = " << b << std::endl;
-// 1 -2
 
     a = {1, 2, 3, 4};
     b = a.inv();
     std::cout << "inv(a) = " << b << std::endl;
-// 0.2 -0.4
 
     a = {1, 2, 3, 4};
     float r = a.abs();
     std::cout << "abs(a) = " << r << std::endl;
-// 2.24 2
 
     a = {1, 2, 3, 4};
     r = a.norm();
     std::cout << "norm(a) = " << r << std::endl;
-// 5 2
 
     a = {1, 2, 3, 4};
     r = a.real();
     std::cout << "real(a) = " << r << std::endl;
-// 1
 
     a = {1, 2, 3, 4};
     b = a.imag();
     std::cout << "imag(a) = " << b << std::endl;
-// 0 2
 
     a = {1, 2, 3, 4};
     a.resize(8);
     std::cout << "a.resize(8) = " << a << std::endl;
-// 1 2 0 0
 
     a = {1, 2, 3, 4};
     b = {2, 0};
@@ -452,38 +439,32 @@ void ReadMeExamples(){
     a = {1, 2, 3, 4};
     b = exp(a);
     std::cout << "exp(a) = " << b << std::endl;
-// 2.21 -0.47
 
     a = {1, 2, 3, 4};
     b = log(a);
     std::cout << "log(a) = " << b << std::endl;
-// 0.69 -1.11
 
     a = {1, 2, 3, 4};
     b = pow(a, -2);
     std::cout << "pow(a, -2) = " << b << std::endl;
-// -3 -4
 
     a = {1, 2, 3, 4};
     b = sin(a);
     std::cout << "sin(a) = " << b << std::endl;
-// 2.1 0.6
 
     a = {1, 2, 3, 4};
     b = cos(a);
     std::cout << "cos(a) = " << b << std::endl;
-// -0.4 2.4
 
     a = {1, 2, 3, 4};
     b = tan(a);
     std::cout << "tan(a) = " << b << std::endl;
-// -5.2 -0.1
 }
 
 int main() {
 
-//    benchmark();
     ReadMeExamples();
+//    benchmark();
 
     return 0;
 }
