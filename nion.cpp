@@ -471,7 +471,10 @@ namespace Nion {
         if (absolute < epsilon) {
             // if the absolute value is zero, then use the product definition of the absolute value.
             // zero divisors are possible in nions with degree >= 16, so we need to check for them.
-            absolute = (*this * this->conj()).real();
+
+            // q* / |q| = q* / sqrt(q * q*)
+            inverse = this->conj() * pow((*this * this->conj()), static_cast<T>(-0.5)).real();
+            return inverse;
         }
 
         inverse[0] /= absolute;
