@@ -310,11 +310,19 @@ namespace Nion {
         /// allocate memory for the nion
         sum.components_ = static_cast<T*>(aligned_alloc(sum.alignment_, sum.bytes_));
 
+        bool thisIsLarger = degree_ >= other.degree_; // check if this nion is larger than the other nion
+        D smallerDegree = thisIsLarger ? other.degree_ : degree_; // set the smaller degree
         /// add the components of the other nion to this nion.
         #pragma vector always
-        for (D i = 0; i < sum.degree_; i++) {
+        for (D i = 0; i < smallerDegree; i++) {
             sum.components_[i] = components_[i] + other.components_[i];
         }
+        /// copy the rest of the components of this nion to the sum nion.
+        if (thisIsLarger)
+            memcpy(sum.components_ + smallerDegree, components_ + smallerDegree, (degree_ - smallerDegree) * sizeof(T));
+        else
+            memcpy(sum.components_ + smallerDegree, other.components_ + smallerDegree, (other.degree_ - smallerDegree) * sizeof(T));
+
         return sum;
     }
 
@@ -329,10 +337,24 @@ namespace Nion {
         /// allocate memory for the nion
         difference.components_ = static_cast<T*>(aligned_alloc(difference.alignment_, difference.bytes_));
 
+
+        bool thisIsLarger = degree_ >= other.degree_; // check if this nion is larger than the other nion
+        D smallerDegree = thisIsLarger ? other.degree_ : degree_; // set the smaller degree
+
         /// substract the components of the other nion from this nion.
         #pragma vector always
-        for (D i = 0; i < difference.degree_; i++) {
+        for (D i = 0; i < smallerDegree; i++) {
             difference.components_[i] = components_[i] - other.components_[i];
+        }
+        /// copy the rest of the components of this nion to the difference nion.
+        if (thisIsLarger)
+            memcpy(difference.components_ + smallerDegree, components_ + smallerDegree, (degree_ - smallerDegree) * sizeof(T));
+        else {
+            /// negate the rest of the components of the other nion and copy them to the difference nion.
+            #pragma vector always
+            for (D i = smallerDegree; i < other.degree_; i++) {
+                difference.components_[i] = -other.components_[i];
+            }
         }
         return difference;
     }
