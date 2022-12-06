@@ -320,7 +320,7 @@ void writeSinData(int N) {
     myfile.close();
 }
 
-void benchmark(){
+void benchmark(int trials){
     std::cout.precision(10);
 //
 
@@ -328,7 +328,6 @@ void benchmark(){
     order2Test();
     mixedOrderTest();
 
-    int trials = 1000000;
     long double start;
     long double end;
 
@@ -464,7 +463,8 @@ void ReadMeExamples(){
 int main() {
 
     ReadMeExamples();
-//    benchmark();
+    int num_trials = 1000000;
+    benchmark(num_trials);
 
     return 0;
 }

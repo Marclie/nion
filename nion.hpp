@@ -36,7 +36,7 @@ namespace Nion {
  * @return true if similar, false otherwise
  */
     template<typename T, typename D = std::size_t, typename S = T>
-    constexpr inline bool value_is_similar(const T a, const S b, const T epsilon = std::numeric_limits<T>::epsilon());
+    constexpr inline bool value_is_similar(T a, S b);
 
 
 /**
@@ -49,8 +49,14 @@ namespace Nion {
     template<typename T, // type of the coefficients
              typename D = std::size_t> // type of the degree
     struct nion {
-        T *components;
-        D degree;
+        
+        /// coefficients
+        T *components_;
+        D degree_;
+
+        /// memory management TODO: create a memory manager
+        D bytes_; // size of the memory block
+        D alignment_; // alignment of the memory block
 
         static_assert(std::is_arithmetic_v<T>, "nion values only supports arithmetic types");
         static_assert(std::is_integral_v<D>, "nion degrees only supports integral types");
@@ -63,26 +69,37 @@ namespace Nion {
          * @brief Default constructor.
          * @details Constructs a null nion object.
          */
-        constexpr inline nion<T, D>() : components(nullptr), degree(0) {};
+        constexpr inline nion<T, D>() : components_(nullptr), degree_(0), bytes_(0), alignment_(0) {}
 
         /**
          * @brief Construct a new nion object from vector
          * @param components The components of the nion.
          * @param degree The degree of the nion.
+         * @details Constructs a nion object from a vector of components.
+         * @note The degree of the nion is the number of components.
+         * @note The degree of the nion must be greater than zero.
          */
-        constexpr inline explicit nion<T, D>(T *components, D degree);
+        constexpr inline explicit nion<T, D>(T *vals, D degree);
 
         /**
-         * @brief Construct a new nion object from brace initializer list
-         * @param degree The degree of the nion.
+         * @brief Construct a new nion object from vector
+         * @param components The components of the nion as an initializer list.
+         * @note The degree of the nion is determined by the size of the initializer list.
          */
-        constexpr inline nion<T, D>(const std::initializer_list<T> &components);
+        constexpr inline nion<T, D>(const std::initializer_list<T> &vals);
 
         /**
          * @brief Construct an empty nion object
          * @param degree The degree of the nion.
          */
         constexpr inline explicit nion<T, D>(D degree);
+
+        /**
+         * @brief zero nion
+         */
+        constexpr inline void zero(){
+            memset(components_, 0, bytes_);
+        };
 
         /**
          * @brief copy constructor
@@ -114,8 +131,8 @@ namespace Nion {
          * @brief Destroy the nion object
          */
         ~nion<T, D>() {
-            free(components);
-            components = nullptr;
+            free(components_);
+            components_ = nullptr;
         };
 
         /**
@@ -135,7 +152,7 @@ namespace Nion {
          * @return A copy of the nion.
          * @note This is a deep copy.
          */
-        constexpr inline nion<T, D> &operator=(const nion<T, D> &other) noexcept;
+        constexpr inline nion<T, D> &operator=(const nion<T, D> &other);
 
         /**
          * @brief assignment operator from initializer list
@@ -231,7 +248,7 @@ namespace Nion {
          * @details The product of two nions is defined as (a,b)(c,d) = (a c - d* b, d a + b c*) = (z,w), where * is the conjugate.
          * and a, b, c, d are the nions with half the degree of the original nions.
          * @note product has the same degree as the larger degree of the two nions.
-         * @note This is recursive function.
+         * @note This is recursive function and will call itself until the degree is 1.
          */
         constexpr inline nion<T, D> operator*(const nion<T, D> &other) const;
 
@@ -263,13 +280,13 @@ namespace Nion {
         constexpr inline T norm() const;
 
         /**
-         * @brief project nion to the real line.
+         * @brief shortest rotation of the nion to the real axis.
          * @tparam T type of the nion.
-         * @param nion The nion to project to the real line.
-         * @return The projection of the nion to the real line.
+         * @param nion The nion to rotate
+         * @return The shortest rotation of the nion to the real axis (preserves the norm and sign of the real component).
          * @details computes the length of the nion and does the shortest rotation to the real line.
          */
-        constexpr inline T proj() const;
+        constexpr inline T rotate_real() const;
 
         /**
          * @brief return real part of the nion.
@@ -322,7 +339,7 @@ namespace Nion {
          * @param other The nion to compare this nion to.
          * @return True if this nion is less than the other nion, false otherwise.
          * @details sorting is undefined for nions with degrees greater than 1. However, we can still compare
-         *         nions with degrees greater than 1 by comparing the projections of the nions onto the real line.
+         *         nions with degrees greater than 1 by comparing the rotations of the nions onto the real line.
          */
         constexpr inline bool operator<(const nion<T, D> &other) const;
 
@@ -331,7 +348,7 @@ namespace Nion {
          * @param other The nion to compare this nion to.
          * @return True if this nion is greater than or equal to the other nion, false otherwise.
          * @details sorting is undefined for nions with degrees greater than 1. However, we can still compare
-         *         nions with degrees greater than 1 by comparing the projections of the nions onto the real line.
+         *         nions with degrees greater than 1 by comparing the rotations of the nions onto the real line.
          */
         constexpr inline bool operator>=(const nion<T, D> &other) const;
 
@@ -340,7 +357,7 @@ namespace Nion {
          * @param other The nion to compare this nion to.
          * @return True if this nion is less than or equal to the other nion, false otherwise.
          * @details sorting is undefined for nions with degrees greater than 1. However, we can still compare
-         *         nions with degrees greater than 1 by comparing the projections of the nions onto the real line.
+         *         nions with degrees greater than 1 by comparing the rotations of the nions onto the real line.
          */
         constexpr inline bool operator<=(const nion<T, D> &other) const;
 
@@ -499,14 +516,6 @@ namespace Nion {
         * @return The string representation of the nion.
         */
         inline std::string to_string() const;
-
-    private:
-        /**
-         * @brief computes size of alignment.
-         * @param degree The degree of the nion.
-         * @return The size of the alignment.
-         */
-        constexpr inline static size_t alignSize(D degree);
     };
 
 /***************************
@@ -759,7 +768,7 @@ namespace Nion {
  *          where a is the real component and v is the imaginary components.
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> exp(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> exp(const nion<T, D> &z);
 
 /**
  * @brief compute the principle logarithm of a nion.
@@ -770,7 +779,7 @@ namespace Nion {
  *          where a is the real component and v is the imaginary components.
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> log(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> log(const nion<T, D> &z);
 
 /**
  * @brief compute the power of a nion with scalar.
@@ -782,7 +791,7 @@ namespace Nion {
  * @details The power of a nion is defined as z^p = e^(p * ln(z)).
  */
     template<typename T, typename D = std::size_t, typename S>
-    static constexpr inline nion<T, D> pow(const nion<T, D> &base, S power) noexcept;
+    static constexpr inline nion<T, D> pow(const nion<T, D> &base, S power);
 
 /**
  * @brief compute the power of a nion with nion.
@@ -793,7 +802,7 @@ namespace Nion {
  * @details The power of a nion is defined as z^p = e^(p * ln(z)).
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> pow(const nion<T, D> &base, const nion<T, D> &power) noexcept;
+    static constexpr inline nion<T, D> pow(const nion<T, D> &base, const nion<T, D> &power);
 
 /**
  * @brief compute the power of a scalar with a nion.
@@ -805,7 +814,7 @@ namespace Nion {
  * @details The power of with a nion is defined as x^z = e^(z * ln(x)).
  */
     template<typename T, typename D = std::size_t, typename S = T>
-    static constexpr inline nion<T, D> pow(S base, const nion<T, D> &power) noexcept;
+    static constexpr inline nion<T, D> pow(S base, const nion<T, D> &power);
 
 /**
  * @brief compute the square of a nion.
@@ -814,7 +823,7 @@ namespace Nion {
  * @return The square of the nion.
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> sqr(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> sqr(const nion<T, D> &base);
 
 /**
  * @brief compute the square root of a nion.
@@ -824,7 +833,7 @@ namespace Nion {
  * @details The square root of a nion is defined as sqrt(z) = z^(1/2).
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> sqrt(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> sqrt(const nion<T, D> &z);
 
 /**
  * @brief compute the cube root of a nion.
@@ -834,7 +843,7 @@ namespace Nion {
  * @details The cube root of a nion is defined as cbrt(z) = z^(1/3).
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> cbrt(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> cbrt(const nion<T, D> &z);
 
 /***************************
     *  NION HYPERBOLIC TRIGONOMETRIC FUNCTIONS *
@@ -848,7 +857,7 @@ namespace Nion {
  * @details The hyperbolic sine of a nion is defined as sinh(z) = (e^z - e^-z) / 2.
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> sinh(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> sinh(const nion<T, D> &z);
 
 /**
  * @brief compute the hyperbolic cosine of a nion.
@@ -858,7 +867,7 @@ namespace Nion {
  * @details The hyperbolic cosine of a nion is defined as cosh(z) = (e^z + e^-z) / 2.
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> cosh(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> cosh(const nion<T, D> &z);
 
 /**
  * @brief compute the hyperbolic tangent of a nion.
@@ -868,7 +877,7 @@ namespace Nion {
  * @details The hyperbolic tangent of a nion is defined as tanh(z) = sinh(z) / cosh(z).
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> tanh(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> tanh(const nion<T, D> &z);
 
 /**
  * @brief compute the hyperbolic cotangent of a nion.
@@ -878,7 +887,7 @@ namespace Nion {
  * @details The hyperbolic cotangent of a nion is defined as coth(z) = 1 / tanh(z).
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> coth(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> coth(const nion<T, D> &z);
 
 /**
  * @brief compute the hyperbolic secant of a nion.
@@ -888,7 +897,7 @@ namespace Nion {
  * @details The hyperbolic secant of a nion is defined as sech(z) = 1 / cosh(z).
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> sech(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> sech(const nion<T, D> &z);
 
 /**
  * @brief compute the hyperbolic cosecant of a nion.
@@ -898,7 +907,7 @@ namespace Nion {
  * @details The hyperbolic cosecant of a nion is defined as csch(z) = 1 / sinh(z).
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> csch(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> csch(const nion<T, D> &z);
 
 /***************************
     *  NION TRIGONOMETRIC FUNCTIONS *
@@ -915,7 +924,7 @@ namespace Nion {
  * @see https://en.wikipedia.org/wiki/Sine_and_cosine#Relationship_to_complex_numbers
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> sin(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> sin(const nion<T, D> &z);
 
 /**
  * @brief compute the cosine of the nion.
@@ -927,7 +936,7 @@ namespace Nion {
  * @see https://en.wikipedia.org/wiki/Sine_and_cosine#Relationship_to_complex_numbers
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> cos(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> cos(const nion<T, D> &z);
 
 /**
  * @brief compute the tangent of the nion.
@@ -939,7 +948,7 @@ namespace Nion {
  * @see https://en.wikipedia.org/wiki/Proofs_of_trigonometric_identities#Angle_sum_identities
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> tan(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> tan(const nion<T, D> &z);
 
 /**
  * @brief compute the cotangent of the nion.
@@ -949,7 +958,7 @@ namespace Nion {
  * @details The cotangent of the nion is defined as cot(z) = 1 / tan(z).
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> cot(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> cot(const nion<T, D> &z);
 
 /**
  * @brief compute the secant of the nion.
@@ -959,7 +968,7 @@ namespace Nion {
  * @details The secant of the nion is defined as sec(z) = 1 / cos(z).
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> sec(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> sec(const nion<T, D> &z);
 
 /**
  * @brief compute the cosecant of the nion.
@@ -969,7 +978,7 @@ namespace Nion {
  * @details The cosecant of the nion is defined as csc(z) = 1 / sin(z).
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> csc(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> csc(const nion<T, D> &z);
 
 /***************************
     *  NION INVERSE HYPERBOLIC TRIGONOMETRIC FUNCTIONS *
@@ -985,7 +994,7 @@ namespace Nion {
  * @see https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions#Principal_values_in_the_complex_plane
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> asinh(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> asinh(const nion<T, D> &z);
 
 /**
  * @brief compute the inverse hyperbolic cosine of the nion.
@@ -997,7 +1006,7 @@ namespace Nion {
  * @see https://mathworld.wolfram.com/InverseHyperbolicCosine.html
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> acosh(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> acosh(const nion<T, D> &z);
 
 /**
  * @brief compute the inverse hyperbolic tangent of the nion.
@@ -1009,7 +1018,7 @@ namespace Nion {
  * @see https://mathworld.wolfram.com/InverseHyperbolicTangent.html
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> atanh(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> atanh(const nion<T, D> &z);
 
 /**
  * @brief compute the inverse hyperbolic cotangent of the nion.
@@ -1021,7 +1030,7 @@ namespace Nion {
  * @see https://mathworld.wolfram.com/InverseHyperbolicCotangent.html
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> acoth(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> acoth(const nion<T, D> &z);
 
 /**
  * @brief compute the inverse hyperbolic secant of the nion.
@@ -1033,7 +1042,7 @@ namespace Nion {
  * @see https://mathworld.wolfram.com/InverseHyperbolicSecant.html
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> asech(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> asech(const nion<T, D> &z);
 
 /**
  * @brief compute the inverse hyperbolic cosecant of the nion.
@@ -1045,7 +1054,7 @@ namespace Nion {
  * @see https://mathworld.wolfram.com/InverseHyperbolicCosecant.html
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> acsch(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> acsch(const nion<T, D> &z);
 
 /***************************
     *  NION INVERSE TRIGONOMETRIC FUNCTIONS *
@@ -1060,7 +1069,7 @@ namespace Nion {
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Logarithmic_forms
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> asin(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> asin(const nion<T, D> &z);
 
 /**
  * @brief compute the inverse cosine of the nion.
@@ -1071,7 +1080,7 @@ namespace Nion {
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_complex_plane
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> acos(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> acos(const nion<T, D> &z);
 
 /**
  * @brief compute the inverse tangent of the nion.
@@ -1083,7 +1092,7 @@ namespace Nion {
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Logarithmic_forms
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> atan(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> atan(const nion<T, D> &z);
 
 /**
  * @brief compute the inverse cotangent of the nion.
@@ -1094,7 +1103,7 @@ namespace Nion {
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_complex_plane
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> acot(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> acot(const nion<T, D> &z);
 
 /**
  * @brief compute the inverse secant of the nion.
@@ -1105,7 +1114,7 @@ namespace Nion {
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_complex_plane
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> asec(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> asec(const nion<T, D> &z);
 
 /**
  * @brief compute the inverse cosecant of the nion.
@@ -1116,7 +1125,7 @@ namespace Nion {
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_complex_plane
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> acsc(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> acsc(const nion<T, D> &z);
 
 /**
  * @brief return atan2 between real and imaginary axis.
@@ -1125,7 +1134,7 @@ namespace Nion {
  * @return The atan2 of the nion.
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> atan2(const nion<T, D> &y, const nion<T, D> &x) noexcept;
+    static constexpr inline nion<T, D> atan2(const nion<T, D> &y, const nion<T, D> &x);
 
 /***************************
     *  NION GAMMA FUNCTION *
@@ -1141,7 +1150,7 @@ namespace Nion {
  * @see https://www.wolframalpha.com/input?i=gamma%28a+%2B+b+i%29
  */
     template<typename T, typename D = std::size_t>
-    static constexpr inline nion<T, D> gamma(const nion<T, D> &z) noexcept;
+    static constexpr inline nion<T, D> gamma(const nion<T, D> &z);
 
 }
 
