@@ -42,7 +42,7 @@ void printSpeedupQuaternion(const T& niontime, const T& othertime) {
 
 template<typename T>
 T getMAEquaternion(nion<T> nion, boost::math::quaternion<T> compare){
-    int degree = nion.degree;
+    int degree = nion.degree_;
     T mae = 0;
     mae += std::pow(nion[0] - compare.R_component_1(), 2);
     mae += std::pow(nion[1] - compare.R_component_2(), 2);
