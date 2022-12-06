@@ -12,23 +12,27 @@ is designed to be portable and fast. It is a header-only library, so
 there is no need to compile it. It is licensed under the Apache License.
 
 The [nion] is a generalization of complex numbers to higher degrees.
-Nions form a [division algebra](https://en.wikipedia.org/wiki/Division_algebra) up to degree 3, 
+Nions form a [division algebra](https://en.wikipedia.org/wiki/Division_algebra) up to degree_ 3, 
 and more generally a [Subalgebra](https://en.wikipedia.org/wiki/Subalgebra) of the
 [Hypercomplex numbers](https://en.wikipedia.org/wiki/Hypercomplex_number).
 
 The nion is defined as a [Cayley-Dickson construction].
-A nion of degree **n** is defined as the pairing of two nions of degree **n-1**.
-Each degree doubles the number of dimensions (i.e. **2<sup>n</sup>**) and removes symmetries from the algebra.
+A nion of degree_ **n** is defined as the pairing of two nions of degree_ **n-1**.
+Each degree_ doubles the number of dimensions (i.e. **2<sup>n</sup>**) and removes symmetries from the algebra.
 
-- The [**Reals**](https://en.wikipedia.org/wiki/Real_number) are a nion of degree **0**, which is a single real number.
-- [**Complex**](https://en.wikipedia.org/wiki/Complex_number) numbers are a nion of degree **1**, which is the pairing of two reals.
+- The [**Reals**](https://en.wikipedia.org/wiki/Real_number) are a nion of degree_ **0**, which is a single real number.
+- [**Complex**](https://en.wikipedia.org/wiki/Complex_number) numbers are a nion of degree_ **1**, which is the pairing of two reals.
   - Complex numbers are no longer an [ordered field](https://en.wikipedia.org/wiki/Ordered_field)
-- The [**Quaternions**](https://en.wikipedia.org/wiki/Quaternion) are a nion of degree **2**, which is the pairing of two complex numbers.
+- The [**Quaternions**](https://en.wikipedia.org/wiki/Quaternion) are a nion of degree_ **2**, which is the pairing of two complex numbers.
   - Quaternions lose the [commutative property](https://en.wikipedia.org/wiki/Commutative_property) of multiplication.
-- The [**Octonions**](https://en.wikipedia.org/wiki/Octonion) are a nion of degree **3**, which is the pairing of two quaternions.
+- The [**Octonions**](https://en.wikipedia.org/wiki/Octonion) are a nion of degree_ **3**, which is the pairing of two quaternions.
   - Octonions lose the [associative property](https://en.wikipedia.org/wiki/Associative_property) of multiplication.
-- The [**Sedenions**](https://en.wikipedia.org/wiki/Sedenion) are a nion of degree **4**, which is the pairing of two octonions
+- The [**Sedenions**](https://en.wikipedia.org/wiki/Sedenion) are a nion of degree_ **4**, which is the pairing of two octonions
   - Sedenions (and higher order nions) lose the [alternative property](https://en.wikipedia.org/wiki/Alternative_algebra)  of multiplication and can have [zero divisors](https://en.wikipedia.org/wiki/Zero_divisor).
+
+Nions support the generalization of complex numbers to even higher arbitrary degrees. 
+While the higher order nions are not as well known as the lower order nions, they exhibit emergent properties that 
+have potential applications in physics, computer graphics, and other fields.
 
 The nions have the following properties:
 
@@ -39,8 +43,8 @@ The nions have the following properties:
   * The [inverse element](https://en.wikipedia.org/wiki/Inverse_element) of a nion is a nion.
   * The product of a nion and its inverse is the identity.
 
-Nions can be used to [improve the accuracy and efficiency of machine learning](https://arxiv.org/abs/1903.08478),
-and to [accomplish tasks that cannot be done with real or complex numbers](https://pages.uoregon.edu/soper/QuantumMechanics/spin.pdf).
+Nions can be used to [improve the accuracy and efficiency of machine learning](https://doi.org/10.1109%2FACCESS.2020.3014690),
+and to [accomplish tasks that cannot be done with real or complex numbers](https://www.sciencedirect.com/science/article/abs/pii/0550321383905849?via%3Dihub).
 
 
 
