@@ -304,7 +304,8 @@ namespace Nion {
         nion<T, D> sum;
         sum.degree_ = std::max(degree_, other.degree_); // set the degree
         sum.bytes_ = sum.degree_ * sizeof(T); // set the number of bytes
-        sum.alignment_ = std::max((sum.bytes_ | (sum.bytes_ - 1)) + 1, std::alignment_of<T>::value); // set the alignment
+        const D alignment_requirement = std::alignment_of<T>::value; // alignment requirement of the type
+        sum.alignment_ = std::max((sum.bytes_ | (sum.bytes_ - 1)) + 1, alignment_requirement); // set the alignment
 
         /// allocate memory for the nion
         sum.components_ = static_cast<T*>(aligned_alloc(sum.alignment_, sum.bytes_));
@@ -322,7 +323,8 @@ namespace Nion {
         nion<T, D> difference;
         difference.degree_ = std::max(degree_, other.degree_); // set the degree
         difference.bytes_ = difference.degree_ * sizeof(T); // set the number of bytes
-        difference.alignment_ = std::max((difference.bytes_ | (difference.bytes_ - 1)) + 1, std::alignment_of<T>::value); // set the alignment
+        const D alignment_requirement = std::alignment_of<T>::value; // alignment requirement of the type
+        difference.alignment_ = std::max((difference.bytes_ | (difference.bytes_ - 1)) + 1, alignment_requirement); // set the alignment
 
         /// allocate memory for the nion
         difference.components_ = static_cast<T*>(aligned_alloc(difference.alignment_, difference.bytes_));
@@ -345,8 +347,8 @@ namespace Nion {
 
         /// allocate memory for the nion
         sum.components_ = static_cast<T*>(aligned_alloc(sum.alignment_, sum.bytes_));
-
-        sum.components_[0] += static_cast<T>(scalar); // add the scalar to the first component
+        memcpy(sum.components_, components_, bytes_);
+        sum.components_[0] += static_cast<T>(scalar);
         return sum;
     }
 
@@ -390,9 +392,10 @@ namespace Nion {
     template<typename T, typename D>
     template<typename S>
     constexpr inline void nion<T, D>::operator*=(S scalar) {
+        T product_scalar = static_cast<T>(scalar);
         #pragma vector always
         for (D i = 0; i < degree_; i++) {
-            components_[i] *= static_cast<T>(scalar);
+            components_[i] *= product_scalar;
         }
     }
 
@@ -404,9 +407,10 @@ namespace Nion {
     template<typename T, typename D>
     template<typename S>
     constexpr inline void nion<T, D>::operator/=(S scalar) {
+        T quotient_scalar = static_cast<T>(scalar);
         #pragma vector always
         for (D i = 0; i < degree_; i++) {
-            components_[i] /= static_cast<T>(scalar);
+            components_[i] /= quotient_scalar;
         }
     }
 
@@ -686,13 +690,8 @@ namespace Nion {
         imag.alignment_ = alignment_;
 
         imag.components_ = static_cast<T*>(aligned_alloc(alignment_, bytes_));
-
-
-        #pragma vector always
-        for (D i = 0; i < degree_; i++) {
-            imag[i] = components_[i];
-        }
         imag[0] = 0;
+        memcpy(imag.components_ + 1, components_ + 1, bytes_ - sizeof(T));
         return imag;
     }
 
