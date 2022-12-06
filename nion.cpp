@@ -264,7 +264,7 @@ namespace Nion {
             resize(other.degree_);
 
         // add the components of the other nion to this nion.
-        #pragma vector aligned always
+        #pragma vector always
         for (D i = 0; i < other.degree_; i++) {
             components_[i] += other.components_[i];
         }
@@ -277,7 +277,7 @@ namespace Nion {
             resize(other.degree_);
 
         // substract the components of the other nion from this nion.
-        #pragma vector aligned always
+        #pragma vector always
         for (D i = 0; i < other.degree_; i++) {
             components_[i] -= other.components_[i];
         }
@@ -301,23 +301,52 @@ namespace Nion {
 
     template<typename T, typename D>
     constexpr inline nion<T, D> nion<T, D>::operator+(const nion<T, D> &other) const {
-        nion<T, D> sum = *this;
-        sum += other;
+        nion<T, D> sum;
+        sum.degree_ = std::max(degree_, other.degree_); // set the degree
+        sum.bytes_ = sum.degree_ * sizeof(T); // set the number of bytes
+        sum.alignment_ = std::max((sum.bytes_ | (sum.bytes_ - 1)) + 1, std::alignment_of<T>::value); // set the alignment
+
+        /// allocate memory for the nion
+        sum.components_ = static_cast<T*>(aligned_alloc(sum.alignment_, sum.bytes_));
+
+        /// add the components of the other nion to this nion.
+        #pragma vector always
+        for (D i = 0; i < sum.degree_; i++) {
+            sum.components_[i] = components_[i] + other.components_[i];
+        }
         return sum;
     }
 
     template<typename T, typename D>
     constexpr inline nion<T, D> nion<T, D>::operator-(const nion<T, D> &other) const {
-        nion<T, D> difference = *this;
-        difference -= other;
+        nion<T, D> difference;
+        difference.degree_ = std::max(degree_, other.degree_); // set the degree
+        difference.bytes_ = difference.degree_ * sizeof(T); // set the number of bytes
+        difference.alignment_ = std::max((difference.bytes_ | (difference.bytes_ - 1)) + 1, std::alignment_of<T>::value); // set the alignment
+
+        /// allocate memory for the nion
+        difference.components_ = static_cast<T*>(aligned_alloc(difference.alignment_, difference.bytes_));
+
+        /// substract the components of the other nion from this nion.
+        #pragma vector always
+        for (D i = 0; i < difference.degree_; i++) {
+            difference.components_[i] = components_[i] - other.components_[i];
+        }
         return difference;
     }
 
     template<typename T, typename D>
     template<typename S>
     constexpr inline nion<T, D> nion<T, D>::operator+(S scalar) const {
-        nion<T, D> sum = *this;
-        sum.components_[0] += static_cast<T>(scalar);
+        nion<T, D> sum;
+        sum.degree_ = degree_; // set the degree
+        sum.bytes_ = bytes_; // set the number of bytes
+        sum.alignment_ = alignment_; // set the alignment
+
+        /// allocate memory for the nion
+        sum.components_ = static_cast<T*>(aligned_alloc(sum.alignment_, sum.bytes_));
+
+        sum.components_[0] += static_cast<T>(scalar); // add the scalar to the first component
         return sum;
     }
 
@@ -325,7 +354,7 @@ namespace Nion {
     static constexpr inline nion<T, D> operator+(S scalar, const nion<T, D> &z) {
         return z + static_cast<T>(scalar);
     }
-    
+
     template<typename T, typename D>
     constexpr inline nion<T, D> nion<T, D>::operator++() {
         components_[0]++;
@@ -342,40 +371,40 @@ namespace Nion {
     static constexpr inline nion<T, D> operator-(S scalar, const nion<T, D> &z) {
         return -z + static_cast<T>(scalar);
     }
-    
+
     template<typename T, typename D>
     constexpr inline nion<T, D> nion<T, D>::operator--() {
         components_[0]--;
         return *this;
     }
-    
+
     /******************************************
     *  ASSIGNMENT AND MULTIPLICATION OPERATORS
     *******************************************/
 
     template<typename T, typename D>
     constexpr inline void nion<T, D>::operator*=(const nion<T, D> &other) {
-        *this = *this * other;
+        *this = std::move(*this * other);
     }
 
     template<typename T, typename D>
     template<typename S>
     constexpr inline void nion<T, D>::operator*=(S scalar) {
-        #pragma vector aligned always
+        #pragma vector always
         for (D i = 0; i < degree_; i++) {
             components_[i] *= static_cast<T>(scalar);
         }
     }
-    
+
     template<typename T, typename D>
     constexpr inline void nion<T, D>::operator/=(const nion<T, D> &other) {
-        *this = *this / other;
+        *this = std::move(*this / other);
     }
 
     template<typename T, typename D>
     template<typename S>
     constexpr inline void nion<T, D>::operator/=(S scalar) {
-        #pragma vector aligned always
+        #pragma vector always
         for (D i = 0; i < degree_; i++) {
             components_[i] /= static_cast<T>(scalar);
         }
@@ -387,29 +416,39 @@ namespace Nion {
 
     template<typename T, typename D>
     constexpr inline nion<T, D> nion<T, D>::conj() const {
-        nion<T, D> conjugate = *this;
+        nion<T, D> conjugate;
+        conjugate.degree_ = degree_;
+        conjugate.bytes_ = bytes_;
+        conjugate.alignment_ = alignment_;
+        conjugate.components_ = static_cast<T*>(aligned_alloc(alignment_, bytes_));
 
         // negate all components except the first
-        #pragma vector aligned always
-        for (D i = 1; i < degree_; i++) {
-            conjugate.components_[i] = -conjugate.components_[i];
+
+        #pragma vector always
+        for (D i = 0; i < degree_; i++) {
+            conjugate.components_[i] = -components_[i];
         }
+        conjugate.components_[0] = components_[0];
 
         return conjugate;
     }
 
     template<typename T, typename D>
     constexpr inline nion<T, D> nion<T, D>::operator-() const {
-        nion<T, D> negated = *this;
+        nion<T, D> negated;
+        negated.degree_ = degree_;
+        negated.bytes_ = bytes_;
+        negated.alignment_ = alignment_;
+        negated.components_ = static_cast<T*>(aligned_alloc(alignment_, bytes_));
 
-        #pragma vector aligned always
+        #pragma vector always
         for (D i = 0; i < degree_; i++) {
-            negated.components_[i] = -negated.components_[i];
+            negated.components_[i] = -components_[i];
         }
 
         return negated;
     }
-    
+
     template<typename T, typename D>
     constexpr inline nion<T, D> nion<T, D>::operator*(const nion<T, D> &other) const {
 
@@ -542,26 +581,31 @@ namespace Nion {
     template<typename T, typename D>
     template<typename S>
     constexpr inline nion<T, D> nion<T, D>::operator*(S scalar) const {
-        nion<T, D> product = *this;
+        nion<T, D> product;
+        product.degree_ = degree_;
+        product.bytes_ = bytes_;
+        product.alignment_ = alignment_;
+        product.components_ = static_cast<T*>(std::aligned_alloc(alignment_, bytes_));
+        T product_scalar = static_cast<T>(scalar);
 
-        #pragma vector aligned always
+        #pragma vector always
         for (D i = 0; i < degree_; i++) {
-            product.components_[i] = components_[i] * static_cast<T>(scalar);
+            product.components_[i] = components_[i] * product_scalar;
         }
         return product;
     }
-    
+
     template<typename T, typename D, typename S>
     static constexpr inline nion<T, D> operator*(S scalar, const nion<T, D> &z) {
         static_assert(std::is_arithmetic_v<S>, "scalar must be arithmetic");
         return z * static_cast<T>(scalar);
     }
-    
+
     template<typename T, typename D>
     constexpr inline T nion<T, D>::abs() const {
         T absVal = 0;
 
-        #pragma vector aligned always
+        #pragma vector always
         for (D i = 0; i < degree_; i++) {
             absVal += components_[i] * components_[i];
         }
@@ -573,7 +617,7 @@ namespace Nion {
     constexpr inline T nion<T, D>::norm() const {
         return std::sqrt(abs());
     }
-    
+
     template<typename T, typename D>
     constexpr inline nion<T, D> nion<T, D>::inv() const {
         constexpr T epsilon = std::numeric_limits<T>::epsilon();
@@ -590,12 +634,18 @@ namespace Nion {
             return inverse;
         }
 
-        nion<T, D> inverse = *this;
-        inverse.components_[0] /= absolute;
-        #pragma vector aligned always
-        for (D i = 1; i < degree_; i++) {
-            inverse.components_[i] /= -absolute;
+        nion<T, D> inverse;
+        inverse.degree_ = degree_;
+        inverse.bytes_ = bytes_;
+        inverse.alignment_ = alignment_;
+        inverse.components_ = static_cast<T*>(std::aligned_alloc(alignment_, bytes_));
+        T inverse_scalar = static_cast<T>(1) / absolute;
+
+        #pragma vector always
+        for (D i = 0; i < degree_; i++) {
+            inverse.components_[i] = -components_[i] * inverse_scalar;
         }
+        inverse.components_[0] = components_[0] * inverse_scalar;
         return inverse;
     }
 
@@ -624,13 +674,24 @@ namespace Nion {
     constexpr inline T &nion<T, D>::operator[](D index) const {
         return this->components_[index];
     }
-    
+
     template<typename T, typename D>
     constexpr inline T nion<T, D>::real() const { return components_[0]; }
 
     template<typename T, typename D>
     constexpr inline nion<T, D> nion<T, D>::imag() const {
-        nion<T> imag = *this;
+        nion<T> imag;
+        imag.degree_ = degree_;
+        imag.bytes_ = bytes_;
+        imag.alignment_ = alignment_;
+
+        imag.components_ = static_cast<T*>(aligned_alloc(alignment_, bytes_));
+
+
+        #pragma vector always
+        for (D i = 0; i < degree_; i++) {
+            imag[i] = components_[i];
+        }
         imag[0] = 0;
         return imag;
     }
@@ -644,7 +705,7 @@ namespace Nion {
         if (degree_ != other.degree_) {
             return false;
         }
-        #pragma vector aligned always
+        #pragma vector always
         for (D i = 0; i < degree_; i++) {
             if (!value_is_similar(components_[i], other[i])) {
                 return false;
@@ -658,7 +719,7 @@ namespace Nion {
         if (degree_ != other.degree_) {
             return true;
         }
-        #pragma vector aligned always
+        #pragma vector always
         for (D i = 0; i < degree_; i++) {
             if (!value_is_similar(components_[i], other[i])) {
                 return true;
@@ -673,7 +734,7 @@ namespace Nion {
         // this is useful for comparing nions with different degrees
         return copysign(norm(), real());
     }
-    
+
     template<typename T, typename D>
     constexpr inline bool nion<T, D>::operator>(const nion<T, D> &other) const {
         // nions with degree > 1 are not ordered, but we can arbitrarily order them by their rotation to the real line
@@ -710,7 +771,7 @@ namespace Nion {
 
     template<typename T, typename D>
     constexpr inline bool nion<T, D>::is_real() const {
-        #pragma vector aligned always
+        #pragma vector always
         for (D i = 1; i < degree_; i++) {
             if (!value_is_similar(components_[i], 0)) {
                 return false;
@@ -718,7 +779,7 @@ namespace Nion {
         }
         return true;
     }
-    
+
     template<typename T, typename D>
     template<typename S>
     constexpr inline bool nion<T, D>::operator==(S scalar) const {
@@ -789,7 +850,7 @@ namespace Nion {
             return true;
         return rotate_real() < static_cast<T>(scalar);
     }
-    
+
     template<typename T, typename D, typename S>
     static constexpr inline bool operator<=(S scalar, const nion<T, D> &z) {
         return z >= static_cast<T>(scalar);
@@ -798,7 +859,7 @@ namespace Nion {
     /******************************************
     *            STREAMING OPERATORS
     *******************************************/
-    
+
     template<typename T, typename D>
     static std::ostream &operator<<(std::ostream &os, const nion<T, D> &z) {
         T component = z.components_[0];
@@ -872,7 +933,7 @@ namespace Nion {
     static constexpr inline T dot(const nion<T, D> &lhs, const nion<T, D> &rhs) {
         T dotProduct = 0;
         D minDegree = std::min(lhs.degree_, rhs.degree_);
-        #pragma vector aligned always
+        #pragma vector always
         for (D i = 0; i < minDegree; i++) {
             dotProduct += lhs[i] * rhs[i];
         }
