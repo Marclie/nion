@@ -5,6 +5,11 @@
 #include <stdexcept>
 #include "nion.hpp"
 
+// max size of stack array for storing elements of nion. Defaults to 2^10 (nion degree of 10)
+#ifndef NION_MAX_SIZE
+#define NION_MAX_SIZE 1024
+#endif
+
 #define ASSERT(condition, message) \
     do { \
         if (! (condition)) { \
@@ -22,116 +27,93 @@ namespace Nion {
     ***************************/
 
     template<typename T, typename D>
-    constexpr inline nion<T, D>::nion(T* vals, D degree) : degree_(degree) {
+    constexpr inline nion<T, D>::nion(T* vals, D size) : size_(size) {
 
-        /// check if the degree is greater than zero
-        ASSERT(degree_ > 0, "The degree of the nion must be greater than zero.");
-
-        /// calculate memory size
-        constexpr D alignment_requirement = std::alignment_of<T>::value; // alignment requirement of the type
-        bytes_ = degree_ * sizeof(T); // total number of bytes
-
-        /// calculate the number of bytes to add to the memory size to make it the LCM of the alignment requirement
-        D min_power_of_two = (bytes_ | (bytes_ - 1)) + 1; // minimum power of two that is greater than or equal to 'bytes'
-        alignment_ = std::max(min_power_of_two, alignment_requirement); // minimum alignment size
-
-        /// allocate memory for the nion
-        components_ = static_cast<T*>(aligned_alloc(alignment_, bytes_));
+        /// check if the degree is greater than zero and less than the maximum size
+        ASSERT(size_ > 0, "The size of the nion must be greater than zero.");
+        ASSERT(size_ <= NION_MAX_SIZE, "The size of the nion is too large. "
+                                          "consider increasing CMake variable NION_MAX_SIZE.");
 
         /// copy the values into the nion
-        memcpy(components_, vals, bytes_);
+        memcpy(elem_, vals, size_ * sizeof(T));
     }
 
     template<typename T, typename D>
-    constexpr inline nion<T, D>::nion(const std::initializer_list<T> &vals) : degree_(vals.size()) {
+    constexpr inline nion<T, D>::nion(const std::initializer_list<T> &vals) : size_(vals.size()) {
         /// check if the degree is greater than zero
-        ASSERT(degree_ > 0, "The degree of the nion must be greater than zero.");
-
-        /// calculate memory size
-        constexpr D alignment_requirement = std::alignment_of<T>::value; // alignment requirement of the type
-        bytes_ = degree_ * sizeof(T); // total number of bytes
-
-        /// calculate the number of bytes to add to the memory size to make it the LCM of the alignment requirement
-        D min_power_of_two = (bytes_ | (bytes_ - 1)) + 1; // minimum power of two that is greater than or equal to 'bytes'
-        alignment_ = std::max(min_power_of_two, alignment_requirement); // minimum alignment size
-
-        /// allocate memory for the nion
-        components_ = static_cast<T*>(aligned_alloc(alignment_, bytes_));
+        ASSERT(size_ > 0, "The size of the nion must be greater than zero.");
+        ASSERT(size_ <= NION_MAX_SIZE, "The size of the nion is too large. "
+                                          "consider increasing CMake variable NION_MAX_SIZE.");
 
         /// copy the values into the nion
-        memcpy(components_, vals.begin(), bytes_);
+        memcpy(elem_, vals.begin(), size_ * sizeof(T));
     }
 
     template<typename T, typename D>
-    constexpr inline nion<T, D>::nion(D degree) : degree_(degree) {
+    constexpr inline nion<T, D>::nion(D size) : size_(size) {
         /// check if the degree is greater than zero
-        ASSERT(degree_ > 0, "The degree of the nion must be greater than zero.");
+        ASSERT(size_ > 0, "The size of the nion must be greater than zero.");
+        ASSERT(size_ <= NION_MAX_SIZE, "The size of the nion is too large. "
+                                          "consider increasing CMake variable NION_MAX_SIZE.");
 
-        /// calculate memory size
-        constexpr D alignment_requirement = std::alignment_of<T>::value; // alignment requirement of the type
-        bytes_ = degree_ * sizeof(T); // total number of bytes
-
-        /// calculate the number of bytes to add to the memory size to make it the LCM of the alignment requirement
-        D min_power_of_two = (bytes_ | (bytes_ - 1)) + 1; // minimum power of two that is greater than or equal to 'bytes'
-        alignment_ = std::max(min_power_of_two, alignment_requirement); // minimum alignment size
-
-        /// allocate memory for the nion
-        components_ = static_cast<T*>(aligned_alloc(alignment_, bytes_)); // keep uninitialized
+        /// initialize the values to zero
+        zero();
     }
 
     template<typename T, typename D>
-    constexpr inline nion<T, D>::nion(const nion<T, D> &other) : degree_(other.degree_), bytes_(other.bytes_), alignment_(other.alignment_) {
-
-        /// allocate memory for the nion
-        components_ = static_cast<T*>(aligned_alloc(alignment_, bytes_));
-
+    constexpr inline nion<T, D>::nion(const nion<T, D> &other) : size_(other.size_) {
         /// copy the values into the nion
-        memcpy(components_, other.components_, bytes_);
+        memcpy(elem_, other.elem_, size_ * sizeof(T));
     }
 
     template<typename T, typename D>
-    constexpr inline nion<T, D>::nion(nion<T, D> &&other) noexcept: degree_(other.degree_), components_(other.components_),
-                                                               bytes_(other.bytes_), alignment_(other.alignment_) {
-        other.components_ = nullptr;
+    constexpr inline nion<T, D>::nion(nion<T, D> &&other) noexcept: size_(other.size_) {
+        /// copy the values into the nion
+        memcpy(elem_, other.elem_, size_ * sizeof(T));
     }
 
     template<typename T, typename D>
     template<typename S>
-    constexpr inline nion<T, D>::nion(S realVal, D degree) : degree_(degree) {
+    constexpr inline nion<T, D>::nion(S realVal, D size) : size_(size) {
         // check if the degree is greater than zero
-        ASSERT(degree_ > 0, "The degree of the nion must be greater than zero.");
+        ASSERT(size_ > 0, "The degree of the nion must be greater than zero.");
+        ASSERT(size_ <= NION_MAX_SIZE, "The size of the nion is too large. "
+                                          "consider increasing CMake variable NION_MAX_SIZE.");
 
-        /// calculate memory size
-        constexpr D alignment_requirement = std::alignment_of<T>::value; // alignment requirement of the type
-        bytes_ = degree_ * sizeof(T); // total number of bytes
-        
-        /// calculate the number of bytes to add to the memory size to make it the LCM of the alignment requirement
-        D min_power_of_two = (bytes_ | (bytes_ - 1)) + 1; // minimum power of two that is greater than or equal to 'bytes'
-        alignment_ = std::max(min_power_of_two, alignment_requirement); // minimum alignment size
-        
-        /// allocate memory for the nion
-        components_ = static_cast<T*>(aligned_alloc(alignment_, bytes_));
-        memset(components_, 0, bytes_);
-        components_[0] = static_cast<T>(realVal);
+        // initialize the values to zero
+        zero();
+
+        // set the real part
+        elem_[0] = static_cast<T>(realVal);
     }
 
     template<typename T, typename D>
-    constexpr inline nion<T, D>::nion(const nion<T, D> &a, const nion<T, D> &b) : degree_(a.degree_ + b.degree_), bytes_(a.bytes_ + b.bytes_) {
-        ASSERT(a.degree_ > 0 && b.degree_ > 0, "The degrees of the nion pair (a, b) must both be greater than zero.");
+    constexpr inline nion<T, D> nion<T, D>::make_pair(const nion<T, D> &a, const nion<T, D> &b) {
 
-        /// calculate memory size
-        constexpr D alignment_requirement = std::alignment_of<T>::value; // alignment requirement of the type
+        /// initialize the nion pair
+        nion<T, D> pair;
 
-        /// calculate the number of bytes to add to the memory size to make it the LCM of the alignment requirement
-        D min_power_of_two = (bytes_ | (bytes_ - 1)) + 1; // minimum power of two that is greater than or equal to 'bytes'
-        alignment_ = std::max(min_power_of_two, alignment_requirement); // minimum alignment size
+        /// set the size of the nion
+        pair.size_ = a.size_ + b.size_;
 
-        /// allocate memory for the nion
-        components_ = static_cast<T*>(aligned_alloc(alignment_, bytes_));
-
+        ASSERT(a.size_ > 0 && b.size_ > 0, "The sizes of the nion pair (a, b) must both be greater than zero.");
+        ASSERT(pair.size_ <= NION_MAX_SIZE, "The size of the nion is too large. "
+                                          "consider increasing CMake variable NION_MAX_SIZE.");
+        
         /// copy the values into the nion
-        memcpy(components_, a.components_, a.bytes_);
-        memcpy(components_ + a.degree_, b.components_, b.bytes_);
+        memcpy(pair.elem_, a.elem_, a.size_ * sizeof(T));
+        memcpy(pair.elem_ + a.size_, b.elem_, b.size_ * sizeof(T));
+
+        return pair;
+    }
+
+    template<typename T, typename D>
+    constexpr inline void nion<T, D>::resize(int size) {
+        ASSERT(size > 0, "new nion size must be greater than zero");
+        size_ = size;
+
+        // set the new elements to zero
+        memset(elem_ + size_, 0, (size - size_) * sizeof(T));
     }
 
     /************************************
@@ -145,40 +127,22 @@ namespace Nion {
             return *this; // return the nion
         }
 
-        /// No need to reallocate memory if this nion's degree is greater than or equal to the other nion's degree
-        if (degree_ < other.degree_) {
-            // reallocate memory for the nion
-            free(components_);
-            components_ = static_cast<T *>(aligned_alloc(other.alignment_, other.bytes_));
-        }
+        /// set the size
+        size_ = other.size_;
 
         /// copy the values into the nion
-        degree_ = other.degree_; // set the degree
-        bytes_ = other.bytes_; // set the number of bytes
-        alignment_ = other.alignment_; // set the alignment
-
-        memcpy(components_, other.components_, bytes_);
+        memcpy(elem_, other.elem_, size_ * sizeof(T));
         return *this; // return the nion
     }
 
     template<typename T, typename D>
     constexpr nion<T, D> &Nion::nion<T, D>::operator=(const std::initializer_list<T> &vals) {
-        /// check if the degree is the same
-        if (degree_ != vals.size()) {
-            degree_ = vals.size(); // set the degree
-            bytes_ = degree_ * sizeof(T); // set the number of bytes
-            alignment_ = std::max((bytes_ | (bytes_ - 1)) + 1, std::alignment_of<T>::value); // set the alignment
 
-            /// check if this nion's degree is greater than or equal to the initializer list's size
-            if (degree_ < vals.size()) {
-                // reallocate memory for the nion
-                free(components_);
-                components_ = static_cast<T *>(aligned_alloc(alignment_, bytes_));
-            }
-        }
+        /// set the size of the nion
+        size_ = vals.size();
 
         /// copy the values into the nion
-        memcpy(components_, vals.begin(), bytes_);
+        memcpy(elem_, vals.begin(), size_ * sizeof(T));
         return *this; // return the nion
     }
 
@@ -189,16 +153,11 @@ namespace Nion {
             return *this; // return the nion
         }
 
-        /// free the memory of this nion
-        free(components_);
+        /// set the size
+        size_ = other.size_;
 
-        /// move the values into the nion
-        degree_ = other.degree_; // set the degree
-        bytes_ = other.bytes_; // set the number of bytes
-        alignment_ = other.alignment_; // set the alignment
-        components_ = other.components_; // set the components
-
-        other.components_ = nullptr; // set the other nion's components to null
+        /// copy the values into the nion
+        memcpy(elem_, other.elem_, size_ * sizeof(T));
         return *this; // return the nion
     }
 
@@ -206,17 +165,10 @@ namespace Nion {
     template<typename S>
     constexpr inline nion<T, D> &nion<T, D>::operator=(S scalar) {
         /// check if the nion is initialized
-        if (degree_ <= 0) {
-            degree_ = 1; // set the degree
-            bytes_ = sizeof(T); // set the number of bytes
-            alignment_ = std::max((bytes_ | (bytes_ - 1)) + 1, std::alignment_of<T>::value); // set the alignment
-
-            /// allocate memory for the nion
-            components_ = static_cast<T*>(aligned_alloc(alignment_, bytes_));
-        }
+        if (size_ <= 0) size_ = 1; // set the degree
 
         zero(); // set the nion to zero
-        components_[0] = static_cast<T>(scalar); // set the real component
+        elem_[0] = static_cast<T>(scalar); // set the real component
         return *this; // return the nion
     }
 
@@ -225,74 +177,55 @@ namespace Nion {
     *************************************/
 
     template<typename T, typename D>
-    constexpr inline void nion<T, D>::resize(D newDegree) {
-        ASSERT(newDegree >= degree_, "The new degree must be greater than or equal to the current degree.");
-        if (newDegree == degree_) return; // return if the degrees are the same
-
-        /// allocate new memory for the nion
-        
-        /// calculate memory size
-        constexpr D alignment_requirement = std::alignment_of<T>::value; // alignment requirement of the type
-        D newbytes_ = newDegree * sizeof(T); // set the number of bytes
-        
-        /// calculate the number of bytes to add to the memory size to make it the LCM of the alignment requirement
-        D min_power_of_two = (newbytes_ | (newbytes_ - 1)) + 1; // minimum power of two that is greater than or equal to 'bytes'
-        D newalignment_ = std::max(min_power_of_two, alignment_requirement); // minimum alignment size
-
-        /// allocate memory for the nion
-        T* newcomponents_ = static_cast<T*>(aligned_alloc(newalignment_, newbytes_));
-        
-        /// copy the values into the nion
-        memcpy(newcomponents_, components_, bytes_);
-        
-        /// memset the rest of the memory to zero
-        memset(newcomponents_ + degree_, 0, newbytes_ - bytes_);
-        
-        /// free the old memory
-        free(components_); // free the memory of the nion
-        
-        components_ = newcomponents_; // set the components
-        degree_ = newDegree; // set the degree
-        bytes_ = newbytes_; // set the number of bytes
-        alignment_ = newalignment_; // set the alignment
-    }
-    
-    template<typename T, typename D>
     constexpr inline void nion<T, D>::operator+=(const nion<T, D> &other) {
-        // if the degree is less than the other nion, resize this nion.
-        if (degree_ < other.degree_)
-            resize(other.degree_);
 
         // add the components of the other nion to this nion.
-        #pragma vector always
-        for (D i = 0; i < other.degree_; i++) {
-            components_[i] += other.components_[i];
+        if (size_ >= other.size_) {
+            #pragma unroll
+            for (D i = 0; i < other.size_; i++) elem_[i] += other.elem_[i];
+        } else {
+            #pragma unroll
+            for (D i = 0; i < size_; i++) elem_[i] += other.elem_[i];
+
+            // copy the remaining values
+            memcpy(elem_ + size_, other.elem_ + size_, (other.size_ - size_) * sizeof(T));
+
+            // set the new size of the nion
+            size_ = other.size_;
         }
+
     }
 
     template<typename T, typename D>
     constexpr inline void nion<T, D>::operator-=(const nion<T, D> &other) {
-        // if the degree is less than the other nion, resize this nion.
-        if (degree_ < other.degree_)
-            resize(other.degree_);
 
-        // substract the components of the other nion from this nion.
-        #pragma vector always
-        for (D i = 0; i < other.degree_; i++) {
-            components_[i] -= other.components_[i];
+        // subtract the components of the other nion to this nion.
+        if (size_ >= other.size_) {
+            #pragma unroll
+            for (D i = 0; i < other.size_; i++) elem_[i] -= other.elem_[i];
+        } else {
+            #pragma unroll
+            for (D i = 0; i < size_; i++) elem_[i] -= other.elem_[i];
+
+            // copy the remaining values and negate them
+            #pragma unroll
+            for (D i = size_; i < other.size_; i++) elem_[i] = -other.elem_[i];
+
+            // set the new size of the nion
+            size_ = other.size_;
         }
     }
 
     template<typename T, typename D>
     template<typename S>
-    constexpr inline void nion<T, D>::operator+=(S scalar) const {
-        components_[0] += static_cast<T>(scalar);
+    constexpr inline void nion<T, D>::operator+=(S scalar) {
+        elem_[0] += static_cast<T>(scalar);
     }
 
     template<typename T, typename D>
     template<typename S>
-    constexpr inline void nion<T, D>::operator-=(S scalar) const {
-        components_[0] -= static_cast<T>(scalar);
+    constexpr inline void nion<T, D>::operator-=(S scalar) {
+        elem_[0] -= static_cast<T>(scalar);
     }
 
     /************************************
@@ -301,87 +234,86 @@ namespace Nion {
 
     template<typename T, typename D>
     constexpr inline nion<T, D> nion<T, D>::operator+(const nion<T, D> &other) const {
-        nion<T, D> sum;
-        sum.degree_ = std::max(degree_, other.degree_); // set the degree
-        sum.bytes_ = sum.degree_ * sizeof(T); // set the number of bytes
-        const D alignment_requirement = std::alignment_of<T>::value; // alignment requirement of the type
-        sum.alignment_ = std::max((sum.bytes_ | (sum.bytes_ - 1)) + 1, alignment_requirement); // set the alignment
 
-        /// allocate memory for the nion
-        sum.components_ = static_cast<T*>(aligned_alloc(sum.alignment_, sum.bytes_));
+        nion<T, D> sum; // create a nion to store the sum
 
-        bool thisIsLarger = degree_ >= other.degree_; // check if this nion is larger than the other nion
-        D smallerDegree = thisIsLarger ? other.degree_ : degree_; // set the smaller degree
-        /// add the components of the other nion to this nion.
-        #pragma vector always
-        for (D i = 0; i < smallerDegree; i++) {
-            sum.components_[i] = components_[i] + other.components_[i];
+        if (size_ >= other.size_) {
+            // set the size of the sum
+            sum.size_ = size_;
+
+            // add the components of the other nion and this nion.
+            #pragma unroll
+            for (D i = 0; i < other.size_; i++) sum.elem_[i] = elem_[i] + other.elem_[i];
+
+            // copy the remaining values of this nion
+            memcpy(sum.elem_ + other.size_, elem_ + other.size_, (size_ - other.size_) * sizeof(T));
+        } else {
+            // set the size of the sum
+            sum.size_ = other.size_;
+
+            // add the components of the other nion and this nion.
+            #pragma unroll
+            for (D i = 0; i < size_; i++) sum.elem_[i] = elem_[i] + other.elem_[i];
+
+            // copy the remaining values of the other nion
+            memcpy(sum.elem_ + size_, other.elem_ + size_, (other.size_ - size_) * sizeof(T));
         }
-        /// copy the rest of the components of this nion to the sum nion.
-        if (thisIsLarger)
-            memcpy(sum.components_ + smallerDegree, components_ + smallerDegree, (degree_ - smallerDegree) * sizeof(T));
-        else
-            memcpy(sum.components_ + smallerDegree, other.components_ + smallerDegree, (other.degree_ - smallerDegree) * sizeof(T));
 
         return sum;
     }
 
     template<typename T, typename D>
     constexpr inline nion<T, D> nion<T, D>::operator-(const nion<T, D> &other) const {
-        nion<T, D> difference;
-        difference.degree_ = std::max(degree_, other.degree_); // set the degree
-        difference.bytes_ = difference.degree_ * sizeof(T); // set the number of bytes
-        const D alignment_requirement = std::alignment_of<T>::value; // alignment requirement of the type
-        difference.alignment_ = std::max((difference.bytes_ | (difference.bytes_ - 1)) + 1, alignment_requirement); // set the alignment
 
-        /// allocate memory for the nion
-        difference.components_ = static_cast<T*>(aligned_alloc(difference.alignment_, difference.bytes_));
+        nion<T, D> diff; // create a nion to store the difference
 
+        if (size_ >= other.size_) {
+            // set the size of the difference
+            diff.size_ = size_;
 
-        bool thisIsLarger = degree_ >= other.degree_; // check if this nion is larger than the other nion
-        D smallerDegree = thisIsLarger ? other.degree_ : degree_; // set the smaller degree
+            // subtract the components of the other nion and this nion.
+            #pragma unroll
+            for (D i = 0; i < other.size_; i++) diff.elem_[i] = elem_[i] - other.elem_[i];
 
-        /// subtract the components of the other nion from this nion.
-        #pragma vector always
-        for (D i = 0; i < smallerDegree; i++) {
-            difference.components_[i] = components_[i] - other.components_[i];
+            // copy the remaining values of this nion
+            memcpy(diff.elem_ + other.size_, elem_ + other.size_, (size_ - other.size_) * sizeof(T));
+        } else {
+            // set the size of the difference
+            diff.size_ = other.size_;
+
+            // subtract the components of the other nion and this nion.
+            #pragma unroll
+            for (D i = 0; i < size_; i++) diff.elem_[i] = elem_[i] - other.elem_[i];
+
+            // copy the remaining values of the other nion and negate them
+            #pragma unroll
+            for (D i = size_; i < other.size_; i++) diff.elem_[i] = -other.elem_[i];
         }
-        /// copy the rest of the components of this nion to the difference nion.
-        if (thisIsLarger)
-            memcpy(difference.components_ + smallerDegree, components_ + smallerDegree, (degree_ - smallerDegree) * sizeof(T));
-        else {
-            /// negate the rest of the components of the other nion and copy them to the difference nion.
-            #pragma vector always
-            for (D i = smallerDegree; i < other.degree_; i++) {
-                difference.components_[i] = -other.components_[i];
-            }
-        }
-        return difference;
+
+        return diff;
     }
 
     template<typename T, typename D>
     template<typename S>
     constexpr inline nion<T, D> nion<T, D>::operator+(S scalar) const {
-        nion<T, D> sum;
-        sum.degree_ = degree_; // set the degree
-        sum.bytes_ = bytes_; // set the number of bytes
-        sum.alignment_ = alignment_; // set the alignment
+        nion<T, D> sum(size_); // create a nion to store the sum
 
-        /// allocate memory for the nion
-        sum.components_ = static_cast<T*>(aligned_alloc(sum.alignment_, sum.bytes_));
-        memcpy(sum.components_, components_, bytes_);
-        sum.components_[0] += static_cast<T>(scalar);
+        /// copy the components of this nion to the sum nion.
+        memcpy(sum.elem_, elem_, size_ * sizeof(T));
+
+        /// add the scalar to the real component of the sum nion.
+        sum.elem_[0] += static_cast<T>(scalar);
         return sum;
     }
 
     template<typename T, typename D, typename S>
-    static constexpr inline nion<T, D> operator+(S scalar, const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> operator+(S scalar, const nion<T, D> &z) {
         return z + static_cast<T>(scalar);
     }
 
     template<typename T, typename D>
     constexpr inline nion<T, D> nion<T, D>::operator++() {
-        components_[0]++;
+        elem_[0]++;
         return *this;
     }
 
@@ -392,13 +324,13 @@ namespace Nion {
     }
 
     template<typename T, typename D, typename S>
-    static constexpr inline nion<T, D> operator-(S scalar, const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> operator-(S scalar, const nion<T, D> &z) {
         return -z + static_cast<T>(scalar);
     }
 
     template<typename T, typename D>
     constexpr inline nion<T, D> nion<T, D>::operator--() {
-        components_[0]--;
+        elem_[0]--;
         return *this;
     }
 
@@ -408,32 +340,30 @@ namespace Nion {
 
     template<typename T, typename D>
     constexpr inline void nion<T, D>::operator*=(const nion<T, D> &other) {
-        *this = std::move(*this * other);
+        *this = *this * other;
     }
 
     template<typename T, typename D>
     template<typename S>
     constexpr inline void nion<T, D>::operator*=(S scalar) {
         T product_scalar = static_cast<T>(scalar);
-        #pragma vector always
-        for (D i = 0; i < degree_; i++) {
-            components_[i] *= product_scalar;
-        }
+        #pragma unroll
+        for (D i = 0; i < size_; i++) elem_[i] *= product_scalar;
+
     }
 
     template<typename T, typename D>
     constexpr inline void nion<T, D>::operator/=(const nion<T, D> &other) {
-        *this = std::move(*this / other);
+        *this = *this / other;
     }
 
     template<typename T, typename D>
     template<typename S>
     constexpr inline void nion<T, D>::operator/=(S scalar) {
         T quotient_scalar = static_cast<T>(scalar);
-        #pragma vector always
-        for (D i = 0; i < degree_; i++) {
-            components_[i] /= quotient_scalar;
-        }
+        #pragma unroll
+        for (D i = 0; i < size_; i++) elem_[i] /= quotient_scalar;
+
     }
 
     /******************************************
@@ -442,35 +372,22 @@ namespace Nion {
 
     template<typename T, typename D>
     constexpr inline nion<T, D> nion<T, D>::conj() const {
-        nion<T, D> conjugate;
-        conjugate.degree_ = degree_;
-        conjugate.bytes_ = bytes_;
-        conjugate.alignment_ = alignment_;
-        conjugate.components_ = static_cast<T*>(aligned_alloc(alignment_, bytes_));
+        nion<T, D> conjugate = *this; // copy this nion
 
         // negate all components except the first
-
-        #pragma vector always
-        for (D i = 0; i < degree_; i++) {
-            conjugate.components_[i] = -components_[i];
-        }
-        conjugate.components_[0] = components_[0];
+        #pragma unroll
+        for (D i = 1; i < size_; i++) conjugate.elem_[i] *= -1;
 
         return conjugate;
     }
 
     template<typename T, typename D>
     constexpr inline nion<T, D> nion<T, D>::operator-() const {
-        nion<T, D> negated;
-        negated.degree_ = degree_;
-        negated.bytes_ = bytes_;
-        negated.alignment_ = alignment_;
-        negated.components_ = static_cast<T*>(aligned_alloc(alignment_, bytes_));
+        nion<T, D> negated = *this; // copy this nion
 
-        #pragma vector always
-        for (D i = 0; i < degree_; i++) {
-            negated.components_[i] = -components_[i];
-        }
+        // negate all components
+        #pragma unroll
+        for (D i = 0; i < size_; i++) negated.elem_[i] *= -1;
 
         return negated;
     }
@@ -478,152 +395,110 @@ namespace Nion {
     template<typename T, typename D>
     constexpr inline nion<T, D> nion<T, D>::operator*(const nion<T, D> &other) const {
 
-        switch (degree_) {
-            case 1:
-                // if the degree is 1, then the product is just the scalar product.
-                if (other.degree_ == 1) {
-                    nion<T> product = {components_[0] * other.components_[0]};
+        if (size_ == other.size_) {
+            nion<T, D> product; // create a nion to store the product
+            product.size_ = size_;
+            
+            switch (size_) {
+                case 1: // if this size is 1, then the product is just the scalar product.
+                    product.elem_[0] = elem_[0] * other.elem_[0];
                     return product;
-                }
-                else
-                    return other * components_[0];
-            case 2:
-                if (other.degree_ == 2) { // hard-coded complex product
-                    nion<T> product =
-                    {
-                        components_[0] * other.components_[0] - components_[1] * other.components_[1],
-                        components_[1] * other.components_[0] + components_[0] * other.components_[1]
-                    };
+                    
+// if not in debug mode, use the optimized code
+#ifndef NION_DEBUG
+                case 2: // hard-coded complex product
+                    product.elem_[0] = elem_[0] * other.elem_[0] - elem_[1] * other.elem_[1];
+                    product.elem_[1] = elem_[1] * other.elem_[0] + elem_[0] * other.elem_[1];
                     return product;
-                }
-                break;
-            case 4:
-                if (other.degree_ == 4) { // hard-coded quaternion product
-                    nion<T> product =
-                    {
-                        components_[0] * other.components_[0] - components_[1] * other.components_[1] - components_[2] * other.components_[2] - components_[3] * other.components_[3],
-                        components_[1] * other.components_[0] + components_[0] * other.components_[1] - components_[3] * other.components_[2] + components_[2] * other.components_[3],
-                        components_[2] * other.components_[0] + components_[3] * other.components_[1] + components_[0] * other.components_[2] - components_[1] * other.components_[3],
-                        components_[3] * other.components_[0] - components_[2] * other.components_[1] + components_[1] * other.components_[2] + components_[0] * other.components_[3]
-                    };
+                    
+                case 4: // hard-coded quaternion product
+                    product.elem_[0] = elem_[0] * other.elem_[0] - elem_[1] * other.elem_[1] - elem_[2] * other.elem_[2] - elem_[3] * other.elem_[3];
+                    product.elem_[1] = elem_[1] * other.elem_[0] + elem_[0] * other.elem_[1] - elem_[3] * other.elem_[2] + elem_[2] * other.elem_[3];
+                    product.elem_[2] = elem_[2] * other.elem_[0] + elem_[3] * other.elem_[1] + elem_[0] * other.elem_[2] - elem_[1] * other.elem_[3];
+                    product.elem_[3] = elem_[3] * other.elem_[0] - elem_[2] * other.elem_[1] + elem_[1] * other.elem_[2] + elem_[0] * other.elem_[3];
                     return product;
-                }
-                break;
-            case 8:
-                if (other.degree_ == 8) { // hard-coded octonion product ( I know, it's a bit much )
-                    nion<T> product =
-                    {
-                        components_[0] * other.components_[0] - components_[1] * other.components_[1] - components_[2] * other.components_[2] - components_[3] * other.components_[3] - components_[4] * other.components_[4] - components_[5] * other.components_[5] - components_[6] * other.components_[6] - components_[7] * other.components_[7],
-                        components_[1] * other.components_[0] + components_[0] * other.components_[1] - components_[3] * other.components_[2] + components_[2] * other.components_[3] - components_[5] * other.components_[4] + components_[4] * other.components_[5] + components_[7] * other.components_[6] - components_[6] * other.components_[7],
-                        components_[2] * other.components_[0] + components_[3] * other.components_[1] + components_[0] * other.components_[2] - components_[1] * other.components_[3] - components_[6] * other.components_[4] - components_[7] * other.components_[5] + components_[4] * other.components_[6] + components_[5] * other.components_[7],
-                        components_[3] * other.components_[0] - components_[2] * other.components_[1] + components_[1] * other.components_[2] + components_[0] * other.components_[3] - components_[7] * other.components_[4] + components_[6] * other.components_[5] - components_[5] * other.components_[6] + components_[4] * other.components_[7],
-                        components_[4] * other.components_[0] + components_[5] * other.components_[1] + components_[6] * other.components_[2] + components_[7] * other.components_[3] + components_[0] * other.components_[4] - components_[1] * other.components_[5] - components_[2] * other.components_[6] - components_[3] * other.components_[7],
-                        components_[5] * other.components_[0] - components_[4] * other.components_[1] + components_[7] * other.components_[2] - components_[6] * other.components_[3] + components_[1] * other.components_[4] + components_[0] * other.components_[5] + components_[3] * other.components_[6] - components_[2] * other.components_[7],
-                        components_[6] * other.components_[0] - components_[7] * other.components_[1] - components_[4] * other.components_[2] + components_[5] * other.components_[3] + components_[2] * other.components_[4] - components_[3] * other.components_[5] + components_[0] * other.components_[6] + components_[1] * other.components_[7],
-                        components_[7] * other.components_[0] + components_[6] * other.components_[1] - components_[5] * other.components_[2] - components_[4] * other.components_[3] + components_[3] * other.components_[4] + components_[2] * other.components_[5] - components_[1] * other.components_[6] + components_[0] * other.components_[7]
-                    };
+                    
+                case 8: // hard-coded octonion product ( I know, it's a bit much )
+                    product.elem_[0] = elem_[0] * other.elem_[0] - elem_[1] * other.elem_[1] - elem_[2] * other.elem_[2] - elem_[3] * other.elem_[3] - elem_[4] * other.elem_[4] - elem_[5] * other.elem_[5] - elem_[6] * other.elem_[6] - elem_[7] * other.elem_[7];
+                    product.elem_[1] = elem_[1] * other.elem_[0] + elem_[0] * other.elem_[1] - elem_[3] * other.elem_[2] + elem_[2] * other.elem_[3] - elem_[5] * other.elem_[4] + elem_[4] * other.elem_[5] + elem_[7] * other.elem_[6] - elem_[6] * other.elem_[7];
+                    product.elem_[2] = elem_[2] * other.elem_[0] + elem_[3] * other.elem_[1] + elem_[0] * other.elem_[2] - elem_[1] * other.elem_[3] - elem_[6] * other.elem_[4] - elem_[7] * other.elem_[5] + elem_[4] * other.elem_[6] + elem_[5] * other.elem_[7];
+                    product.elem_[3] = elem_[3] * other.elem_[0] - elem_[2] * other.elem_[1] + elem_[1] * other.elem_[2] + elem_[0] * other.elem_[3] - elem_[7] * other.elem_[4] + elem_[6] * other.elem_[5] - elem_[5] * other.elem_[6] + elem_[4] * other.elem_[7];
+                    product.elem_[4] = elem_[4] * other.elem_[0] + elem_[5] * other.elem_[1] + elem_[6] * other.elem_[2] + elem_[7] * other.elem_[3] + elem_[0] * other.elem_[4] - elem_[1] * other.elem_[5] - elem_[2] * other.elem_[6] - elem_[3] * other.elem_[7];
+                    product.elem_[5] = elem_[5] * other.elem_[0] - elem_[4] * other.elem_[1] + elem_[7] * other.elem_[2] - elem_[6] * other.elem_[3] + elem_[1] * other.elem_[4] + elem_[0] * other.elem_[5] + elem_[3] * other.elem_[6] - elem_[2] * other.elem_[7];
+                    product.elem_[6] = elem_[6] * other.elem_[0] - elem_[7] * other.elem_[1] - elem_[4] * other.elem_[2] + elem_[5] * other.elem_[3] + elem_[2] * other.elem_[4] - elem_[3] * other.elem_[5] + elem_[0] * other.elem_[6] + elem_[1] * other.elem_[7];
+                    product.elem_[7] = elem_[7] * other.elem_[0] + elem_[6] * other.elem_[1] - elem_[5] * other.elem_[2] - elem_[4] * other.elem_[3] + elem_[3] * other.elem_[4] + elem_[2] * other.elem_[5] - elem_[1] * other.elem_[6] + elem_[0] * other.elem_[7];
                     return product;
-                }
-                break;
-//            case 16:
-//                if (other.degree_ == 16) { // hard-coded sedenion product ( I strongly recommend using nowrap if you're looking at this... )
-//                    nion<T> product =
-//                    {
-//
-//                    components_[0] *  other[0] - components_[1] *  other[1] - components_[2] *  other[2] - components_[3] *  other[3] - components_[4] *  other[4] - components_[5] *  other[5] - components_[6] *  other[6] - components_[7] *  other[7] - components_[8] *  other[8] - components_[9] *  other[9] - components_[10] * other[10] - components_[11] * other[11] - components_[12] * other[12] - components_[13] * other[13] - components_[14] * other[14] - components_[15] * other[15],
-//                    components_[1] *  other[0] + components_[0] *  other[1] - components_[3] *  other[2] + components_[2] *  other[3] - components_[5] *  other[4] + components_[4] *  other[5] - components_[7] *  other[6] + components_[6] *  other[7] - components_[9] *  other[8] + components_[8] *  other[9] - components_[11] * other[10] + components_[10] * other[11] - components_[13] * other[12] + components_[12] * other[13] - components_[15] * other[14] + components_[14] * other[15],
-//                    components_[0] *  other[2] - components_[1] *  other[3] + components_[2] *  other[0] + components_[3] *  other[1] + components_[4] *  other[6] + components_[5] *  other[7] - components_[6] *  other[4] - components_[7] *  other[5] + components_[8] * other[10] + components_[9] * other[11] - components_[10] *  other[8] - components_[11] *  other[9] - components_[12] * other[14] - components_[13] * other[15] + components_[14] * other[12] + components_[15] * other[13],
-//                    components_[0] *  other[3] + components_[1] *  other[2] - components_[2] *  other[1] + components_[3] *  other[0] + components_[4] *  other[7] - components_[5] *  other[6] + components_[6] *  other[5] - components_[7] *  other[4] + components_[8] * other[11] - components_[9] * other[10] + components_[10] *  other[9] - components_[11] *  other[8] - components_[12] * other[15] + components_[13] * other[14] - components_[14] * other[13] + components_[15] * other[12],
-//                    components_[0] *  other[4] - components_[1] *  other[5] - components_[2] *  other[6] - components_[3] *  other[7] + components_[4] *  other[0] + components_[5] *  other[1] + components_[6] *  other[2] + components_[7] *  other[3] + components_[8] * other[12] + components_[9] * other[13] + components_[10] * other[14] + components_[11] * other[15] - components_[12] *  other[8] - components_[13] *  other[9] - components_[14] * other[10] - components_[15] * other[11],
-//                    components_[0] *  other[5] + components_[1] *  other[4] - components_[2] *  other[7] + components_[3] *  other[6] - components_[4] *  other[1] + components_[5] *  other[0] - components_[6] *  other[3] + components_[7] *  other[2] + components_[8] * other[13] - components_[9] * other[12] + components_[10] * other[15] - components_[11] * other[14] + components_[12] *  other[9] - components_[13] *  other[8] + components_[14] * other[11] - components_[15] * other[10],
-//                    components_[0] *  other[6] + components_[1] *  other[7] + components_[2] *  other[4] - components_[3] *  other[5] - components_[4] *  other[2] + components_[5] *  other[3] + components_[6] *  other[0] - components_[7] *  other[1] + components_[8] * other[14] - components_[9] * other[15] - components_[10] * other[12] + components_[11] * other[13] + components_[12] * other[10] - components_[13] * other[11] - components_[14] *  other[8] + components_[15] * other[9],
-//                    components_[0] *  other[7] - components_[1] *  other[6] + components_[2] *  other[5] + components_[3] *  other[4] - components_[4] *  other[3] - components_[5] *  other[2] + components_[6] *  other[1] + components_[7] *  other[0] + components_[8] * other[15] + components_[9] * other[14] - components_[10] * other[13] - components_[11] * other[12] + components_[12] * other[11] + components_[13] * other[10] - components_[14] *  other[9] - components_[15] * other[8],
-//                    components_[0] *  other[8] - components_[1] *  other[9] - components_[2] * other[10] - components_[3] * other[11] - components_[4] * other[12] - components_[5] * other[13] - components_[6] * other[14] - components_[7] * other[15] + components_[8] *  other[0] + components_[9] *  other[1] + components_[10] *  other[2] + components_[11] *  other[3] + components_[12] *  other[4] + components_[13] *  other[5] + components_[14] *  other[6] + components_[15] * other[7],
-//                    components_[0] *  other[9] + components_[1] *  other[8] - components_[2] * other[11] + components_[3] * other[10] - components_[4] * other[13] + components_[5] * other[12] + components_[6] * other[15] - components_[7] * other[14] - components_[8] *  other[1] + components_[9] *  other[0] - components_[10] *  other[3] + components_[11] *  other[2] - components_[12] *  other[5] + components_[13] *  other[4] + components_[14] *  other[7] - components_[15] * other[6],
-//                    components_[0] * other[10] + components_[1] * other[11] + components_[2] *  other[8] - components_[3] *  other[9] - components_[4] * other[14] - components_[5] * other[15] + components_[6] * other[12] + components_[7] * other[13] - components_[8] *  other[2] + components_[9] *  other[3] + components_[10] *  other[0] - components_[11] *  other[1] - components_[12] *  other[6] - components_[13] *  other[7] + components_[14] *  other[4] + components_[15] * other[5],
-//                    components_[0] * other[11] - components_[1] * other[10] + components_[2] *  other[9] + components_[3] *  other[8] - components_[4] * other[15] + components_[5] * other[14] - components_[6] * other[13] + components_[7] * other[12] - components_[8] *  other[3] - components_[9] *  other[2] + components_[10] *  other[1] + components_[11] *  other[0] - components_[12] *  other[7] + components_[13] *  other[6] - components_[14] *  other[5] + components_[15] * other[4],
-//                    components_[0] * other[12] + components_[1] * other[13] + components_[2] * other[14] + components_[3] * other[15] + components_[4] *  other[8] - components_[5] *  other[9] - components_[6] * other[10] - components_[7] * other[11] - components_[8] *  other[4] + components_[9] *  other[5] + components_[10] *  other[6] + components_[11] *  other[7] + components_[12] *  other[0] - components_[13] *  other[1] - components_[14] *  other[2] - components_[15] * other[3],
-//                    components_[0] * other[13] - components_[1] * other[12] + components_[2] * other[15] - components_[3] * other[14] + components_[4] *  other[9] + components_[5] *  other[8] + components_[6] * other[11] - components_[7] * other[10] - components_[8] *  other[5] - components_[9] *  other[4] + components_[10] *  other[7] - components_[11] *  other[6] + components_[12] *  other[1] + components_[13] *  other[0] + components_[14] *  other[3] - components_[15] * other[2],
-//                    components_[0] * other[14] - components_[1] * other[15] - components_[2] * other[12] + components_[3] * other[13] + components_[4] * other[10] - components_[5] * other[11] + components_[6] *  other[8] + components_[7] *  other[9] - components_[8] *  other[6] - components_[9] *  other[7] - components_[10] *  other[4] + components_[11] *  other[5] + components_[12] *  other[2] - components_[13] *  other[3] + components_[14] *  other[0] + components_[15] * other[1],
-//                    components_[0] * other[15] + components_[1] * other[14] - components_[2] * other[13] - components_[3] * other[12] + components_[4] * other[11] + components_[5] * other[10] - components_[6] *  other[9] + components_[7] *  other[8] - components_[8] *  other[7] + components_[9] *  other[6] - components_[10] *  other[5] - components_[11] *  other[4] + components_[12] *  other[3] + components_[13] *  other[2] - components_[14] *  other[1] + components_[15] * other[0]
-//                     };
-//
-//                    return product;
-//                }
-//                break;
-            //case 32: TODO: No way. You can't make me. 32x32 products are just too big. I could do it, but it wouldn't be pretty. I'll leave it to you.
+                    
+                case 16: // hard-coded sedenion product ( I strongly recommend using nowrap if you're looking at this... )
+                    product.elem_[ 0] = elem_[ 0] * other.elem_[ 0] - elem_[ 1] * other.elem_[ 1] - elem_[ 2] * other.elem_[ 2] - elem_[ 3] * other.elem_[ 3] - elem_[ 4] * other.elem_[ 4] - elem_[ 5] * other.elem_[ 5] - elem_[ 6] * other.elem_[ 6] - elem_[ 7] * other.elem_[ 7] - elem_[ 8] * other.elem_[ 8] - elem_[ 9] * other.elem_[ 9] - elem_[10] * other.elem_[10] - elem_[11] * other.elem_[11] - elem_[12] * other.elem_[12] - elem_[13] * other.elem_[13] - elem_[14] * other.elem_[14] - elem_[15] * other.elem_[15];
+                    product.elem_[ 1] = elem_[ 0] * other.elem_[ 1] + elem_[ 1] * other.elem_[ 0] + elem_[ 2] * other.elem_[ 3] - elem_[ 3] * other.elem_[ 2] + elem_[ 4] * other.elem_[ 5] - elem_[ 5] * other.elem_[ 4] - elem_[ 6] * other.elem_[ 7] + elem_[ 7] * other.elem_[ 6] + elem_[ 8] * other.elem_[ 9] - elem_[ 9] * other.elem_[ 8] - elem_[10] * other.elem_[11] + elem_[11] * other.elem_[10] - elem_[12] * other.elem_[13] + elem_[13] * other.elem_[12] + elem_[14] * other.elem_[15] - elem_[15] * other.elem_[14];
+                    product.elem_[ 2] = elem_[ 0] * other.elem_[ 2] - elem_[ 1] * other.elem_[ 3] + elem_[ 2] * other.elem_[ 0] + elem_[ 3] * other.elem_[ 1] + elem_[ 4] * other.elem_[ 6] + elem_[ 5] * other.elem_[ 7] - elem_[ 6] * other.elem_[ 4] - elem_[ 7] * other.elem_[ 5] + elem_[ 8] * other.elem_[10] + elem_[ 9] * other.elem_[11] - elem_[10] * other.elem_[ 8] - elem_[11] * other.elem_[ 9] - elem_[12] * other.elem_[14] - elem_[13] * other.elem_[15] + elem_[14] * other.elem_[12] + elem_[15] * other.elem_[13];
+                    product.elem_[ 3] = elem_[ 0] * other.elem_[ 3] + elem_[ 1] * other.elem_[ 2] - elem_[ 2] * other.elem_[ 1] + elem_[ 3] * other.elem_[ 0] + elem_[ 4] * other.elem_[ 7] - elem_[ 5] * other.elem_[ 6] + elem_[ 6] * other.elem_[ 5] - elem_[ 7] * other.elem_[ 4] + elem_[ 8] * other.elem_[11] - elem_[ 9] * other.elem_[10] + elem_[10] * other.elem_[ 9] - elem_[11] * other.elem_[ 8] - elem_[12] * other.elem_[15] + elem_[13] * other.elem_[14] - elem_[14] * other.elem_[13] + elem_[15] * other.elem_[12];
+                    product.elem_[ 4] = elem_[ 0] * other.elem_[ 4] - elem_[ 1] * other.elem_[ 5] - elem_[ 2] * other.elem_[ 6] - elem_[ 3] * other.elem_[ 7] + elem_[ 4] * other.elem_[ 0] + elem_[ 5] * other.elem_[ 1] + elem_[ 6] * other.elem_[ 2] + elem_[ 7] * other.elem_[ 3] + elem_[ 8] * other.elem_[12] + elem_[ 9] * other.elem_[13] + elem_[10] * other.elem_[14] + elem_[11] * other.elem_[15] - elem_[12] * other.elem_[ 8] - elem_[13] * other.elem_[ 9] - elem_[14] * other.elem_[10] - elem_[15] * other.elem_[11];
+                    product.elem_[ 5] = elem_[ 0] * other.elem_[ 5] + elem_[ 1] * other.elem_[ 4] - elem_[ 2] * other.elem_[ 7] + elem_[ 3] * other.elem_[ 6] - elem_[ 4] * other.elem_[ 1] + elem_[ 5] * other.elem_[ 0] - elem_[ 6] * other.elem_[ 3] + elem_[ 7] * other.elem_[ 2] + elem_[ 8] * other.elem_[13] - elem_[ 9] * other.elem_[12] + elem_[10] * other.elem_[15] - elem_[11] * other.elem_[14] + elem_[12] * other.elem_[ 9] - elem_[13] * other.elem_[ 8] + elem_[14] * other.elem_[11] - elem_[15] * other.elem_[10];
+                    product.elem_[ 6] = elem_[ 0] * other.elem_[ 6] + elem_[ 1] * other.elem_[ 7] + elem_[ 2] * other.elem_[ 4] - elem_[ 3] * other.elem_[ 5] - elem_[ 4] * other.elem_[ 2] + elem_[ 5] * other.elem_[ 3] + elem_[ 6] * other.elem_[ 0] - elem_[ 7] * other.elem_[ 1] + elem_[ 8] * other.elem_[14] - elem_[ 9] * other.elem_[15] - elem_[10] * other.elem_[12] + elem_[11] * other.elem_[13] + elem_[12] * other.elem_[10] - elem_[13] * other.elem_[11] - elem_[14] * other.elem_[ 8] + elem_[15] * other.elem_[ 9];
+                    product.elem_[ 7] = elem_[ 0] * other.elem_[ 7] - elem_[ 1] * other.elem_[ 6] + elem_[ 2] * other.elem_[ 5] + elem_[ 3] * other.elem_[ 4] - elem_[ 4] * other.elem_[ 3] - elem_[ 5] * other.elem_[ 2] + elem_[ 6] * other.elem_[ 1] + elem_[ 7] * other.elem_[ 0] + elem_[ 8] * other.elem_[15] + elem_[ 9] * other.elem_[14] - elem_[10] * other.elem_[13] - elem_[11] * other.elem_[12] + elem_[12] * other.elem_[11] + elem_[13] * other.elem_[10] - elem_[14] * other.elem_[ 9] - elem_[15] * other.elem_[ 8];
+                    product.elem_[ 8] = elem_[ 0] * other.elem_[ 8] - elem_[ 1] * other.elem_[ 9] - elem_[ 2] * other.elem_[10] - elem_[ 3] * other.elem_[11] - elem_[ 4] * other.elem_[12] - elem_[ 5] * other.elem_[13] - elem_[ 6] * other.elem_[14] - elem_[ 7] * other.elem_[15] + elem_[ 8] * other.elem_[ 0] + elem_[ 9] * other.elem_[ 1] + elem_[10] * other.elem_[ 2] + elem_[11] * other.elem_[ 3] + elem_[12] * other.elem_[ 4] + elem_[13] * other.elem_[ 5] + elem_[14] * other.elem_[ 6] + elem_[15] * other.elem_[ 7];
+                    product.elem_[ 9] = elem_[ 0] * other.elem_[ 9] + elem_[ 1] * other.elem_[ 8] - elem_[ 2] * other.elem_[11] + elem_[ 3] * other.elem_[10] - elem_[ 4] * other.elem_[13] + elem_[ 5] * other.elem_[12] + elem_[ 6] * other.elem_[15] - elem_[ 7] * other.elem_[14] - elem_[ 8] * other.elem_[ 1] + elem_[ 9] * other.elem_[ 0] - elem_[10] * other.elem_[ 3] + elem_[11] * other.elem_[ 2] - elem_[12] * other.elem_[ 5] + elem_[13] * other.elem_[ 4] + elem_[14] * other.elem_[ 7] - elem_[15] * other.elem_[ 6];
+                    product.elem_[10] = elem_[ 0] * other.elem_[10] + elem_[ 1] * other.elem_[11] + elem_[ 2] * other.elem_[ 8] - elem_[ 3] * other.elem_[ 9] - elem_[ 4] * other.elem_[14] - elem_[ 5] * other.elem_[15] + elem_[ 6] * other.elem_[12] + elem_[ 7] * other.elem_[13] - elem_[ 8] * other.elem_[ 2] + elem_[ 9] * other.elem_[ 3] + elem_[10] * other.elem_[ 0] - elem_[11] * other.elem_[ 1] - elem_[12] * other.elem_[ 6] - elem_[13] * other.elem_[ 7] + elem_[14] * other.elem_[ 4] + elem_[15] * other.elem_[ 5];
+                    product.elem_[11] = elem_[ 0] * other.elem_[11] - elem_[ 1] * other.elem_[10] + elem_[ 2] * other.elem_[ 9] + elem_[ 3] * other.elem_[ 8] - elem_[ 4] * other.elem_[15] + elem_[ 5] * other.elem_[14] - elem_[ 6] * other.elem_[13] + elem_[ 7] * other.elem_[12] - elem_[ 8] * other.elem_[ 3] - elem_[ 9] * other.elem_[ 2] + elem_[10] * other.elem_[ 1] + elem_[11] * other.elem_[ 0] - elem_[12] * other.elem_[ 7] + elem_[13] * other.elem_[ 6] - elem_[14] * other.elem_[ 5] + elem_[15] * other.elem_[ 4];
+                    product.elem_[12] = elem_[ 0] * other.elem_[12] + elem_[ 1] * other.elem_[13] + elem_[ 2] * other.elem_[14] + elem_[ 3] * other.elem_[15] + elem_[ 4] * other.elem_[ 8] - elem_[ 5] * other.elem_[ 9] - elem_[ 6] * other.elem_[10] - elem_[ 7] * other.elem_[11] - elem_[ 8] * other.elem_[ 4] + elem_[ 9] * other.elem_[ 5] + elem_[10] * other.elem_[ 6] + elem_[11] * other.elem_[ 7] + elem_[12] * other.elem_[ 0] - elem_[13] * other.elem_[ 1] - elem_[14] * other.elem_[ 2] - elem_[15] * other.elem_[ 3];
+                    product.elem_[13] = elem_[ 0] * other.elem_[13] - elem_[ 1] * other.elem_[12] + elem_[ 2] * other.elem_[15] - elem_[ 3] * other.elem_[14] + elem_[ 4] * other.elem_[ 9] + elem_[ 5] * other.elem_[ 8] + elem_[ 6] * other.elem_[11] - elem_[ 7] * other.elem_[10] - elem_[ 8] * other.elem_[ 5] - elem_[ 9] * other.elem_[ 4] + elem_[10] * other.elem_[ 7] - elem_[11] * other.elem_[ 6] + elem_[12] * other.elem_[ 1] + elem_[13] * other.elem_[ 0] + elem_[14] * other.elem_[ 3] - elem_[15] * other.elem_[ 2];
+                    product.elem_[14] = elem_[ 0] * other.elem_[14] - elem_[ 1] * other.elem_[15] - elem_[ 2] * other.elem_[12] + elem_[ 3] * other.elem_[13] + elem_[ 4] * other.elem_[10] - elem_[ 5] * other.elem_[11] + elem_[ 6] * other.elem_[ 8] + elem_[ 7] * other.elem_[ 9] - elem_[ 8] * other.elem_[ 6] - elem_[ 9] * other.elem_[ 7] - elem_[10] * other.elem_[ 4] + elem_[11] * other.elem_[ 5] + elem_[12] * other.elem_[ 2] - elem_[13] * other.elem_[ 3] + elem_[14] * other.elem_[ 0] + elem_[15] * other.elem_[ 1];
+                    product.elem_[15] = elem_[ 0] * other.elem_[15] + elem_[ 1] * other.elem_[14] - elem_[ 2] * other.elem_[13] - elem_[ 3] * other.elem_[12] + elem_[ 4] * other.elem_[11] + elem_[ 5] * other.elem_[10] - elem_[ 6] * other.elem_[ 9] + elem_[ 7] * other.elem_[ 8] - elem_[ 8] * other.elem_[ 7] + elem_[ 9] * other.elem_[ 6] - elem_[10] * other.elem_[ 5] - elem_[11] * other.elem_[ 4] + elem_[12] * other.elem_[ 3] + elem_[13] * other.elem_[ 2] - elem_[14] * other.elem_[ 1] + elem_[15] * other.elem_[ 0];
+                    return product;
+                //case 32: TODO: No way. You can't make me. 32x32 products are just too big. I could do it, but it wouldn't be pretty. I'll leave it to you.
+#endif
+            } // if size_ is not 1, 2, 8, or 16, we need to do the recursive product.
+        } else { // If the matrix is not square, we need to do the recursive product.
+
+            // if any of the sizes are 1, then the product is just the scalar product.
+            if (size_ == 1) return other * elem_[0];
+            if (other.size_ == 1) return *this * other.elem_[0];
         }
 
-        // if the other degree is 1, then the product is just the scalar product.
-        if (other.degree_ == 1)
-            return *this * other.components_[0];
-
-
-        ///*** if the degree is not 1, 2, 4, or 8, then we need to do the recursive product ***
-
-        // the degree of the first half of the nion
-        std::size_t this_half_degree = degree_ - degree_ / 2;
-        std::size_t other_half_degree = other.degree_ - other.degree_ / 2;
+        /// ********** Recursive Product ********** ///
 
         nion<T> a, b, c, d; // the four halves of the nions
 
-        a.degree_ = this_half_degree; // the degree of the first half of the nion
-        b.degree_ = degree_ - this_half_degree; // the degree of the second half of the nion (can be one less than the first half)
-        c.degree_ = other_half_degree; // same as a for the other nion
-        d.degree_ = other.degree_ - other_half_degree; // same as b for the other nion
+        // the elements of the first half of the nion
+        std::size_t this_half_size = size_ - size_ / 2;
+        std::size_t other_half_size = other.size_ - other.size_ / 2;
 
+        a.size_ = this_half_size; // the size of the first half of the nion
+        b.size_ = size_ - this_half_size; // the size of the second half of the nion (can be one less than the first half)
+        c.size_ = other_half_size; // same as a for the other nion
+        d.size_ = other.size_ - other_half_size; // same as b for the other nion
 
-        /// copy the references to the parts of the nions (this and other) into the parts of the nions (a, b) * (c, d)
-        // this is a bit tricky, but it's the only way to do it without copying the data
-
-        a.components_ = components_; // a is the first pair of this
-        b.components_ = components_ + this_half_degree; // b is the second pair of this
-        c.components_ = other.components_; // c is the first pair of other
-        d.components_ = other.components_ + other_half_degree; // d is the second pair of other
-
-        /// compute new bytes and alignments for each of the parts
-        a.bytes_ = a.degree_ * sizeof(T);
-        b.bytes_ = b.degree_ * sizeof(T);
-        c.bytes_ = c.degree_ * sizeof(T);
-        d.bytes_ = d.degree_ * sizeof(T);
-
-        constexpr D alignment_requirement = std::alignment_of<T>::value; // alignment requirement of the type T
-        a.alignment_ = std::max((a.bytes_ | (a.bytes_ - 1)) + 1, alignment_requirement);
-        b.alignment_ = std::max((b.bytes_ | (b.bytes_ - 1)) + 1, alignment_requirement);
-        c.alignment_ = std::max((c.bytes_ | (c.bytes_ - 1)) + 1, alignment_requirement);
-        d.alignment_ = std::max((d.bytes_ | (d.bytes_ - 1)) + 1, alignment_requirement);
+        /// copy the elements of the nions into the halves ///
+        memcpy(a.elem_, elem_, this_half_size * sizeof(T));
+        memcpy(b.elem_, elem_ + this_half_size, (size_ - this_half_size) * sizeof(T));
+        memcpy(c.elem_, other.elem_, other_half_size * sizeof(T));
+        memcpy(d.elem_, other.elem_ + other_half_size, (other.size_ - other_half_size) * sizeof(T));
 
         /// calculate the cayley-dickson product
-        nion<T> product(
-                (a * c) - (d.conj() * b), // maybe add involution parameter for sign (split hypercomplex numbers)
+        return make_pair(
+                (a * c) - (d.conj() * b), // add involution parameter for sign with macro? (split hypercomplex numbers)
                 (d * a) + (b * c.conj())
         );
-
-        // necessary to prevent the nion pairs from deleting the data
-        a.components_ = b.components_ = c.components_ = d.components_ = nullptr;
-        return product;
-
     }
 
     template<typename T, typename D>
     template<typename S>
     constexpr inline nion<T, D> nion<T, D>::operator*(S scalar) const {
         nion<T, D> product;
-        product.degree_ = degree_;
-        product.bytes_ = bytes_;
-        product.alignment_ = alignment_;
-        product.components_ = static_cast<T*>(std::aligned_alloc(alignment_, bytes_));
+        product.size_ = size_;
         T product_scalar = static_cast<T>(scalar);
-
-        #pragma vector always
-        for (D i = 0; i < degree_; i++) {
-            product.components_[i] = components_[i] * product_scalar;
-        }
+        
+        // compute the product of each element of the nion with the scalar
+        #pragma unroll
+        for (D i = 0; i < size_; i++) product.elem_[i] = elem_[i] * product_scalar;
+        
         return product;
     }
 
     template<typename T, typename D, typename S>
-    static constexpr inline nion<T, D> operator*(S scalar, const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> operator*(S scalar, const nion<T, D> &z) {
         static_assert(std::is_arithmetic_v<S>, "scalar must be arithmetic");
         return z * static_cast<T>(scalar);
     }
@@ -631,12 +506,10 @@ namespace Nion {
     template<typename T, typename D>
     constexpr inline T nion<T, D>::abs() const {
         T absVal = 0;
-
-        #pragma vector always
-        for (D i = 0; i < degree_; i++) {
-            absVal += components_[i] * components_[i];
-        }
-
+        
+        #pragma unroll
+        for (D i = 0; i < size_; i++) absVal += elem_[i] * elem_[i];
+        
         return absVal;
     }
 
@@ -649,12 +522,11 @@ namespace Nion {
     constexpr inline nion<T, D> nion<T, D>::inv() const {
         constexpr T epsilon = std::numeric_limits<T>::epsilon();
 
-
         T absolute = abs();
         if (absolute < epsilon) {
             // if the absolute value is zero, then use the product definition of the absolute value.
             // zero divisors are possible in nions with degree >= 16, so we need to check for them.
-            // this is a bit of a hack, but it works. (like the rest of this library)
+            // this is a bit of a hack, and probably not useful. (like the rest of this library)
 
             // q* / |q| = q* / sqrt(q * q*)
             nion<T, D> inverse = this->conj() * pow((*this * this->conj()), static_cast<T>(-0.5)).real();
@@ -662,17 +534,13 @@ namespace Nion {
         }
 
         nion<T, D> inverse;
-        inverse.degree_ = degree_;
-        inverse.bytes_ = bytes_;
-        inverse.alignment_ = alignment_;
-        inverse.components_ = static_cast<T*>(std::aligned_alloc(alignment_, bytes_));
+        inverse.size_ = size_;
         T inverse_scalar = static_cast<T>(1) / absolute;
-
-        #pragma vector always
-        for (D i = 0; i < degree_; i++) {
-            inverse.components_[i] = -components_[i] * inverse_scalar;
-        }
-        inverse.components_[0] = components_[0] * inverse_scalar;
+        
+        #pragma unroll
+        for (D i = 0; i < size_; i++) inverse.elem_[i] = -elem_[i] * inverse_scalar;
+        
+        inverse.elem_[0] = elem_[0] * inverse_scalar;
         return inverse;
     }
 
@@ -688,7 +556,7 @@ namespace Nion {
     }
 
     template<typename T, typename D, typename S>
-    static constexpr inline nion<T, D> operator/(S scalar, const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> operator/(S scalar, const nion<T, D> &z) {
         return z.inv() * static_cast<T>(scalar);
     }
 
@@ -698,23 +566,17 @@ namespace Nion {
     *******************************************/
 
     template<typename T, typename D>
-    constexpr inline T &nion<T, D>::operator[](D index) const {
-        return this->components_[index];
+    constexpr inline T nion<T, D>::operator[](D index) const {
+        return this->elem_[index];
     }
 
     template<typename T, typename D>
-    constexpr inline T nion<T, D>::real() const { return components_[0]; }
+    constexpr inline T nion<T, D>::real() const { return elem_[0]; }
 
     template<typename T, typename D>
     constexpr inline nion<T, D> nion<T, D>::imag() const {
-        nion<T> imag;
-        imag.degree_ = degree_;
-        imag.bytes_ = bytes_;
-        imag.alignment_ = alignment_;
-
-        imag.components_ = static_cast<T*>(aligned_alloc(alignment_, bytes_));
-        imag[0] = 0;
-        memcpy(imag.components_ + 1, components_ + 1, bytes_ - sizeof(T));
+        nion<T> imag = *this;
+        imag.elem_[0] = 0;
         return imag;
     }
 
@@ -724,29 +586,23 @@ namespace Nion {
 
     template<typename T, typename D>
     constexpr inline bool nion<T, D>::operator==(const nion<T, D> &other) const {
-        if (degree_ != other.degree_) {
-            return false;
-        }
-        #pragma vector always
-        for (D i = 0; i < degree_; i++) {
-            if (!value_is_similar(components_[i], other[i])) {
-                return false;
-            }
-        }
+        if (this == &other) return true;
+        if (size_ != other.size_) return false;
+        
+        #pragma unroll
+        for (D i = 0; i < size_; i++) 
+            if (!value_is_similar(elem_[i], other.elem_[i])) return false;
         return true;
     }
 
     template<typename T, typename D>
     constexpr inline bool nion<T, D>::operator!=(const nion<T, D> &other) const {
-        if (degree_ != other.degree_) {
-            return true;
-        }
-        #pragma vector always
-        for (D i = 0; i < degree_; i++) {
-            if (!value_is_similar(components_[i], other[i])) {
-                return true;
-            }
-        }
+        if (this == &other) return false;
+        if (size_ != other.size_) return true;
+        
+        #pragma unroll
+        for (D i = 0; i < size_; i++)
+            if (!value_is_similar(elem_[i], other.elem_[i])) return true;
         return false;
     }
 
@@ -793,26 +649,21 @@ namespace Nion {
 
     template<typename T, typename D>
     constexpr inline bool nion<T, D>::is_real() const {
-        #pragma vector always
-        for (D i = 1; i < degree_; i++) {
-            if (!value_is_similar(components_[i], 0)) {
-                return false;
-            }
-        }
+        #pragma unroll
+        for (D i = 1; i < size_; i++)
+            if (!value_is_similar(elem_[i], 0)) return false;
         return true;
     }
 
     template<typename T, typename D>
     template<typename S>
     constexpr inline bool nion<T, D>::operator==(S scalar) const {
-        if (!value_is_similar(real(), static_cast<T>(scalar))) {
-            return false;
-        }
+        if (!value_is_similar(real(), static_cast<T>(scalar))) return false;
         return is_real();
     }
 
     template<typename T, typename D, typename S>
-    static constexpr inline bool operator==(S scalar, const nion<T, D> &z) {
+    constexpr inline bool operator==(S scalar, const nion<T, D> &z) {
         return z == static_cast<T>(scalar);
     }
 
@@ -826,7 +677,7 @@ namespace Nion {
     }
 
     template<typename T, typename D, typename S>
-    static constexpr inline bool operator!=(S scalar, const nion<T, D> &z) {
+    constexpr inline bool operator!=(S scalar, const nion<T, D> &z) {
         return z != static_cast<T>(scalar);
     }
 
@@ -837,7 +688,7 @@ namespace Nion {
     }
 
     template<typename T, typename D, typename S>
-    static constexpr inline bool operator>(S scalar, const nion<T, D> &z) {
+    constexpr inline bool operator>(S scalar, const nion<T, D> &z) {
         return z < static_cast<T>(scalar);
     }
 
@@ -848,33 +699,33 @@ namespace Nion {
     }
 
     template<typename T, typename D, typename S>
-    static constexpr inline bool operator<(S scalar, const nion<T, D> &z) {
+    constexpr inline bool operator<(S scalar, const nion<T, D> &z) {
         return z > static_cast<T>(scalar);
     }
 
     template<typename T, typename D>
     template<typename S>
     constexpr inline bool nion<T,D>::operator>=(S scalar) const{
-        if (*this == nion<T, D>(static_cast<T>(scalar), this->degree_))
+        if (*this == nion<T, D>(static_cast<T>(scalar), this->size_))
             return true;
         return rotate_real() > static_cast<T>(scalar);
     }
 
     template<typename T, typename D, typename S>
-    static constexpr inline bool operator>=(S scalar, const nion<T, D> &z) {
+    constexpr inline bool operator>=(S scalar, const nion<T, D> &z) {
         return z <= static_cast<T>(scalar);
     }
 
     template<typename T, typename D>
     template<typename S>
     constexpr inline bool nion<T,D>::operator<=(S scalar) const{
-        if (*this == nion<T, D>(static_cast<T>(scalar), this->degree_))
+        if (*this == nion<T, D>(static_cast<T>(scalar), this->size_))
             return true;
         return rotate_real() < static_cast<T>(scalar);
     }
 
     template<typename T, typename D, typename S>
-    static constexpr inline bool operator<=(S scalar, const nion<T, D> &z) {
+    constexpr inline bool operator<=(S scalar, const nion<T, D> &z) {
         return z >= static_cast<T>(scalar);
     }
 
@@ -883,12 +734,12 @@ namespace Nion {
     *******************************************/
 
     template<typename T, typename D>
-    static std::ostream &operator<<(std::ostream &os, const nion<T, D> &z) {
-        T component = z.components_[0];
+    std::ostream &operator<<(std::ostream &os, const nion<T, D> &z) {
+        T component = z.elem_[0];
         os << "(" << component;
 
-        for (D i = 1; i < z.degree_; i++) {
-            component = z.components_[i];
+        for (D i = 1; i < z.size_; i++) {
+            component = z.elem_[i];
             os << "," << component;
         }
         os << ")";
@@ -896,9 +747,9 @@ namespace Nion {
     }
 
     template<typename T, typename D>
-    static std::istream &operator>>(std::istream &is, nion<T, D> &z) {
-        for (D i = 0; i < z.degree_; i++) {
-            is >> z.components_[i];
+    std::istream &operator>>(std::istream &is, nion<T, D> &z) {
+        for (D i = 0; i < z.size_; i++) {
+            is >> z.elem_[i];
         }
         return is;
     }
@@ -909,9 +760,9 @@ namespace Nion {
     */
     template<typename T, typename D>
     inline std::string nion<T, D>::to_string() const {
-        std::string nion_string = "(" + std::to_string(components_[0]);
-        for (D i = 1; i < degree_; i++) {
-            nion_string += "," + std::to_string(components_[i]);
+        std::string nion_string = "(" + std::to_string(elem_[0]);
+        for (D i = 1; i < size_; i++) {
+            nion_string += "," + std::to_string(elem_[i]);
         }
         nion_string += ")";
         return nion_string;
@@ -922,57 +773,57 @@ namespace Nion {
 **********************************/
 
     template<typename T, typename D>
-    static constexpr inline T real(const nion<T, D> &z) {
+    extern constexpr inline T real(const nion<T, D> &z) {
         return z.real();
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> imag(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> imag(const nion<T, D> &z) {
         return z.imag();
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> conj(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> conj(const nion<T, D> &z) {
         return z.conj();
     }
 
     template<typename T, typename D>
-    static constexpr inline T abs(const nion<T, D> &z) {
+    extern constexpr inline T abs(const nion<T, D> &z) {
         return z.abs();
     }
 
     template<typename T, typename D>
-    static constexpr inline T norm(const nion<T, D> &z) {
+    extern constexpr inline T norm(const nion<T, D> &z) {
         return z.norm();
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> inv(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> inv(const nion<T, D> &z) {
         return z.inv();
     }
 
     template<typename T, typename D>
-    static constexpr inline T dot(const nion<T, D> &lhs, const nion<T, D> &rhs) {
+    extern constexpr inline T dot(const nion<T, D> &lhs, const nion<T, D> &rhs) {
         T dotProduct = 0;
-        D minDegree = std::min(lhs.degree_, rhs.degree_);
-        #pragma vector always
+        D minDegree = std::min(lhs.size_, rhs.size_);
+        #pragma unroll
         for (D i = 0; i < minDegree; i++) {
-            dotProduct += lhs[i] * rhs[i];
+            dotProduct += lhs.elem_[i] * rhs.elem_[i];
         }
         return dotProduct;
     }
 
     /*
     template<typename T, typename D>
-    static constexpr inline nion<T, D>
+    extern constexpr inline nion<T, D>
     cross(const nion<T, D> &lhs, const nion<T, D> &rhs){} //TODO: implement cross product
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D>
+    extern constexpr inline nion<T, D>
     wedge(const nion<T, D> &lhs, const nion<T, D> &rhs){} //TODO: implement wedge product
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D>
+    extern constexpr inline nion<T, D>
     outer(const nion<T, D> &lhs, const nion<T, D> &rhs){} //TODO: implement outer product
      */
 
@@ -982,7 +833,7 @@ namespace Nion {
     *****************************/
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> exp(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> exp(const nion<T, D> &z) {
 
         // get polar form of nion
         T r = z.real();
@@ -999,7 +850,7 @@ namespace Nion {
 
         constexpr T epsilon = std::numeric_limits<T>::epsilon();
         if (i_abs < epsilon)
-            return nion<T, D>(exp_r, z.degree_);
+            return nion<T, D>(exp_r, z.size_);
 
         // compute exponential of nion
         cos_theta = std::cos(i_norm);
@@ -1010,7 +861,7 @@ namespace Nion {
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> log(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> log(const nion<T, D> &z) {
 
         // get polar form of nion
         T r = z.real();
@@ -1032,7 +883,7 @@ namespace Nion {
     }
 
     template<typename T, typename D, typename S>
-    static constexpr inline nion<T, D> pow(const nion<T, D> &base, S power) {
+    extern constexpr inline nion<T, D> pow(const nion<T, D> &base, S power) {
 
         // get polar form of nion
         T r = base.real();
@@ -1062,7 +913,7 @@ namespace Nion {
 
                 return std::pow(base_norm, power_t) * (cos_ptheta + i * (sin_ptheta));
             } else {
-                return nion<T, D>(std::pow(base_norm, static_cast<T>(power)), base.degree_); // if base is positive
+                return nion<T, D>(std::pow(base_norm, static_cast<T>(power)), base.size_); // if base is positive
             }
         }
         
@@ -1076,7 +927,7 @@ namespace Nion {
 
             switch (power) {
                 case 0:
-                    return nion<T, D>(1, z.degree_);
+                    return nion<T, D>(1, z.size_);
                 case 1:
                     return z;
                 case 2:
@@ -1100,17 +951,17 @@ namespace Nion {
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> pow(const nion<T, D> &base, const nion<T, D> &power) {
+    extern constexpr inline nion<T, D> pow(const nion<T, D> &base, const nion<T, D> &power) {
         return exp(power * log(base));
     }
 
     template<typename T, typename D, typename S>
-    static constexpr inline nion<T, D> pow(S base, const nion<T, D> &power) {
-        return pow(nion<T, D>(static_cast<T>(base), power.degree_), power);
+    extern constexpr inline nion<T, D> pow(S base, const nion<T, D> &power) {
+        return pow(nion<T, D>(static_cast<T>(base), power.size_), power);
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> sqr(const nion<T, D> &base) {
+    extern constexpr inline nion<T, D> sqr(const nion<T, D> &base) {
         // get polar form of nion
         T r = base.real();
         nion<T, D> i = base.imag();
@@ -1129,7 +980,7 @@ namespace Nion {
         T x2 = r * r;
         T y2 = i_norm * i_norm;
         if (x2 + y2 <= epsilon)
-            return nion<T>(base_norm * base_norm, base.degree_); // if base is zero return zero (0^2 = 0)
+            return nion<T>(base_norm * base_norm, base.size_); // if base is zero return zero (0^2 = 0)
 
         T denom = static_cast<T>(1) / (x2 + y2);
         T cos_2theta = (x2 - y2) * denom;
@@ -1143,12 +994,12 @@ namespace Nion {
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> sqrt(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> sqrt(const nion<T, D> &z) {
         return pow(z, static_cast<T>(0.5));
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> cbrt(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> cbrt(const nion<T, D> &z) {
         return pow(z, static_cast<T>(1.0) / static_cast<T>(3.0));
     }
 
@@ -1157,7 +1008,7 @@ namespace Nion {
     ********************************************/
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> sinh(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> sinh(const nion<T, D> &z) {
         // get polar form of nion
         nion<T, D> i = z.imag();
 
@@ -1166,8 +1017,8 @@ namespace Nion {
         T i_norm = std::sqrt(i_abs);
 
         // calculate scalars
-        T e_z = std::exp(z[0]) / static_cast<T>(2);
-        T e_mz = std::exp(-z[0]) / static_cast<T>(2);
+        T e_z = std::exp(z.elem_[0]) / static_cast<T>(2);
+        T e_mz = std::exp(-z.elem_[0]) / static_cast<T>(2);
 
         // compute exponential of nion
         constexpr T epsilon = std::numeric_limits<T>::epsilon();
@@ -1184,7 +1035,7 @@ namespace Nion {
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> cosh(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> cosh(const nion<T, D> &z) {
         // get polar form of nion
         nion<T, D> i = z.imag();
 
@@ -1193,8 +1044,8 @@ namespace Nion {
         T i_norm = std::sqrt(i_abs);
 
         // calculate scalars
-        T e_z = std::exp(z[0]) / static_cast<T>(2);
-        T e_mz = std::exp(-z[0]) / static_cast<T>(2);
+        T e_z = std::exp(z.elem_[0]) / static_cast<T>(2);
+        T e_mz = std::exp(-z.elem_[0]) / static_cast<T>(2);
 
         // compute exponential of nion
         constexpr T epsilon = std::numeric_limits<T>::epsilon();
@@ -1210,22 +1061,22 @@ namespace Nion {
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> tanh(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> tanh(const nion<T, D> &z) {
         return (exp(z*2) - 1) / (exp(z*2) + 1);
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> coth(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> coth(const nion<T, D> &z) {
         return tanh(z).inv();
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> sech(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> sech(const nion<T, D> &z) {
         return cosh(z).inv();
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> csch(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> csch(const nion<T, D> &z) {
         return sinh(z).inv();
     }
 
@@ -1235,7 +1086,7 @@ namespace Nion {
 
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> sin(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> sin(const nion<T, D> &z) {
         // get the polar form of the nion
         T r = real(z);
         nion<T, D> i = imag(z);
@@ -1253,7 +1104,7 @@ namespace Nion {
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> cos(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> cos(const nion<T, D> &z) {
         // get the polar form of the nion
         T r = real(z);
         nion<T, D> i = imag(z);
@@ -1271,7 +1122,7 @@ namespace Nion {
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> tan(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> tan(const nion<T, D> &z) {
         // get the polar form of the nion
         T r = real(z);
         nion<T, D> i = imag(z);
@@ -1289,17 +1140,17 @@ namespace Nion {
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> cot(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> cot(const nion<T, D> &z) {
         return tan(z).inv();
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> sec(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> sec(const nion<T, D> &z) {
         return cos(z).inv();
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> csc(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> csc(const nion<T, D> &z) {
         return sin(z).inv();
     }
 
@@ -1308,34 +1159,34 @@ namespace Nion {
     ****************************************************/
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> asinh(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> asinh(const nion<T, D> &z) {
         return log(z + sqrt(sqr(z) + static_cast<T>(1)));
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> acosh(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> acosh(const nion<T, D> &z) {
         // compute the inverse hyperbolic cosine of the nion
         return 2 * log(sqrt((z-1) * static_cast<T>(0.5)) + sqrt((z+1) * static_cast<T>(0.5)));
 
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> atanh(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> atanh(const nion<T, D> &z) {
         return (log(static_cast<T>(1) + z) - log(static_cast<T>(1) - z)) * static_cast<T>(0.5);
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> acoth(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> acoth(const nion<T, D> &z) {
         return (log(static_cast<T>(1) + inv(z)) - log(static_cast<T>(1) - inv(z))) * static_cast<T>(0.5);
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> asech(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> asech(const nion<T, D> &z) {
         return log(sqrt(1/sqr(z) - static_cast<T>(1)) + inv(z));
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> acsch(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> acsch(const nion<T, D> &z) {
         return log(sqrt(static_cast<T>(1) + 1/sqr(z)) + inv(z));
     }
 
@@ -1344,7 +1195,7 @@ namespace Nion {
     *****************************************/
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> asin(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> asin(const nion<T, D> &z) {
 
         // get the polar form of the nion
         T r = real(z);
@@ -1362,12 +1213,12 @@ namespace Nion {
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> acos(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> acos(const nion<T, D> &z) {
         return static_cast<T>(M_PI_2l) - asin(z);
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> atan(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> atan(const nion<T, D> &z) {
         // get the polar form of the nion
         T r = real(z);
         nion<T, D> i = z.imag();
@@ -1385,22 +1236,22 @@ namespace Nion {
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> acot(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> acot(const nion<T, D> &z) {
         return static_cast<T>(M_PI_2l) - atan(z);
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> asec(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> asec(const nion<T, D> &z) {
         return acos(inv(z));
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> acsc(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> acsc(const nion<T, D> &z) {
         return asin(inv(z));
     }
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> atan2(const nion<T, D> &y, const nion<T, D> &x) {
+    extern constexpr inline nion<T, D> atan2(const nion<T, D> &y, const nion<T, D> &x) {
         return atan(y / x);
     }
 
@@ -1409,7 +1260,7 @@ namespace Nion {
      **************************/
 
     template<typename T, typename D>
-    static constexpr inline nion<T, D> gamma(const nion<T, D> &z) {
+    extern constexpr inline nion<T, D> gamma(const nion<T, D> &z) {
         // compute the gamma function of the nion
         return exp(-z) * sqrt(inv(z))
                * pow(static_cast<T>(1) / (static_cast<T>(12) * z - inv(static_cast<T>(10) * z)) + z, z)

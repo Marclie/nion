@@ -463,7 +463,7 @@ void ReadMeExamples(){
 int main() {
 
     ReadMeExamples();
-    int num_trials = 1000000;
+    int num_trials = 10000000;
     benchmark(num_trials);
 
     return 0;

@@ -42,7 +42,7 @@ void printSpeedupComplex(const T& niontime, const T& othertime) {
 
 template<typename T>
 T getMAEcomplex(nion<T> nion, std::complex<T> compare){
-    int degree = nion.degree_;
+    int degree = nion.size_;
     T mae = 0;
     mae += std::pow(nion[0] - compare.real(), 2);
     mae += std::pow(nion[1] - compare.imag(), 2);

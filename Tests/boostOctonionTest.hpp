@@ -42,7 +42,7 @@ void printSpeedupOctonion(const T& niontime, const T& othertime) {
 
 template<typename T>
 T getMAEoctonion(nion<T> nion, boost::math::octonion<T> compare){
-    int degree = nion.degree_;
+    int degree = nion.size_;
     T mae = 0;
     mae += std::pow(nion[0] - compare.R_component_1(), 2);
     mae += std::pow(nion[1] - compare.R_component_2(), 2);
