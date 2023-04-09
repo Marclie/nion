@@ -176,10 +176,8 @@ namespace Nion {
 
         // add the components of the other nion to this nion.
         if (size_ >= other.size_) {
-            #pragma unroll N
             for (D i = 0; i < other.size_; i++) elem_[i] += other.elem_[i];
         } else {
-            #pragma unroll N
             for (D i = 0; i < size_; i++) elem_[i] += other.elem_[i];
 
             // copy the remaining values
@@ -196,14 +194,11 @@ namespace Nion {
 
         // subtract the components of the other nion to this nion.
         if (size_ >= other.size_) {
-            #pragma unroll N
             for (D i = 0; i < other.size_; i++) elem_[i] -= other.elem_[i];
         } else {
-            #pragma unroll N
             for (D i = 0; i < size_; i++) elem_[i] -= other.elem_[i];
 
             // copy the remaining values and negate them
-            #pragma unroll N
             for (D i = size_; i < other.size_; i++) elem_[i] = -other.elem_[i];
 
             // set the new size of the nion
@@ -237,7 +232,6 @@ namespace Nion {
             sum.size_ = size_;
 
             // add the components of the other nion and this nion.
-            #pragma unroll N
             for (D i = 0; i < other.size_; i++) sum.elem_[i] = elem_[i] + other.elem_[i];
 
             // copy the remaining values of this nion
@@ -247,7 +241,6 @@ namespace Nion {
             sum.size_ = other.size_;
 
             // add the components of the other nion and this nion.
-            #pragma unroll N
             for (D i = 0; i < size_; i++) sum.elem_[i] = elem_[i] + other.elem_[i];
 
             // copy the remaining values of the other nion
@@ -267,7 +260,6 @@ namespace Nion {
             diff.size_ = size_;
 
             // subtract the components of the other nion and this nion.
-            #pragma unroll N
             for (D i = 0; i < other.size_; i++) diff.elem_[i] = elem_[i] - other.elem_[i];
 
             // copy the remaining values of this nion
@@ -277,11 +269,9 @@ namespace Nion {
             diff.size_ = other.size_;
 
             // subtract the components of the other nion and this nion.
-            #pragma unroll N
             for (D i = 0; i < size_; i++) diff.elem_[i] = elem_[i] - other.elem_[i];
 
             // copy the remaining values of the other nion and negate them
-            #pragma unroll N
             for (D i = size_; i < other.size_; i++) diff.elem_[i] = -other.elem_[i];
         }
 
@@ -342,7 +332,6 @@ namespace Nion {
     template<typename S>
     constexpr inline void nion<T,N,D>::operator*=(S scalar) {
         T product_scalar = static_cast<T>(scalar);
-        #pragma unroll N
         for (D i = 0; i < size_; i++) elem_[i] *= product_scalar;
 
     }
@@ -356,7 +345,6 @@ namespace Nion {
     template<typename S>
     constexpr inline void nion<T,N,D>::operator/=(S scalar) {
         T quotient_scalar = static_cast<T>(scalar);
-        #pragma unroll N
         for (D i = 0; i < size_; i++) elem_[i] /= quotient_scalar;
 
     }
@@ -370,7 +358,6 @@ namespace Nion {
         nion<T,N,D> conjugate = *this; // copy this nion
 
         // negate all components except the first
-        #pragma unroll N
         for (D i = 1; i < size_; i++) conjugate.elem_[i] *= -1;
 
         return conjugate;
@@ -381,7 +368,6 @@ namespace Nion {
         nion<T,N,D> negated = *this; // copy this nion
 
         // negate all components
-        #pragma unroll N
         for (D i = 0; i < size_; i++) negated.elem_[i] *= -1;
 
         return negated;
@@ -486,7 +472,6 @@ namespace Nion {
         T product_scalar = static_cast<T>(scalar);
         
         // compute the product of each element of the nion with the scalar
-        #pragma unroll N
         for (D i = 0; i < size_; i++) product.elem_[i] = elem_[i] * product_scalar;
         
         return product;
@@ -502,7 +487,6 @@ namespace Nion {
     constexpr inline T nion<T,N,D>::abs() const {
         T absVal = 0;
         
-        #pragma unroll N
         for (D i = 0; i < size_; i++) absVal += elem_[i] * elem_[i];
         
         return absVal;
@@ -532,7 +516,6 @@ namespace Nion {
         inverse.size_ = size_;
         T inverse_scalar = static_cast<T>(1) / absolute;
         
-        #pragma unroll N
         for (D i = 0; i < size_; i++) inverse.elem_[i] = -elem_[i] * inverse_scalar;
         
         inverse.elem_[0] = elem_[0] * inverse_scalar;
@@ -584,7 +567,6 @@ namespace Nion {
         if (this == &other) return true;
         if (size_ != other.size_) return false;
         
-        #pragma unroll N
         for (D i = 0; i < size_; i++) 
             if (!value_is_similar(elem_[i], other.elem_[i])) return false;
         return true;
@@ -595,7 +577,6 @@ namespace Nion {
         if (this == &other) return false;
         if (size_ != other.size_) return true;
         
-        #pragma unroll N
         for (D i = 0; i < size_; i++)
             if (!value_is_similar(elem_[i], other.elem_[i])) return true;
         return false;
@@ -644,7 +625,6 @@ namespace Nion {
 
     template<typename T, unsigned long int N, typename D>
     constexpr inline bool nion<T,N,D>::is_real() const {
-        #pragma unroll N
         for (D i = 1; i < size_; i++)
             if (!value_is_similar(elem_[i], 0)) return false;
         return true;
@@ -801,7 +781,6 @@ namespace Nion {
     extern constexpr inline T dot(const nion<T,N,D> &lhs, const nion<T,N,D> &rhs) {
         T dotProduct = 0;
         D minDegree = std::min(lhs.size_, rhs.size_);
-        #pragma unroll N
         for (D i = 0; i < minDegree; i++) {
             dotProduct += lhs.elem_[i] * rhs.elem_[i];
         }
