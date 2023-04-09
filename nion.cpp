@@ -179,9 +179,11 @@
 
         // add the components of the other nion to this nion.
         if (size_ >= other.size_) {
-            for (D i = 0; i < other.size_; i++) elem_[i] += other.elem_[i];
+            for (D i = 0; i < other.size_; i++)
+                elem_[i] += other.elem_[i];
         } else {
-            for (D i = 0; i < size_; i++) elem_[i] += other.elem_[i];
+            for (D i = 0; i < size_; i++)
+                elem_[i] += other.elem_[i];
 
             // copy the remaining values
             memcpy(elem_ + size_, other.elem_ + size_, (other.size_ - size_) * sizeof(T));
@@ -198,12 +200,15 @@
 
         // subtract the components of the other nion to this nion.
         if (size_ >= other.size_) {
-            for (D i = 0; i < other.size_; i++) elem_[i] -= other.elem_[i];
+            for (D i = 0; i < other.size_; i++)
+                elem_[i] -= other.elem_[i];
         } else {
-            for (D i = 0; i < size_; i++) elem_[i] -= other.elem_[i];
+            for (D i = 0; i < size_; i++)
+                elem_[i] -= other.elem_[i];
 
             // copy the remaining values and negate them
-            for (D i = size_; i < other.size_; i++) elem_[i] = -other.elem_[i];
+            for (D i = size_; i < other.size_; i++)
+                elem_[i] = -other.elem_[i];
 
             // set the new size of the nion
             size_ = other.size_;
@@ -237,7 +242,8 @@
             sum.size_ = size_;
 
             // add the components of the other nion and this nion.
-            for (D i = 0; i < other.size_; i++) sum.elem_[i] = elem_[i] + other.elem_[i];
+            for (D i = 0; i < other.size_; i++)
+                sum.elem_[i] = elem_[i] + other.elem_[i];
 
             // copy the remaining values of this nion
             memcpy(sum.elem_ + other.size_, elem_ + other.size_, (size_ - other.size_) * sizeof(T));
@@ -246,7 +252,8 @@
             sum.size_ = other.size_;
 
             // add the components of the other nion and this nion.
-            for (D i = 0; i < size_; i++) sum.elem_[i] = elem_[i] + other.elem_[i];
+            for (D i = 0; i < size_; i++)
+                sum.elem_[i] = elem_[i] + other.elem_[i];
 
             // copy the remaining values of the other nion
             memcpy(sum.elem_ + size_, other.elem_ + size_, (other.size_ - size_) * sizeof(T));
@@ -266,7 +273,8 @@
             diff.size_ = size_;
 
             // subtract the components of the other nion and this nion.
-            for (D i = 0; i < other.size_; i++) diff.elem_[i] = elem_[i] - other.elem_[i];
+            for (D i = 0; i < other.size_; i++)
+                diff.elem_[i] = elem_[i] - other.elem_[i];
 
             // copy the remaining values of this nion
             memcpy(diff.elem_ + other.size_, elem_ + other.size_, (size_ - other.size_) * sizeof(T));
@@ -275,10 +283,12 @@
             diff.size_ = other.size_;
 
             // subtract the components of the other nion and this nion.
-            for (D i = 0; i < size_; i++) diff.elem_[i] = elem_[i] - other.elem_[i];
+            for (D i = 0; i < size_; i++)
+                diff.elem_[i] = elem_[i] - other.elem_[i];
 
             // copy the remaining values of the other nion and negate them
-            for (D i = size_; i < other.size_; i++) diff.elem_[i] = -other.elem_[i];
+            for (D i = size_; i < other.size_; i++)
+                diff.elem_[i] = -other.elem_[i];
         }
 
         return diff;
@@ -339,7 +349,8 @@
     template<typename S>
     constexpr inline void nion<T,N,D>::operator*=(S scalar) {
         T product_scalar = static_cast<T>(scalar);
-        for (D i = 0; i < size_; i++) elem_[i] *= product_scalar;
+        for (D i = 0; i < size_; i++)
+            elem_[i] *= product_scalar;
 
     }
 
@@ -353,7 +364,8 @@
     template<typename S>
     constexpr inline void nion<T,N,D>::operator/=(S scalar) {
         T quotient_scalar = static_cast<T>(scalar);
-        for (D i = 0; i < size_; i++) elem_[i] /= quotient_scalar;
+        for (D i = 0; i < size_; i++)
+            elem_[i] /= quotient_scalar;
 
     }
 
@@ -363,11 +375,12 @@
 
     template<typename T, unsigned long int N, typename D>
     constexpr inline nion<T,N,D> nion<T,N,D>::conj() const {
-        nion<T,N,D> conjugate(size_); // copy this nion
+        nion<T,N,D> conjugate(size_);
 
         // negate all components except the first
         conjugate.elem_[0] = elem_[0];
-        for (D i = 1; i < size_; i++) conjugate.elem_[i] = -elem_[i];
+        for (D i = 1; i < size_; i++)
+            conjugate.elem_[i] = -elem_[i];
 
         return conjugate;
     }
@@ -377,7 +390,8 @@
         nion<T,N,D> negated = *this; // copy this nion
 
         // negate all components
-        for (D i = 0; i < size_; i++) negated.elem_[i] *= -1;
+        for (D i = 0; i < size_; i++)
+            negated.elem_[i] *= -1;
 
         return negated;
     }
@@ -483,7 +497,8 @@
         T product_scalar = static_cast<T>(scalar);
         
         // compute the product of each element of the nion with the scalar
-        for (D i = 0; i < size_; i++) product.elem_[i] = elem_[i] * product_scalar;
+        for (D i = 0; i < size_; i++)
+            product.elem_[i] = elem_[i] * product_scalar;
         
         return product;
     }
@@ -498,7 +513,8 @@
     constexpr inline T nion<T,N,D>::abs() const {
         T absVal = 0;
         
-        for (D i = 0; i < size_; i++) absVal += elem_[i] * elem_[i];
+        for (D i = 0; i < size_; i++)
+            absVal += elem_[i] * elem_[i];
         
         return absVal;
     }
@@ -516,7 +532,8 @@
         inverse.size_ = size_;
         T inverse_scalar = static_cast<T>(1) / absolute;
         
-        for (D i = 0; i < size_; i++) inverse.elem_[i] = -elem_[i] * inverse_scalar;
+        for (D i = 0; i < size_; i++)
+            inverse.elem_[i] = -elem_[i] * inverse_scalar;
         
         inverse.elem_[0] = elem_[0] * inverse_scalar;
         return inverse;
@@ -788,9 +805,9 @@
     extern constexpr inline T dot(const nion<T,N,D> &lhs, const nion<T,N,D> &rhs) {
         T dotProduct = 0;
         D minDegree = std::min(lhs.size_, rhs.size_);
-        for (D i = 0; i < minDegree; i++) {
+        for (D i = 0; i < minDegree; i++)
             dotProduct += lhs.elem_[i] * rhs.elem_[i];
-        }
+
         return dotProduct;
     }
 
