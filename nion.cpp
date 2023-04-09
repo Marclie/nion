@@ -397,8 +397,8 @@ namespace Nion {
                     product.elem_[0] = elem_[0] * other.elem_[0];
                     return product;
                     
-// if not in debug mode, use the optimized code
-#ifndef NION_DEBUG
+// if FULL_RECURSION is defined, then the compiler will use recursion to calculate the product of nions for any size.
+#ifndef FULL_RECURSION
                 case 2: // hard-coded complex product
                     product.elem_[0] = elem_[0] * other.elem_[0] - elem_[1] * other.elem_[1];
                     product.elem_[1] = elem_[1] * other.elem_[0] + elem_[0] * other.elem_[1];
@@ -452,11 +452,12 @@ namespace Nion {
 
         /// ********** Recursive Product ********** ///
 
-        nion<T,N,D> a, b, c, d; // the four halves of the nions
+        nion<T,N-(N>>1),D> a, b;
+        nion<T,M-(M>>1),D> c, d; // the four halves of the nions
 
         // the elements of the first half of the nion
-        std::size_t this_half_size = size_ - size_ / 2;
-        std::size_t other_half_size = other.size_ - other.size_ / 2;
+        std::size_t this_half_size = size_ - (size_ >> 1);
+        std::size_t other_half_size = other.size_ - (other.size_ >> 1);
 
         a.size_ = this_half_size; // the size of the first half of the nion
         b.size_ = size_ - this_half_size; // the size of the second half of the nion (can be one less than the first half)
@@ -511,19 +512,8 @@ namespace Nion {
 
     template<typename T, unsigned long int N, typename D>
     constexpr inline nion<T,N,D> nion<T,N,D>::inv() const {
-        constexpr T epsilon = std::numeric_limits<T>::epsilon();
 
         T absolute = abs();
-        if (absolute < epsilon) {
-            // if the absolute value is zero, then use the product definition of the absolute value.
-            // zero divisors are possible in nions with degree >= 16, so we need to check for them.
-            // this is a bit of a hack, and probably not useful. (like the rest of this library)
-
-            // q* / |q| = q* / sqrt(q * q*)
-            nion<T,N,D> inverse = this->conj() * pow((*this * this->conj()), static_cast<T>(-0.5)).real();
-            return inverse;
-        }
-
         nion<T,N,D> inverse;
         inverse.size_ = size_;
         T inverse_scalar = static_cast<T>(1) / absolute;
@@ -841,8 +831,8 @@ namespace Nion {
         T sin_theta;
         T exp_r = std::exp(r);
 
-        constexpr T epsilon = std::numeric_limits<T>::epsilon();
-        if (i_abs < epsilon)
+        constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
+        if (i_abs < denorm_min)
             return nion<T,N,D>(exp_r, z.size_);
 
         // compute exponential of nion
@@ -868,8 +858,8 @@ namespace Nion {
         T theta = std::atan2(i_norm, r);
 
         // compute natural logarithm of nion
-        constexpr T epsilon = std::numeric_limits<T>::epsilon();
-        if (i_abs <= epsilon)
+        constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
+        if (i_abs <= denorm_min)
             return std::log(z_norm) + i * theta;
         else
             return i * (theta / i_norm) + std::log(z_norm);
@@ -905,11 +895,11 @@ namespace Nion {
         T i_norm = std::sqrt(i_abs);
 
         T power_t = static_cast<T>(2);
-        constexpr T epsilon = std::numeric_limits<T>::epsilon();
+        constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
 
         T x2 = r * r;
-        T y2 = i_norm * i_norm;
-        if (x2 + y2 <= epsilon)
+        T y2 = i_abs;
+        if (x2 + y2 <= denorm_min)
             return nion<T,N,D>(base_norm * base_norm, base.size_); // if base is zero return zero (0^2 = 0)
 
         T denom = static_cast<T>(1) / (x2 + y2);
@@ -917,7 +907,7 @@ namespace Nion {
         T sin_2theta = static_cast<T>(2) * r * i_norm * denom;
 
         // compute power of nion
-        if (i_abs <= epsilon)
+        if (i_abs <= denorm_min)
             return std::pow(base_norm, power_t) * (cos_2theta + i * sin_2theta);
         else
             return std::pow(base_norm, power_t) * (cos_2theta + i * (sin_2theta / i_norm));
@@ -951,8 +941,8 @@ namespace Nion {
         T e_mz = std::exp(-z.elem_[0]) / static_cast<T>(2);
 
         // compute exponential of nion
-        constexpr T epsilon = std::numeric_limits<T>::epsilon();
-        if (i_abs <= epsilon) {
+        constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
+        if (i_abs <= denorm_min) {
             nion<T,N,D> sin_nion = i * ((e_z + e_mz) * std::sin(i_norm));
             sin_nion += std::cos(i_norm) * (e_z - e_mz);
             return sin_nion;
@@ -978,8 +968,8 @@ namespace Nion {
         T e_mz = std::exp(-z.elem_[0]) / static_cast<T>(2);
 
         // compute exponential of nion
-        constexpr T epsilon = std::numeric_limits<T>::epsilon();
-        if (i_abs <= epsilon) {
+        constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
+        if (i_abs <= denorm_min) {
             nion<T,N,D> cos_nion = i * ((e_z - e_mz) * std::sin(i_norm));
             cos_nion += std::cos(i_norm) * (e_z + e_mz);
             return cos_nion;
@@ -1026,8 +1016,8 @@ namespace Nion {
         T i_norm = std::sqrt(i_abs);
 
         // compute the sine of the nion
-        constexpr T epsilon = std::numeric_limits<T>::epsilon();
-        if (i_abs <= epsilon)
+        constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
+        if (i_abs <= denorm_min)
             return i * (std::sinh(i_norm) * std::cos(r)) + std::sin(r) * std::cosh(i_norm);
         else
             return i * (std::sinh(i_norm) * std::cos(r) / i_norm) + std::sin(r) * std::cosh(i_norm);
@@ -1044,8 +1034,8 @@ namespace Nion {
         T i_norm = std::sqrt(i_abs);
 
         // compute the cosine of the nion
-        constexpr T epsilon = std::numeric_limits<T>::epsilon();
-        if (i_abs <= epsilon)
+        constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
+        if (i_abs <= denorm_min)
             return -i * (std::sinh(i_norm) * std::sin(r)) + std::cos(r) * std::cosh(i_norm);
         else
             return -i * (std::sinh(i_norm) * std::sin(r) / i_norm) + std::cos(r) * std::cosh(i_norm);
@@ -1062,8 +1052,8 @@ namespace Nion {
         T i_norm = std::sqrt(i_abs);
 
         // compute the tangent of the nion
-        constexpr T epsilon = std::numeric_limits<T>::epsilon();
-        if (i_norm <= epsilon)
+        constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
+        if (i_norm <= denorm_min)
             return (std::tan(r) + i * std::tanh(i_norm)) / (static_cast<T>(1) - i * (std::tan(r) * std::tanh(i_norm)));
         else
             return (std::tan(r) + i * (std::tanh(i_norm) / i_norm)) / (static_cast<T>(1) - i * (std::tan(r) / i_norm * std::tanh(i_norm)));
@@ -1134,8 +1124,8 @@ namespace Nion {
         // make unit vector
         T i_abs = i.abs();
         T i_norm = std::sqrt(i_abs);
-        constexpr T epsilon = std::numeric_limits<T>::epsilon();
-        if (i_abs > epsilon)
+        constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
+        if (i_abs > denorm_min)
             i /= i_norm;
 
         // compute the inv sine of the nion
@@ -1156,8 +1146,8 @@ namespace Nion {
         // make unit vector
         T i_abs = i.abs();
         T i_norm = std::sqrt(i_abs);
-        constexpr T epsilon = std::numeric_limits<T>::epsilon();
-        if (i_abs > epsilon)
+        constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
+        if (i_abs > denorm_min)
             i /= i_norm;
 
         // compute the inv tangent of the nion:
