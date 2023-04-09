@@ -375,6 +375,8 @@ void ReadMeExamples(){
     nion<float> a = {1, 2, 3, 4};
     nion<float> b = {5, 6, 7, 8};
     nion<float> c = a + b;
+    std::cout << "a = " << a << std::endl;
+    std::cout << "b = " << b << std::endl;
     std::cout << "a + b = " << c << std::endl;
 
     a = {1, 2, 3, 4};
@@ -463,7 +465,7 @@ void ReadMeExamples(){
 int main() {
 
     ReadMeExamples();
-    int num_trials = 10000000;
+    int num_trials = 100000;
     benchmark(num_trials);
 
     return 0;

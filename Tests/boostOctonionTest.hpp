@@ -41,7 +41,7 @@ void printSpeedupOctonion(const T& niontime, const T& othertime) {
 }
 
 template<typename T>
-T getMAEoctonion(nion<T> nion, boost::math::octonion<T> compare){
+T getMAEoctonion(nion<T,8> nion, boost::math::octonion<T> compare){
     int degree = nion.size_;
     T mae = 0;
     mae += std::pow(nion[0] - compare.R_component_1(), 2);
@@ -78,7 +78,7 @@ void boostOctonionComparison(int trials){
     T MRE_Add = 0;
     T MAE_Add= 0;
     T MAX_Add = -1;
-    nion<T> maxAddNion;
+    nion<T,8> maxAddNion;
     boost::math::octonion<T> maxAddBoost;
     boost::math::octonion<T> max1valueAdd;
     boost::math::octonion<T> max2valueAdd;
@@ -89,7 +89,7 @@ void boostOctonionComparison(int trials){
     T MRE_Conj = 0;
     T MAE_Conj= 0;
     T MAX_Conj = -1;
-    nion<T> maxConjNion;
+    nion<T,8> maxConjNion;
     boost::math::octonion<T> maxConjBoost;
     boost::math::octonion<T> max1valueConj;
     boost::math::octonion<T> max2valueConj;
@@ -100,7 +100,7 @@ void boostOctonionComparison(int trials){
     T MRE_Mul = 0;
     T MAE_Mul= 0;
     T MAX_Mul = -1;
-    nion<T> maxMulNion;
+    nion<T,8> maxMulNion;
     boost::math::octonion<T> maxMulBoost;
     boost::math::octonion<T> max1valueMul;
     boost::math::octonion<T> max2valueMul;
@@ -111,7 +111,7 @@ void boostOctonionComparison(int trials){
     T MRE_Div = 0;
     T MAE_Div= 0;
     T MAX_Div = -1;
-    nion<T> maxDivNion;
+    nion<T,8> maxDivNion;
     boost::math::octonion<T> maxDivBoost;
     boost::math::octonion<T> max1valueDiv;
     boost::math::octonion<T> max2valueDiv;
@@ -122,7 +122,7 @@ void boostOctonionComparison(int trials){
     T MRE_Pow = 0;
     T MAE_Pow= 0;
     T MAX_Pow = -1;
-    nion<T> maxPowNion;
+    nion<T,8> maxPowNion;
     boost::math::octonion<T> maxPowBoost;
     boost::math::octonion<T> max1valuePow;
     boost::math::octonion<T> max2valuePow;
@@ -133,7 +133,7 @@ void boostOctonionComparison(int trials){
     T MRE_Exp = 0;
     T MAE_Exp= 0;
     T MAX_Exp = -1;
-    nion<T> maxExpNion;
+    nion<T,8> maxExpNion;
     boost::math::octonion<T> maxExpBoost;
     boost::math::octonion<T> max1valueExp;
     boost::math::octonion<T> max2valueExp;
@@ -144,7 +144,7 @@ void boostOctonionComparison(int trials){
     T MRE_Sin = 0;
     T MAE_Sin= 0;
     T MAX_Sin = -1;
-    nion<T> maxSinNion;
+    nion<T,8> maxSinNion;
     boost::math::octonion<T> maxSinBoost;
     boost::math::octonion<T> max1valueSin;
     boost::math::octonion<T> max2valueSin;
@@ -155,7 +155,7 @@ void boostOctonionComparison(int trials){
     T MRE_Cos = 0;
     T MAE_Cos= 0;
     T MAX_Cos = -1;
-    nion<T> maxCosNion;
+    nion<T,8> maxCosNion;
     boost::math::octonion<T> maxCosBoost;
     boost::math::octonion<T> max1valueCos;
     boost::math::octonion<T> max2valueCos;
@@ -166,7 +166,7 @@ void boostOctonionComparison(int trials){
     T MRE_Tan = 0;
     T MAE_Tan= 0;
     T MAX_Tan = -1;
-    nion<T> maxTanNion;
+    nion<T,8> maxTanNion;
     boost::math::octonion<T> maxTanBoost;
     boost::math::octonion<T> max1valueTan;
     boost::math::octonion<T> max2valueTan;
@@ -177,7 +177,7 @@ void boostOctonionComparison(int trials){
     T MRE_Sinh = 0;
     T MAE_Sinh= 0;
     T MAX_Sinh = -1;
-    nion<T> maxSinhNion;
+    nion<T,8> maxSinhNion;
     boost::math::octonion<T> maxSinhBoost;
     boost::math::octonion<T> max1valueSinh;
     boost::math::octonion<T> max2valueSinh;
@@ -188,7 +188,7 @@ void boostOctonionComparison(int trials){
     T MRE_Cosh = 0;
     T MAE_Cosh= 0;
     T MAX_Cosh = -1;
-    nion<T> maxCoshNion;
+    nion<T,8> maxCoshNion;
     boost::math::octonion<T> maxCoshBoost;
     boost::math::octonion<T> max1valueCosh;
     boost::math::octonion<T> max2valueCosh;
@@ -199,7 +199,7 @@ void boostOctonionComparison(int trials){
     T MRE_Tanh = 0;
     T MAE_Tanh= 0;
     T MAX_Tanh = -1;
-    nion<T> maxTanhNion;
+    nion<T,8> maxTanhNion;
     boost::math::octonion<T> maxTanhBoost;
     boost::math::octonion<T> max1valueTanh;
     boost::math::octonion<T> max2valueTanh;
@@ -209,7 +209,7 @@ void boostOctonionComparison(int trials){
     auto startBoost = std::chrono::high_resolution_clock::now();
     auto endBoost = std::chrono::high_resolution_clock::now();
 
-    nion < T > nionResult;
+    nion <T,8> nionResult;
     boost::math::octonion<T> boostResult;
     T diff;
 
@@ -224,8 +224,8 @@ void boostOctonionComparison(int trials){
             vals2[j] = distribution(generator);
         }
 
-        nion<T> nion1(vals1, 8);
-        nion<T> nion2(vals2, 8);
+        nion<T,8> nion1(vals1, 8);
+        nion<T,8> nion2(vals2, 8);
         boost::math::octonion<T> boost1(vals1[0], vals1[1], vals1[2], vals1[3], vals1[4], vals1[5], vals1[6], vals1[7]);
         boost::math::octonion<T> boost2(vals2[0], vals2[1], vals2[2], vals2[3], vals2[4], vals2[5], vals2[6], vals2[7]);
 
@@ -704,17 +704,17 @@ void boostOctonionComparison(int trials){
 
 
     std::cout << "\n\n###### Comparing sine series expansion for octonions to function: 100 terms ######" << std::endl;
-    nion<T> n2({1, 2, 3, 4, 5, 6, 7, 8});
+    nion<T,8> n2({1, 2, 3, 4, 5, 6, 7, 8});
     boost::math::octonion<T> b2(1, 2, 3, 4, 5, 6, 7, 8);
 
     std::cout << "input: " << b2 << std::endl;
 
-    nion<T> sinNion({0, 0, 0, 0, 0, 0, 0, 0});
+    nion<T,8> sinNion({0, 0, 0, 0, 0, 0, 0, 0});
     boost::math::octonion<T> sinBoost(0, 0, 0, 0, 0, 0, 0, 0);
     std::cout << "sin = sum_{n=0}^{\\infty} (-1)^(2n+1) * (x^(2n+1))/(1+2n)!\n\n" << std::endl;
 
     for (int i = 0; i < 100; ++i) {
-        nion<T> nionTerm = pow(n2, 2 * i + 1);
+        nion<T,8> nionTerm = pow(n2, 2 * i + 1);
         boost::math::octonion<T> boostTerm = pow(b2, 2 * i + 1);
         for (int j = 0; j < (1 + 2 * i); ++j) {
             nionTerm /= (T)((1 + 2 * i)-j);
@@ -736,16 +736,16 @@ void boostOctonionComparison(int trials){
 
 
     std::cout << "\n\n###### Comparing hyperbolic sine series expansion for octonions to function: 100 terms ######" << std::endl;
-    nion<T> n({1, 2, 3, 4, 5, 6, 7, 8});
+    nion<T,8> n({1, 2, 3, 4, 5, 6, 7, 8});
     boost::math::octonion<T> b(1, 2, 3, 4, 5, 6, 7, 8);
 
     std::cout << "input: " << b << std::endl;
 
-    nion<T> sinhNion({0, 0, 0, 0, 0, 0, 0, 0});
+    nion<T,8> sinhNion({0, 0, 0, 0, 0, 0, 0, 0});
     boost::math::octonion<T> sinhBoost(0, 0, 0, 0, 0, 0, 0, 0);
     std::cout << "sinh = sum_{n=0}^{\\infty} (x^(2n+1))/(1+2n)!\n\n" << std::endl;
     for (int i = 0; i < 100; ++i) {
-        nion<T> nionTerm = pow(n, 2 * i + 1);
+        nion<T,8> nionTerm = pow(n, 2 * i + 1);
         boost::math::octonion<T> boostTerm = pow(b, 2 * i + 1);
         for (int j = 0; j < (1 + 2 * i); ++j) {
             nionTerm /= (T)((1 + 2 * i)-j);

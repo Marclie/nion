@@ -5,11 +5,6 @@
 #include <stdexcept>
 #include "nion.hpp"
 
-// max size of stack array for storing elements of nion. Defaults to 2^10 (nion degree of 10)
-#ifndef NION_MAX_SIZE
-#define NION_MAX_SIZE 1024
-#endif
-
 #define ASSERT(condition, message) \
     do { \
         if (! (condition)) { \
@@ -26,59 +21,59 @@ namespace Nion {
     *  NION CONSTRUCTORS
     ***************************/
 
-    template<typename T, typename D>
-    constexpr inline nion<T, D>::nion(T* vals, D size) : size_(size) {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline nion<T,N,D>::nion(T* vals, D size) : size_(size) {
 
         /// check if the degree is greater than zero and less than the maximum size
         ASSERT(size_ > 0, "The size of the nion must be greater than zero.");
-        ASSERT(size_ <= NION_MAX_SIZE, "The size of the nion is too large. "
-                                          "consider increasing CMake variable NION_MAX_SIZE.");
+        ASSERT(size_ <= N, "The size of the nion is too large. "
+                                          "consider increasing template parameter, N.");
 
         /// copy the values into the nion
         memcpy(elem_, vals, size_ * sizeof(T));
     }
 
-    template<typename T, typename D>
-    constexpr inline nion<T, D>::nion(const std::initializer_list<T> &vals) : size_(vals.size()) {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline nion<T,N,D>::nion(const std::initializer_list<T> &vals) : size_(vals.size()) {
         /// check if the degree is greater than zero
         ASSERT(size_ > 0, "The size of the nion must be greater than zero.");
-        ASSERT(size_ <= NION_MAX_SIZE, "The size of the nion is too large. "
-                                          "consider increasing CMake variable NION_MAX_SIZE.");
+        ASSERT(size_ <= N, "The size of the nion is too large. "
+                                          "consider increasing template parameter, N.");
 
         /// copy the values into the nion
         memcpy(elem_, vals.begin(), size_ * sizeof(T));
     }
 
-    template<typename T, typename D>
-    constexpr inline nion<T, D>::nion(D size) : size_(size) {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline nion<T,N,D>::nion(D size) : size_(size) {
         /// check if the degree is greater than zero
         ASSERT(size_ > 0, "The size of the nion must be greater than zero.");
-        ASSERT(size_ <= NION_MAX_SIZE, "The size of the nion is too large. "
-                                          "consider increasing CMake variable NION_MAX_SIZE.");
+        ASSERT(size_ <= N, "The size of the nion is too large. "
+                                          "consider increasing template parameter, N.");
 
         /// initialize the values to zero
         zero();
     }
 
-    template<typename T, typename D>
-    constexpr inline nion<T, D>::nion(const nion<T, D> &other) : size_(other.size_) {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline nion<T,N,D>::nion(const nion<T,N,D> &other) : size_(other.size_) {
         /// copy the values into the nion
         memcpy(elem_, other.elem_, size_ * sizeof(T));
     }
 
-    template<typename T, typename D>
-    constexpr inline nion<T, D>::nion(nion<T, D> &&other) noexcept: size_(other.size_) {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline nion<T,N,D>::nion(nion<T,N,D> &&other) noexcept: size_(other.size_) {
         /// copy the values into the nion
         memcpy(elem_, other.elem_, size_ * sizeof(T));
     }
 
-    template<typename T, typename D>
+    template<typename T, unsigned long int N, typename D>
     template<typename S>
-    constexpr inline nion<T, D>::nion(S realVal, D size) : size_(size) {
+    constexpr inline nion<T,N,D>::nion(S realVal, D size) : size_(size) {
         // check if the degree is greater than zero
         ASSERT(size_ > 0, "The degree of the nion must be greater than zero.");
-        ASSERT(size_ <= NION_MAX_SIZE, "The size of the nion is too large. "
-                                          "consider increasing CMake variable NION_MAX_SIZE.");
+        ASSERT(size_ <= N, "The size of the nion is too large. "
+                                          "consider increasing template parameter, N.");
 
         // initialize the values to zero
         zero();
@@ -87,18 +82,18 @@ namespace Nion {
         elem_[0] = static_cast<T>(realVal);
     }
 
-    template<typename T, typename D>
-    constexpr inline nion<T, D> nion<T, D>::make_pair(const nion<T, D> &a, const nion<T, D> &b) {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline nion<T,N,D> nion<T,N,D>::make_pair(const nion<T,N,D> &a, const nion<T,N,D> &b) {
 
         /// initialize the nion pair
-        nion<T, D> pair;
+        nion<T,N,D> pair;
 
         /// set the size of the nion
         pair.size_ = a.size_ + b.size_;
 
         ASSERT(a.size_ > 0 && b.size_ > 0, "The sizes of the nion pair (a, b) must both be greater than zero.");
-        ASSERT(pair.size_ <= NION_MAX_SIZE, "The size of the nion is too large. "
-                                          "consider increasing CMake variable NION_MAX_SIZE.");
+        ASSERT(pair.size_ <= N, "The size of the nion is too large. "
+                                          "consider increasing template parameter, N.");
         
         /// copy the values into the nion
         memcpy(pair.elem_, a.elem_, a.size_ * sizeof(T));
@@ -107,8 +102,8 @@ namespace Nion {
         return pair;
     }
 
-    template<typename T, typename D>
-    constexpr inline void nion<T, D>::resize(int size) {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline void nion<T,N,D>::resize(int size) {
         ASSERT(size > 0, "new nion size must be greater than zero");
         size_ = size;
 
@@ -120,8 +115,8 @@ namespace Nion {
     *         ASSIGNMENT OPERATORS
     *************************************/
     
-    template<typename T, typename D>
-    constexpr inline nion<T, D> &nion<T, D>::operator=(const nion<T, D> &other) {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline nion<T,N,D> &nion<T,N,D>::operator=(const nion<T,N,D> &other) {
         /// check if the nions are the same
         if (&other == this) {
             return *this; // return the nion
@@ -135,8 +130,8 @@ namespace Nion {
         return *this; // return the nion
     }
 
-    template<typename T, typename D>
-    constexpr nion<T, D> &Nion::nion<T, D>::operator=(const std::initializer_list<T> &vals) {
+    template<typename T, unsigned long int N, typename D>
+    constexpr nion<T,N,D> &Nion::nion<T,N,D>::operator=(const std::initializer_list<T> &vals) {
 
         /// set the size of the nion
         size_ = vals.size();
@@ -146,8 +141,8 @@ namespace Nion {
         return *this; // return the nion
     }
 
-    template<typename T, typename D>
-    constexpr inline nion<T, D> &nion<T, D>::operator=(nion<T, D> &&other)  noexcept {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline nion<T,N,D> &nion<T,N,D>::operator=(nion<T,N,D> &&other)  noexcept {
         /// check if the nions are the same
         if (&other == this) {
             return *this; // return the nion
@@ -161,9 +156,9 @@ namespace Nion {
         return *this; // return the nion
     }
 
-    template<typename T, typename D>
+    template<typename T, unsigned long int N, typename D>
     template<typename S>
-    constexpr inline nion<T, D> &nion<T, D>::operator=(S scalar) {
+    constexpr inline nion<T,N,D> &nion<T,N,D>::operator=(S scalar) {
         /// check if the nion is initialized
         if (size_ <= 0) size_ = 1; // set the degree
 
@@ -176,15 +171,15 @@ namespace Nion {
     *  ASSIGNMENT AND ADDITION OPERATORS
     *************************************/
 
-    template<typename T, typename D>
-    constexpr inline void nion<T, D>::operator+=(const nion<T, D> &other) {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline void nion<T,N,D>::operator+=(const nion<T,N,D> &other) {
 
         // add the components of the other nion to this nion.
         if (size_ >= other.size_) {
-            #pragma unroll
+            #pragma unroll N
             for (D i = 0; i < other.size_; i++) elem_[i] += other.elem_[i];
         } else {
-            #pragma unroll
+            #pragma unroll N
             for (D i = 0; i < size_; i++) elem_[i] += other.elem_[i];
 
             // copy the remaining values
@@ -196,19 +191,19 @@ namespace Nion {
 
     }
 
-    template<typename T, typename D>
-    constexpr inline void nion<T, D>::operator-=(const nion<T, D> &other) {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline void nion<T,N,D>::operator-=(const nion<T,N,D> &other) {
 
         // subtract the components of the other nion to this nion.
         if (size_ >= other.size_) {
-            #pragma unroll
+            #pragma unroll N
             for (D i = 0; i < other.size_; i++) elem_[i] -= other.elem_[i];
         } else {
-            #pragma unroll
+            #pragma unroll N
             for (D i = 0; i < size_; i++) elem_[i] -= other.elem_[i];
 
             // copy the remaining values and negate them
-            #pragma unroll
+            #pragma unroll N
             for (D i = size_; i < other.size_; i++) elem_[i] = -other.elem_[i];
 
             // set the new size of the nion
@@ -216,15 +211,15 @@ namespace Nion {
         }
     }
 
-    template<typename T, typename D>
+    template<typename T, unsigned long int N, typename D>
     template<typename S>
-    constexpr inline void nion<T, D>::operator+=(S scalar) {
+    constexpr inline void nion<T,N,D>::operator+=(S scalar) {
         elem_[0] += static_cast<T>(scalar);
     }
 
-    template<typename T, typename D>
+    template<typename T, unsigned long int N, typename D>
     template<typename S>
-    constexpr inline void nion<T, D>::operator-=(S scalar) {
+    constexpr inline void nion<T,N,D>::operator-=(S scalar) {
         elem_[0] -= static_cast<T>(scalar);
     }
 
@@ -232,17 +227,17 @@ namespace Nion {
     *        ADDITION OPERATORS
     *************************************/
 
-    template<typename T, typename D>
-    constexpr inline nion<T, D> nion<T, D>::operator+(const nion<T, D> &other) const {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline nion<T,N,D> nion<T,N,D>::operator+(const nion<T,N,D> &other) const {
 
-        nion<T, D> sum; // create a nion to store the sum
+        nion<T,N,D> sum; // create a nion to store the sum
 
         if (size_ >= other.size_) {
             // set the size of the sum
             sum.size_ = size_;
 
             // add the components of the other nion and this nion.
-            #pragma unroll
+            #pragma unroll N
             for (D i = 0; i < other.size_; i++) sum.elem_[i] = elem_[i] + other.elem_[i];
 
             // copy the remaining values of this nion
@@ -252,7 +247,7 @@ namespace Nion {
             sum.size_ = other.size_;
 
             // add the components of the other nion and this nion.
-            #pragma unroll
+            #pragma unroll N
             for (D i = 0; i < size_; i++) sum.elem_[i] = elem_[i] + other.elem_[i];
 
             // copy the remaining values of the other nion
@@ -262,17 +257,17 @@ namespace Nion {
         return sum;
     }
 
-    template<typename T, typename D>
-    constexpr inline nion<T, D> nion<T, D>::operator-(const nion<T, D> &other) const {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline nion<T,N,D> nion<T,N,D>::operator-(const nion<T,N,D> &other) const {
 
-        nion<T, D> diff; // create a nion to store the difference
+        nion<T,N,D> diff; // create a nion to store the difference
 
         if (size_ >= other.size_) {
             // set the size of the difference
             diff.size_ = size_;
 
             // subtract the components of the other nion and this nion.
-            #pragma unroll
+            #pragma unroll N
             for (D i = 0; i < other.size_; i++) diff.elem_[i] = elem_[i] - other.elem_[i];
 
             // copy the remaining values of this nion
@@ -282,21 +277,21 @@ namespace Nion {
             diff.size_ = other.size_;
 
             // subtract the components of the other nion and this nion.
-            #pragma unroll
+            #pragma unroll N
             for (D i = 0; i < size_; i++) diff.elem_[i] = elem_[i] - other.elem_[i];
 
             // copy the remaining values of the other nion and negate them
-            #pragma unroll
+            #pragma unroll N
             for (D i = size_; i < other.size_; i++) diff.elem_[i] = -other.elem_[i];
         }
 
         return diff;
     }
 
-    template<typename T, typename D>
+    template<typename T, unsigned long int N, typename D>
     template<typename S>
-    constexpr inline nion<T, D> nion<T, D>::operator+(S scalar) const {
-        nion<T, D> sum(size_); // create a nion to store the sum
+    constexpr inline nion<T,N,D> nion<T,N,D>::operator+(S scalar) const {
+        nion<T,N,D> sum(size_); // create a nion to store the sum
 
         /// copy the components of this nion to the sum nion.
         memcpy(sum.elem_, elem_, size_ * sizeof(T));
@@ -306,30 +301,30 @@ namespace Nion {
         return sum;
     }
 
-    template<typename T, typename D, typename S>
-    extern constexpr inline nion<T, D> operator+(S scalar, const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D, typename S>
+    extern constexpr inline nion<T,N,D> operator+(S scalar, const nion<T,N,D> &z) {
         return z + static_cast<T>(scalar);
     }
 
-    template<typename T, typename D>
-    constexpr inline nion<T, D> nion<T, D>::operator++() {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline nion<T,N,D> nion<T,N,D>::operator++() {
         elem_[0]++;
         return *this;
     }
 
-    template<typename T, typename D>
+    template<typename T, unsigned long int N, typename D>
     template<typename S>
-    constexpr inline nion<T, D> nion<T, D>::operator-(S scalar) const {
+    constexpr inline nion<T,N,D> nion<T,N,D>::operator-(S scalar) const {
         return *this + (static_cast<T>(-scalar));
     }
 
-    template<typename T, typename D, typename S>
-    extern constexpr inline nion<T, D> operator-(S scalar, const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D, typename S>
+    extern constexpr inline nion<T,N,D> operator-(S scalar, const nion<T,N,D> &z) {
         return -z + static_cast<T>(scalar);
     }
 
-    template<typename T, typename D>
-    constexpr inline nion<T, D> nion<T, D>::operator--() {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline nion<T,N,D> nion<T,N,D>::operator--() {
         elem_[0]--;
         return *this;
     }
@@ -338,30 +333,30 @@ namespace Nion {
     *  ASSIGNMENT AND MULTIPLICATION OPERATORS
     *******************************************/
 
-    template<typename T, typename D>
-    constexpr inline void nion<T, D>::operator*=(const nion<T, D> &other) {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline void nion<T,N,D>::operator*=(const nion<T,N,D> &other) {
         *this = *this * other;
     }
 
-    template<typename T, typename D>
+    template<typename T, unsigned long int N, typename D>
     template<typename S>
-    constexpr inline void nion<T, D>::operator*=(S scalar) {
+    constexpr inline void nion<T,N,D>::operator*=(S scalar) {
         T product_scalar = static_cast<T>(scalar);
-        #pragma unroll
+        #pragma unroll N
         for (D i = 0; i < size_; i++) elem_[i] *= product_scalar;
 
     }
 
-    template<typename T, typename D>
-    constexpr inline void nion<T, D>::operator/=(const nion<T, D> &other) {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline void nion<T,N,D>::operator/=(const nion<T,N,D> &other) {
         *this = *this / other;
     }
 
-    template<typename T, typename D>
+    template<typename T, unsigned long int N, typename D>
     template<typename S>
-    constexpr inline void nion<T, D>::operator/=(S scalar) {
+    constexpr inline void nion<T,N,D>::operator/=(S scalar) {
         T quotient_scalar = static_cast<T>(scalar);
-        #pragma unroll
+        #pragma unroll N
         for (D i = 0; i < size_; i++) elem_[i] /= quotient_scalar;
 
     }
@@ -370,33 +365,33 @@ namespace Nion {
     *        MULTIPLICATION OPERATORS
     *******************************************/
 
-    template<typename T, typename D>
-    constexpr inline nion<T, D> nion<T, D>::conj() const {
-        nion<T, D> conjugate = *this; // copy this nion
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline nion<T,N,D> nion<T,N,D>::conj() const {
+        nion<T,N,D> conjugate = *this; // copy this nion
 
         // negate all components except the first
-        #pragma unroll
+        #pragma unroll N
         for (D i = 1; i < size_; i++) conjugate.elem_[i] *= -1;
 
         return conjugate;
     }
 
-    template<typename T, typename D>
-    constexpr inline nion<T, D> nion<T, D>::operator-() const {
-        nion<T, D> negated = *this; // copy this nion
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline nion<T,N,D> nion<T,N,D>::operator-() const {
+        nion<T,N,D> negated = *this; // copy this nion
 
         // negate all components
-        #pragma unroll
+        #pragma unroll N
         for (D i = 0; i < size_; i++) negated.elem_[i] *= -1;
 
         return negated;
     }
 
-    template<typename T, typename D>
-    constexpr inline nion<T, D> nion<T, D>::operator*(const nion<T, D> &other) const {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline nion<T,N,D> nion<T,N,D>::operator*(const nion<T,N,D> &other) const {
 
         if (size_ == other.size_) {
-            nion<T, D> product; // create a nion to store the product
+            nion<T,N,D> product; // create a nion to store the product
             product.size_ = size_;
             
             switch (size_) {
@@ -459,7 +454,7 @@ namespace Nion {
 
         /// ********** Recursive Product ********** ///
 
-        nion<T> a, b, c, d; // the four halves of the nions
+        nion<T,N,D> a, b, c, d; // the four halves of the nions
 
         // the elements of the first half of the nion
         std::size_t this_half_size = size_ - size_ / 2;
@@ -483,43 +478,43 @@ namespace Nion {
         );
     }
 
-    template<typename T, typename D>
+    template<typename T, unsigned long int N, typename D>
     template<typename S>
-    constexpr inline nion<T, D> nion<T, D>::operator*(S scalar) const {
-        nion<T, D> product;
+    constexpr inline nion<T,N,D> nion<T,N,D>::operator*(S scalar) const {
+        nion<T,N,D> product;
         product.size_ = size_;
         T product_scalar = static_cast<T>(scalar);
         
         // compute the product of each element of the nion with the scalar
-        #pragma unroll
+        #pragma unroll N
         for (D i = 0; i < size_; i++) product.elem_[i] = elem_[i] * product_scalar;
         
         return product;
     }
 
-    template<typename T, typename D, typename S>
-    extern constexpr inline nion<T, D> operator*(S scalar, const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D, typename S>
+    extern constexpr inline nion<T,N,D> operator*(S scalar, const nion<T,N,D> &z) {
         static_assert(std::is_arithmetic_v<S>, "scalar must be arithmetic");
         return z * static_cast<T>(scalar);
     }
 
-    template<typename T, typename D>
-    constexpr inline T nion<T, D>::abs() const {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline T nion<T,N,D>::abs() const {
         T absVal = 0;
         
-        #pragma unroll
+        #pragma unroll N
         for (D i = 0; i < size_; i++) absVal += elem_[i] * elem_[i];
         
         return absVal;
     }
 
-    template<typename T, typename D>
-    constexpr inline T nion<T, D>::norm() const {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline T nion<T,N,D>::norm() const {
         return std::sqrt(abs());
     }
 
-    template<typename T, typename D>
-    constexpr inline nion<T, D> nion<T, D>::inv() const {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline nion<T,N,D> nion<T,N,D>::inv() const {
         constexpr T epsilon = std::numeric_limits<T>::epsilon();
 
         T absolute = abs();
@@ -529,34 +524,34 @@ namespace Nion {
             // this is a bit of a hack, and probably not useful. (like the rest of this library)
 
             // q* / |q| = q* / sqrt(q * q*)
-            nion<T, D> inverse = this->conj() * pow((*this * this->conj()), static_cast<T>(-0.5)).real();
+            nion<T,N,D> inverse = this->conj() * pow((*this * this->conj()), static_cast<T>(-0.5)).real();
             return inverse;
         }
 
-        nion<T, D> inverse;
+        nion<T,N,D> inverse;
         inverse.size_ = size_;
         T inverse_scalar = static_cast<T>(1) / absolute;
         
-        #pragma unroll
+        #pragma unroll N
         for (D i = 0; i < size_; i++) inverse.elem_[i] = -elem_[i] * inverse_scalar;
         
         inverse.elem_[0] = elem_[0] * inverse_scalar;
         return inverse;
     }
 
-    template<typename T, typename D>
-    constexpr inline nion<T, D> nion<T, D>::operator/(const nion<T, D> &other) const {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline nion<T,N,D> nion<T,N,D>::operator/(const nion<T,N,D> &other) const {
         return *this * other.inv();
     }
 
-    template<typename T, typename D>
+    template<typename T, unsigned long int N, typename D>
     template<typename S>
-    constexpr inline nion<T, D> nion<T, D>::operator/(S scalar) const {
+    constexpr inline nion<T,N,D> nion<T,N,D>::operator/(S scalar) const {
         return *this * (static_cast<T>(1 / scalar));
     }
 
-    template<typename T, typename D, typename S>
-    extern constexpr inline nion<T, D> operator/(S scalar, const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D, typename S>
+    extern constexpr inline nion<T,N,D> operator/(S scalar, const nion<T,N,D> &z) {
         return z.inv() * static_cast<T>(scalar);
     }
 
@@ -565,17 +560,17 @@ namespace Nion {
     *            ACCESSOR FUNCTIONS
     *******************************************/
 
-    template<typename T, typename D>
-    constexpr inline T nion<T, D>::operator[](D index) const {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline T nion<T,N,D>::operator[](D index) const {
         return this->elem_[index];
     }
 
-    template<typename T, typename D>
-    constexpr inline T nion<T, D>::real() const { return elem_[0]; }
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline T nion<T,N,D>::real() const { return elem_[0]; }
 
-    template<typename T, typename D>
-    constexpr inline nion<T, D> nion<T, D>::imag() const {
-        nion<T> imag = *this;
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline nion<T,N,D> nion<T,N,D>::imag() const {
+        nion<T,N,D> imag = *this;
         imag.elem_[0] = 0;
         return imag;
     }
@@ -584,148 +579,148 @@ namespace Nion {
     *            COMPARISON OPERATORS
     *******************************************/
 
-    template<typename T, typename D>
-    constexpr inline bool nion<T, D>::operator==(const nion<T, D> &other) const {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline bool nion<T,N,D>::operator==(const nion<T,N,D> &other) const {
         if (this == &other) return true;
         if (size_ != other.size_) return false;
         
-        #pragma unroll
+        #pragma unroll N
         for (D i = 0; i < size_; i++) 
             if (!value_is_similar(elem_[i], other.elem_[i])) return false;
         return true;
     }
 
-    template<typename T, typename D>
-    constexpr inline bool nion<T, D>::operator!=(const nion<T, D> &other) const {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline bool nion<T,N,D>::operator!=(const nion<T,N,D> &other) const {
         if (this == &other) return false;
         if (size_ != other.size_) return true;
         
-        #pragma unroll
+        #pragma unroll N
         for (D i = 0; i < size_; i++)
             if (!value_is_similar(elem_[i], other.elem_[i])) return true;
         return false;
     }
 
-    template<typename T, typename D>
-    constexpr inline T nion<T, D>::rotate_real() const {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline T nion<T,N,D>::rotate_real() const {
         // this yields the shortest rotation of the nion onto the real axis while preserving the norm and the sign of the real component
         // this is useful for comparing nions with different degrees
         return copysign(norm(), real());
     }
 
-    template<typename T, typename D>
-    constexpr inline bool nion<T, D>::operator>(const nion<T, D> &other) const {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline bool nion<T,N,D>::operator>(const nion<T,N,D> &other) const {
         // nions with degree > 1 are not ordered, but we can arbitrarily order them by their rotation to the real line
         // this is not a good idea, but it's better than nothing (and it's what I'm doing for now)
         return rotate_real() > other.rotate_real();
     }
 
-    template<typename T, typename D>
-    constexpr inline bool nion<T, D>::operator<(const nion<T, D> &other) const {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline bool nion<T,N,D>::operator<(const nion<T,N,D> &other) const {
         // nions with degree > 1 are not ordered, but we can arbitrarily order them by their rotation to the real line
         // this is not a good idea, but it's better than nothing (and it's what I'm doing for now)
         return rotate_real() < other.rotate_real();
     }
 
-    template<typename T, typename D>
-    constexpr inline bool nion<T, D>::operator>=(const nion<T, D> &other) const {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline bool nion<T,N,D>::operator>=(const nion<T,N,D> &other) const {
         if (rotate_real() > other.rotate_real())
             return true;
         return *this == *other;
     }
 
-    template<typename T, typename D>
-    constexpr inline bool nion<T, D>::operator<=(const nion<T, D> &other) const {
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline bool nion<T,N,D>::operator<=(const nion<T,N,D> &other) const {
         if (rotate_real() < other.rotate_real())
             return true;
         return *this == *other;
     }
 
-    template<typename T, typename D, typename S>
+    template<typename T, unsigned long int N, typename D, typename S>
     constexpr inline bool value_is_similar(const T a, const S b){
         constexpr T epsilon = std::numeric_limits<T>::epsilon();
         return std::fabs(a - static_cast<T>(b)) <= epsilon;
     }
 
-    template<typename T, typename D>
-    constexpr inline bool nion<T, D>::is_real() const {
-        #pragma unroll
+    template<typename T, unsigned long int N, typename D>
+    constexpr inline bool nion<T,N,D>::is_real() const {
+        #pragma unroll N
         for (D i = 1; i < size_; i++)
             if (!value_is_similar(elem_[i], 0)) return false;
         return true;
     }
 
-    template<typename T, typename D>
+    template<typename T, unsigned long int N, typename D>
     template<typename S>
-    constexpr inline bool nion<T, D>::operator==(S scalar) const {
+    constexpr inline bool nion<T,N,D>::operator==(S scalar) const {
         if (!value_is_similar(real(), static_cast<T>(scalar))) return false;
         return is_real();
     }
 
-    template<typename T, typename D, typename S>
-    constexpr inline bool operator==(S scalar, const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D, typename S>
+    constexpr inline bool operator==(S scalar, const nion<T,N,D> &z) {
         return z == static_cast<T>(scalar);
     }
 
-    template<typename T, typename D>
+    template<typename T, unsigned long int N, typename D>
     template<typename S>
-    constexpr inline bool nion<T, D>::operator!=(S scalar) const {
+    constexpr inline bool nion<T,N,D>::operator!=(S scalar) const {
         if (!value_is_similar(real(), static_cast<T>(scalar))) {
             return true;
         }
         return !is_real();
     }
 
-    template<typename T, typename D, typename S>
-    constexpr inline bool operator!=(S scalar, const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D, typename S>
+    constexpr inline bool operator!=(S scalar, const nion<T,N,D> &z) {
         return z != static_cast<T>(scalar);
     }
 
-    template<typename T, typename D>
+    template<typename T, unsigned long int N, typename D>
     template<typename S>
-    constexpr inline bool nion<T,D>::operator>(S scalar) const{
+    constexpr inline bool nion<T,N,D>::operator>(S scalar) const{
         return rotate_real() > static_cast<T>(scalar);
     }
 
-    template<typename T, typename D, typename S>
-    constexpr inline bool operator>(S scalar, const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D, typename S>
+    constexpr inline bool operator>(S scalar, const nion<T,N,D> &z) {
         return z < static_cast<T>(scalar);
     }
 
-    template<typename T, typename D>
+    template<typename T, unsigned long int N, typename D>
     template<typename S>
-    constexpr inline bool nion<T,D>::operator<(S scalar) const{
+    constexpr inline bool nion<T,N,D>::operator<(S scalar) const{
         return rotate_real() < static_cast<T>(scalar);
     }
 
-    template<typename T, typename D, typename S>
-    constexpr inline bool operator<(S scalar, const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D, typename S>
+    constexpr inline bool operator<(S scalar, const nion<T,N,D> &z) {
         return z > static_cast<T>(scalar);
     }
 
-    template<typename T, typename D>
+    template<typename T, unsigned long int N, typename D>
     template<typename S>
-    constexpr inline bool nion<T,D>::operator>=(S scalar) const{
-        if (*this == nion<T, D>(static_cast<T>(scalar), this->size_))
+    constexpr inline bool nion<T,N,D>::operator>=(S scalar) const{
+        if (*this == nion<T,N,D>(static_cast<T>(scalar), this->size_))
             return true;
         return rotate_real() > static_cast<T>(scalar);
     }
 
-    template<typename T, typename D, typename S>
-    constexpr inline bool operator>=(S scalar, const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D, typename S>
+    constexpr inline bool operator>=(S scalar, const nion<T,N,D> &z) {
         return z <= static_cast<T>(scalar);
     }
 
-    template<typename T, typename D>
+    template<typename T, unsigned long int N, typename D>
     template<typename S>
-    constexpr inline bool nion<T,D>::operator<=(S scalar) const{
-        if (*this == nion<T, D>(static_cast<T>(scalar), this->size_))
+    constexpr inline bool nion<T,N,D>::operator<=(S scalar) const{
+        if (*this == nion<T,N,D>(static_cast<T>(scalar), this->size_))
             return true;
         return rotate_real() < static_cast<T>(scalar);
     }
 
-    template<typename T, typename D, typename S>
-    constexpr inline bool operator<=(S scalar, const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D, typename S>
+    constexpr inline bool operator<=(S scalar, const nion<T,N,D> &z) {
         return z >= static_cast<T>(scalar);
     }
 
@@ -733,8 +728,8 @@ namespace Nion {
     *            STREAMING OPERATORS
     *******************************************/
 
-    template<typename T, typename D>
-    std::ostream &operator<<(std::ostream &os, const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    std::ostream &operator<<(std::ostream &os, const nion<T,N,D> &z) {
         T component = z.elem_[0];
         os << "(" << component;
 
@@ -746,8 +741,8 @@ namespace Nion {
         return os;
     }
 
-    template<typename T, typename D>
-    std::istream &operator>>(std::istream &is, nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    std::istream &operator>>(std::istream &is, nion<T,N,D> &z) {
         for (D i = 0; i < z.size_; i++) {
             is >> z.elem_[i];
         }
@@ -758,8 +753,8 @@ namespace Nion {
     * @brief Converts a nion to a string.
     * @return The string representation of the nion.
     */
-    template<typename T, typename D>
-    inline std::string nion<T, D>::to_string() const {
+    template<typename T, unsigned long int N, typename D>
+    inline std::string nion<T,N,D>::to_string() const {
         std::string nion_string = "(" + std::to_string(elem_[0]);
         for (D i = 1; i < size_; i++) {
             nion_string += "," + std::to_string(elem_[i]);
@@ -772,41 +767,41 @@ namespace Nion {
 *  NION FUNCTION IMPLEMENTATIONS *
 **********************************/
 
-    template<typename T, typename D>
-    extern constexpr inline T real(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline T real(const nion<T,N,D> &z) {
         return z.real();
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> imag(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> imag(const nion<T,N,D> &z) {
         return z.imag();
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> conj(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> conj(const nion<T,N,D> &z) {
         return z.conj();
     }
 
-    template<typename T, typename D>
-    extern constexpr inline T abs(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline T abs(const nion<T,N,D> &z) {
         return z.abs();
     }
 
-    template<typename T, typename D>
-    extern constexpr inline T norm(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline T norm(const nion<T,N,D> &z) {
         return z.norm();
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> inv(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> inv(const nion<T,N,D> &z) {
         return z.inv();
     }
 
-    template<typename T, typename D>
-    extern constexpr inline T dot(const nion<T, D> &lhs, const nion<T, D> &rhs) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline T dot(const nion<T,N,D> &lhs, const nion<T,N,D> &rhs) {
         T dotProduct = 0;
         D minDegree = std::min(lhs.size_, rhs.size_);
-        #pragma unroll
+        #pragma unroll N
         for (D i = 0; i < minDegree; i++) {
             dotProduct += lhs.elem_[i] * rhs.elem_[i];
         }
@@ -814,17 +809,17 @@ namespace Nion {
     }
 
     /*
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D>
-    cross(const nion<T, D> &lhs, const nion<T, D> &rhs){} //TODO: implement cross product
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D>
+    cross(const nion<T,N,D> &lhs, const nion<T,N,D> &rhs){} //TODO: implement cross product
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D>
-    wedge(const nion<T, D> &lhs, const nion<T, D> &rhs){} //TODO: implement wedge product
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D>
+    wedge(const nion<T,N,D> &lhs, const nion<T,N,D> &rhs){} //TODO: implement wedge product
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D>
-    outer(const nion<T, D> &lhs, const nion<T, D> &rhs){} //TODO: implement outer product
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D>
+    outer(const nion<T,N,D> &lhs, const nion<T,N,D> &rhs){} //TODO: implement outer product
      */
 
 
@@ -832,12 +827,12 @@ namespace Nion {
     *  NION ALGEBRAIC FUNCTIONS *
     *****************************/
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> exp(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> exp(const nion<T,N,D> &z) {
 
         // get polar form of nion
         T r = z.real();
-        nion<T, D> i = z.imag();
+        nion<T,N,D> i = z.imag();
 
         // make unit vector
         T i_abs = i.abs();
@@ -850,7 +845,7 @@ namespace Nion {
 
         constexpr T epsilon = std::numeric_limits<T>::epsilon();
         if (i_abs < epsilon)
-            return nion<T, D>(exp_r, z.size_);
+            return nion<T,N,D>(exp_r, z.size_);
 
         // compute exponential of nion
         cos_theta = std::cos(i_norm);
@@ -860,12 +855,12 @@ namespace Nion {
 
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> log(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> log(const nion<T,N,D> &z) {
 
         // get polar form of nion
         T r = z.real();
-        nion<T, D> i = z.imag();
+        nion<T,N,D> i = z.imag();
 
         // compute norms
         T z_abs = z.abs();
@@ -882,89 +877,26 @@ namespace Nion {
             return i * (theta / i_norm) + std::log(z_norm);
     }
 
-    template<typename T, typename D, typename S>
-    extern constexpr inline nion<T, D> pow(const nion<T, D> &base, S power) {
-
-        // get polar form of nion
-        T r = base.real();
-        nion<T, D> i = base.imag();
-
-        // compute norms
-        T base_abs = base.abs();
-        T base_norm = std::sqrt(base_abs);
-
-        // make unit vector
-        T i_abs = base_abs - r * r;
-        T i_norm = std::sqrt(i_abs);
-
-        T power_t;
-        T theta;
-
-        T cos_ptheta;
-        T sin_ptheta;
-
-        constexpr T epsilon = std::numeric_limits<T>::epsilon();
-        if (i_abs <= epsilon) { // real nion
-            if (std::signbit(r)) { // if base is negative
-                power_t = static_cast<T>(power);
-                theta = power_t * std::atan2(i_norm, r);
-                cos_ptheta = std::cos(theta);
-                sin_ptheta = std::sin(theta);
-
-                return std::pow(base_norm, power_t) * (cos_ptheta + i * (sin_ptheta));
-            } else {
-                return nion<T, D>(std::pow(base_norm, static_cast<T>(power)), base.size_); // if base is positive
-            }
-        }
-        
-        if constexpr (std::is_integral_v<S>) { // if power is integer, use faster algorithm
-
-            nion<T, D> z = base;
-            if (std::signbit(power)) {
-                z = inv(z);
-                power = -power;
-            }
-
-            switch (power) {
-                case 0:
-                    return nion<T, D>(1, z.size_);
-                case 1:
-                    return z;
-                case 2:
-                    return sqr(z);
-                default:
-                    power_t = static_cast<T>(power);
-                    theta = power_t * std::atan2(i_norm, r);
-                    cos_ptheta = std::cos(theta);
-                    sin_ptheta = std::sin(theta);
-                    break;
-            }
-        } else {
-            power_t = static_cast<T>(power);
-            theta = power_t * std::atan2(i_norm, r);
-            cos_ptheta = std::cos(theta); //cos(atan(y/x)) = 1/sqrt(1+y^2/x^2) --> cos(p*atan(y/x)) = ???
-            sin_ptheta = std::sin(theta); //sin(atan(y/x)) = y/(x*sqrt(1 + y^2/x^2)) --> sin(p*atan(y/x)) = ???
-        }
-
-        // compute power of nion
-        return std::pow(base_norm, power_t) * (cos_ptheta + i * (sin_ptheta / i_norm));
-    }
-
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> pow(const nion<T, D> &base, const nion<T, D> &power) {
+    template<typename T, unsigned long int N, typename D, typename S>
+    extern constexpr inline nion<T,N,D> pow(const nion<T,N,D> &base, S power) {
         return exp(power * log(base));
     }
 
-    template<typename T, typename D, typename S>
-    extern constexpr inline nion<T, D> pow(S base, const nion<T, D> &power) {
-        return pow(nion<T, D>(static_cast<T>(base), power.size_), power);
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> pow(const nion<T,N,D> &base, const nion<T,N,D> &power) {
+        return exp(power * log(base));
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> sqr(const nion<T, D> &base) {
+    template<typename T, unsigned long int N, typename D, typename S>
+    extern constexpr inline nion<T,N,D> pow(S base, const nion<T,N,D> &power) {
+        return exp(power * log(base));
+    }
+
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> sqr(const nion<T,N,D> &base) {
         // get polar form of nion
         T r = base.real();
-        nion<T, D> i = base.imag();
+        nion<T,N,D> i = base.imag();
 
         // compute norms
         T base_abs = base.abs();
@@ -980,7 +912,7 @@ namespace Nion {
         T x2 = r * r;
         T y2 = i_norm * i_norm;
         if (x2 + y2 <= epsilon)
-            return nion<T>(base_norm * base_norm, base.size_); // if base is zero return zero (0^2 = 0)
+            return nion<T,N,D>(base_norm * base_norm, base.size_); // if base is zero return zero (0^2 = 0)
 
         T denom = static_cast<T>(1) / (x2 + y2);
         T cos_2theta = (x2 - y2) * denom;
@@ -993,13 +925,13 @@ namespace Nion {
             return std::pow(base_norm, power_t) * (cos_2theta + i * (sin_2theta / i_norm));
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> sqrt(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> sqrt(const nion<T,N,D> &z) {
         return pow(z, static_cast<T>(0.5));
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> cbrt(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> cbrt(const nion<T,N,D> &z) {
         return pow(z, static_cast<T>(1.0) / static_cast<T>(3.0));
     }
 
@@ -1007,10 +939,10 @@ namespace Nion {
     *  NION HYPERBOLIC TRIGONOMETRIC FUNCTIONS *
     ********************************************/
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> sinh(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> sinh(const nion<T,N,D> &z) {
         // get polar form of nion
-        nion<T, D> i = z.imag();
+        nion<T,N,D> i = z.imag();
 
         // make unit vector
         T i_abs = i.abs();
@@ -1023,21 +955,21 @@ namespace Nion {
         // compute exponential of nion
         constexpr T epsilon = std::numeric_limits<T>::epsilon();
         if (i_abs <= epsilon) {
-            nion<T, D> sin_nion = i * ((e_z + e_mz) * std::sin(i_norm));
+            nion<T,N,D> sin_nion = i * ((e_z + e_mz) * std::sin(i_norm));
             sin_nion += std::cos(i_norm) * (e_z - e_mz);
             return sin_nion;
         } else {
-            nion<T, D> sin_nion = i * ((e_z + e_mz) * std::sin(i_norm) / i_norm);
+            nion<T,N,D> sin_nion = i * ((e_z + e_mz) * std::sin(i_norm) / i_norm);
             sin_nion += std::cos(i_norm) * (e_z - e_mz);
             return sin_nion;
         }
 
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> cosh(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> cosh(const nion<T,N,D> &z) {
         // get polar form of nion
-        nion<T, D> i = z.imag();
+        nion<T,N,D> i = z.imag();
 
         // make unit vector
         T i_abs = i.abs();
@@ -1050,33 +982,33 @@ namespace Nion {
         // compute exponential of nion
         constexpr T epsilon = std::numeric_limits<T>::epsilon();
         if (i_abs <= epsilon) {
-            nion<T, D> cos_nion = i * ((e_z - e_mz) * std::sin(i_norm));
+            nion<T,N,D> cos_nion = i * ((e_z - e_mz) * std::sin(i_norm));
             cos_nion += std::cos(i_norm) * (e_z + e_mz);
             return cos_nion;
         } else {
-            nion<T, D> cos_nion = i * ((e_z - e_mz) * std::sin(i_norm) / i_norm);
+            nion<T,N,D> cos_nion = i * ((e_z - e_mz) * std::sin(i_norm) / i_norm);
             cos_nion += std::cos(i_norm) * (e_z + e_mz);
             return cos_nion;
         }
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> tanh(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> tanh(const nion<T,N,D> &z) {
         return (exp(z*2) - 1) / (exp(z*2) + 1);
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> coth(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> coth(const nion<T,N,D> &z) {
         return tanh(z).inv();
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> sech(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> sech(const nion<T,N,D> &z) {
         return cosh(z).inv();
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> csch(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> csch(const nion<T,N,D> &z) {
         return sinh(z).inv();
     }
 
@@ -1085,11 +1017,11 @@ namespace Nion {
     *********************************/
 
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> sin(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> sin(const nion<T,N,D> &z) {
         // get the polar form of the nion
         T r = real(z);
-        nion<T, D> i = imag(z);
+        nion<T,N,D> i = imag(z);
 
         // make unit vector
         T i_abs = i.abs();
@@ -1103,11 +1035,11 @@ namespace Nion {
             return i * (std::sinh(i_norm) * std::cos(r) / i_norm) + std::sin(r) * std::cosh(i_norm);
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> cos(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> cos(const nion<T,N,D> &z) {
         // get the polar form of the nion
         T r = real(z);
-        nion<T, D> i = imag(z);
+        nion<T,N,D> i = imag(z);
 
         // make unit vector
         T i_abs = i.abs();
@@ -1121,11 +1053,11 @@ namespace Nion {
             return -i * (std::sinh(i_norm) * std::sin(r) / i_norm) + std::cos(r) * std::cosh(i_norm);
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> tan(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> tan(const nion<T,N,D> &z) {
         // get the polar form of the nion
         T r = real(z);
-        nion<T, D> i = imag(z);
+        nion<T,N,D> i = imag(z);
 
         // make unit vector
         T i_abs = i.abs();
@@ -1139,18 +1071,18 @@ namespace Nion {
             return (std::tan(r) + i * (std::tanh(i_norm) / i_norm)) / (static_cast<T>(1) - i * (std::tan(r) / i_norm * std::tanh(i_norm)));
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> cot(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> cot(const nion<T,N,D> &z) {
         return tan(z).inv();
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> sec(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> sec(const nion<T,N,D> &z) {
         return cos(z).inv();
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> csc(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> csc(const nion<T,N,D> &z) {
         return sin(z).inv();
     }
 
@@ -1158,35 +1090,35 @@ namespace Nion {
     *  NION INVERSE HYPERBOLIC TRIGONOMETRIC FUNCTIONS *
     ****************************************************/
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> asinh(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> asinh(const nion<T,N,D> &z) {
         return log(z + sqrt(sqr(z) + static_cast<T>(1)));
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> acosh(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> acosh(const nion<T,N,D> &z) {
         // compute the inverse hyperbolic cosine of the nion
         return 2 * log(sqrt((z-1) * static_cast<T>(0.5)) + sqrt((z+1) * static_cast<T>(0.5)));
 
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> atanh(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> atanh(const nion<T,N,D> &z) {
         return (log(static_cast<T>(1) + z) - log(static_cast<T>(1) - z)) * static_cast<T>(0.5);
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> acoth(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> acoth(const nion<T,N,D> &z) {
         return (log(static_cast<T>(1) + inv(z)) - log(static_cast<T>(1) - inv(z))) * static_cast<T>(0.5);
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> asech(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> asech(const nion<T,N,D> &z) {
         return log(sqrt(1/sqr(z) - static_cast<T>(1)) + inv(z));
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> acsch(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> acsch(const nion<T,N,D> &z) {
         return log(sqrt(static_cast<T>(1) + 1/sqr(z)) + inv(z));
     }
 
@@ -1194,12 +1126,12 @@ namespace Nion {
     *  NION INVERSE TRIGONOMETRIC FUNCTIONS *
     *****************************************/
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> asin(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> asin(const nion<T,N,D> &z) {
 
         // get the polar form of the nion
         T r = real(z);
-        nion<T, D> i = z.imag();
+        nion<T,N,D> i = z.imag();
 
         // make unit vector
         T i_abs = i.abs();
@@ -1212,16 +1144,16 @@ namespace Nion {
         return -i * log(sqrt(static_cast<T>(1) - sqr(z)) + (i * r) - i_norm);
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> acos(const nion<T, D> &z) {
-        return static_cast<T>(M_PI_2l) - asin(z);
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> acos(const nion<T,N,D> &z) {
+        return static_cast<T>(M_PI_2) - asin(z);
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> atan(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> atan(const nion<T,N,D> &z) {
         // get the polar form of the nion
         T r = real(z);
-        nion<T, D> i = z.imag();
+        nion<T,N,D> i = z.imag();
 
         // make unit vector
         T i_abs = i.abs();
@@ -1235,23 +1167,23 @@ namespace Nion {
         return static_cast<T>(0.5) * i * (-log((one - i_norm) + (i * r) ) + log((one + i_norm) + (i * -r) ));
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> acot(const nion<T, D> &z) {
-        return static_cast<T>(M_PI_2l) - atan(z);
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> acot(const nion<T,N,D> &z) {
+        return static_cast<T>(M_PI_2) - atan(z);
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> asec(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> asec(const nion<T,N,D> &z) {
         return acos(inv(z));
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> acsc(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> acsc(const nion<T,N,D> &z) {
         return asin(inv(z));
     }
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> atan2(const nion<T, D> &y, const nion<T, D> &x) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> atan2(const nion<T,N,D> &y, const nion<T,N,D> &x) {
         return atan(y / x);
     }
 
@@ -1259,11 +1191,11 @@ namespace Nion {
      *   NION GAMMA FUNCTION   *
      **************************/
 
-    template<typename T, typename D>
-    extern constexpr inline nion<T, D> gamma(const nion<T, D> &z) {
+    template<typename T, unsigned long int N, typename D>
+    extern constexpr inline nion<T,N,D> gamma(const nion<T,N,D> &z) {
         // compute the gamma function of the nion
         return exp(-z) * sqrt(inv(z))
                * pow(static_cast<T>(1) / (static_cast<T>(12) * z - inv(static_cast<T>(10) * z)) + z, z)
-               * std::sqrt(static_cast<T>(2) * static_cast<T>(M_PIl));
+               * std::sqrt(static_cast<T>(2) * static_cast<T>(M_PI));
     }
 }

@@ -41,7 +41,7 @@ void printSpeedupQuaternion(const T& niontime, const T& othertime) {
 }
 
 template<typename T>
-T getMAEquaternion(nion<T> nion, boost::math::quaternion<T> compare){
+T getMAEquaternion(nion<T,4> nion, boost::math::quaternion<T> compare){
     int degree = nion.size_;
     T mae = 0;
     mae += std::pow(nion[0] - compare.R_component_1(), 2);
@@ -73,7 +73,7 @@ void boostQuaternionComparison(int trials) {
     T MRE_Add = 0;
     T MAE_Add= 0;
     T MAX_Add = -1;
-    nion<T> maxAddNion;
+    nion<T,4> maxAddNion;
     boost::math::quaternion<T> maxAddBoost;
     boost::math::quaternion<T> max1valueAdd;
     boost::math::quaternion<T> max2valueAdd;
@@ -84,7 +84,7 @@ void boostQuaternionComparison(int trials) {
     T MRE_Conj = 0;
     T MAE_Conj= 0;
     T MAX_Conj = -1;
-    nion<T> maxConjNion;
+    nion<T,4> maxConjNion;
     boost::math::quaternion<T> maxConjBoost;
     boost::math::quaternion<T> max1valueConj;
     boost::math::quaternion<T> max2valueConj;
@@ -95,7 +95,7 @@ void boostQuaternionComparison(int trials) {
     T MRE_Mul = 0;
     T MAE_Mul= 0;
     T MAX_Mul = -1;
-    nion<T> maxMulNion;
+    nion<T,4> maxMulNion;
     boost::math::quaternion<T> maxMulBoost;
     boost::math::quaternion<T> max1valueMul;
     boost::math::quaternion<T> max2valueMul;
@@ -106,7 +106,7 @@ void boostQuaternionComparison(int trials) {
     T MRE_Div = 0;
     T MAE_Div= 0;
     T MAX_Div = -1;
-    nion<T> maxDivNion;
+    nion<T,4> maxDivNion;
     boost::math::quaternion<T> maxDivBoost;
     boost::math::quaternion<T> max1valueDiv;
     boost::math::quaternion<T> max2valueDiv;
@@ -117,7 +117,7 @@ void boostQuaternionComparison(int trials) {
     T MRE_Pow = 0;
     T MAE_Pow= 0;
     T MAX_Pow = -1;
-    nion<T> maxPowNion;
+    nion<T,4> maxPowNion;
     boost::math::quaternion<T> maxPowBoost;
     boost::math::quaternion<T> max1valuePow;
     boost::math::quaternion<T> max2valuePow;
@@ -128,7 +128,7 @@ void boostQuaternionComparison(int trials) {
     T MRE_Exp = 0;
     T MAE_Exp= 0;
     T MAX_Exp = -1;
-    nion<T> maxExpNion;
+    nion<T,4> maxExpNion;
     boost::math::quaternion<T> maxExpBoost;
     boost::math::quaternion<T> max1valueExp;
     boost::math::quaternion<T> max2valueExp;
@@ -139,7 +139,7 @@ void boostQuaternionComparison(int trials) {
     T MRE_Sin = 0;
     T MAE_Sin= 0;
     T MAX_Sin = -1;
-    nion<T> maxSinNion;
+    nion<T,4> maxSinNion;
     boost::math::quaternion<T> maxSinBoost;
     boost::math::quaternion<T> max1valueSin;
     boost::math::quaternion<T> max2valueSin;
@@ -150,7 +150,7 @@ void boostQuaternionComparison(int trials) {
     T MRE_Cos = 0;
     T MAE_Cos= 0;
     T MAX_Cos = -1;
-    nion<T> maxCosNion;
+    nion<T,4> maxCosNion;
     boost::math::quaternion<T> maxCosBoost;
     boost::math::quaternion<T> max1valueCos;
     boost::math::quaternion<T> max2valueCos;
@@ -161,7 +161,7 @@ void boostQuaternionComparison(int trials) {
     T MRE_Tan = 0;
     T MAE_Tan= 0;
     T MAX_Tan = -1;
-    nion<T> maxTanNion;
+    nion<T,4> maxTanNion;
     boost::math::quaternion<T> maxTanBoost;
     boost::math::quaternion<T> max1valueTan;
     boost::math::quaternion<T> max2valueTan;
@@ -172,7 +172,7 @@ void boostQuaternionComparison(int trials) {
     T MRE_Sinh = 0;
     T MAE_Sinh= 0;
     T MAX_Sinh = -1;
-    nion<T> maxSinhNion;
+    nion<T,4> maxSinhNion;
     boost::math::quaternion<T> maxSinhBoost;
     boost::math::quaternion<T> max1valueSinh;
     boost::math::quaternion<T> max2valueSinh;
@@ -183,7 +183,7 @@ void boostQuaternionComparison(int trials) {
     T MRE_Cosh = 0;
     T MAE_Cosh= 0;
     T MAX_Cosh = -1;
-    nion<T> maxCoshNion;
+    nion<T,4> maxCoshNion;
     boost::math::quaternion<T> maxCoshBoost;
     boost::math::quaternion<T> max1valueCosh;
     boost::math::quaternion<T> max2valueCosh;
@@ -194,7 +194,7 @@ void boostQuaternionComparison(int trials) {
     T MRE_Tanh = 0;
     T MAE_Tanh= 0;
     T MAX_Tanh = -1;
-    nion<T> maxTanhNion;
+    nion<T,4> maxTanhNion;
     boost::math::quaternion<T> maxTanhBoost;
     boost::math::quaternion<T> max1valueTanh;
     boost::math::quaternion<T> max2valueTanh;
@@ -204,7 +204,7 @@ void boostQuaternionComparison(int trials) {
     auto startBoost = std::chrono::high_resolution_clock::now();
     auto endBoost = std::chrono::high_resolution_clock::now();
 
-    nion < T > nionResult;
+    nion <T,4> nionResult;
     boost::math::quaternion<T> boostResult;
     T diff;
 
@@ -222,8 +222,8 @@ void boostQuaternionComparison(int trials) {
             vals2[j] = distribution(generator);
         }
 
-        nion < T > nion1(vals1, 4);
-        nion < T > nion2(vals2, 4);
+        nion <T,4> nion1(vals1, 4);
+        nion <T,4> nion2(vals2, 4);
         boost::math::quaternion<T> boost1(vals1[0], vals1[1], vals1[2], vals1[3]);
         boost::math::quaternion<T> boost2(vals2[0], vals2[1], vals2[2], vals2[3]);
 

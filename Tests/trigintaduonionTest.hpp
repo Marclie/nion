@@ -42,7 +42,7 @@ void printSpeedupTrigintaduonion(const T& niontime, const T& othertime) {
 }
 
 template<typename T>
-T getMAEtrigintaduonion(nion<T> nion, Trigintaduonion<T> compare){
+T getMAEtrigintaduonion(nion<T,32> nion, Trigintaduonion<T> compare){
     int degree = nion.size_;
     T mae = 0;
     for (int i = 0; i < degree; i++) {
@@ -74,7 +74,7 @@ void TrigintaduonionComparison(int trials) {
     T MAE_Add = 0;
     T MRE_Add = 0;
     T MAX_Add = -1;
-    nion<T> maxAddNion;
+    nion<T,32> maxAddNion;
     Trigintaduonion<T> maxAddTrigintaduonion;
     Trigintaduonion<T> max1valueAdd;
     Trigintaduonion<T> max2valueAdd;
@@ -85,7 +85,7 @@ void TrigintaduonionComparison(int trials) {
     T MAE_Conj = 0;
     T MRE_Conj = 0;
     T MAX_Conj = -1;
-    nion<T> maxConjNion;
+    nion<T,32> maxConjNion;
     Trigintaduonion<T> maxConjTrigintaduonion;
     Trigintaduonion<T> max1valueConj;
     Trigintaduonion<T> max2valueConj;
@@ -96,7 +96,7 @@ void TrigintaduonionComparison(int trials) {
     T MAE_Mul = 0;
     T MRE_Mul = 0;
     T MAX_Mul = -1;
-    nion<T> maxMulNion;
+    nion<T,32> maxMulNion;
     Trigintaduonion<T> maxMulTrigintaduonion;
     Trigintaduonion<T> max1valueMul;
     Trigintaduonion<T> max2valueMul;
@@ -107,7 +107,7 @@ void TrigintaduonionComparison(int trials) {
     T MAE_Div = 0;
     T MRE_Div = 0;
     T MAX_Div = -1;
-    nion<T> maxDivNion;
+    nion<T,32> maxDivNion;
     Trigintaduonion<T> maxDivTrigintaduonion;
     Trigintaduonion<T> max1valueDiv;
     Trigintaduonion<T> max2valueDiv;
@@ -118,7 +118,7 @@ void TrigintaduonionComparison(int trials) {
     T MAE_Pow = 0;
     T MRE_Pow = 0;
     T MAX_Pow = -1;
-    nion<T> maxPowNion;
+    nion<T,32> maxPowNion;
     Trigintaduonion<T> maxPowTrigintaduonion;
     Trigintaduonion<T> max1valuePow;
     Trigintaduonion<T> max2valuePow;
@@ -129,7 +129,7 @@ void TrigintaduonionComparison(int trials) {
     T MAE_Sq = 0;
     T MRE_Sq = 0;
     T MAX_Sq = -1;
-    nion<T> maxSqNion;
+    nion<T,32> maxSqNion;
     Trigintaduonion<T> maxSqTrigintaduonion;
     Trigintaduonion<T> max1valueSq;
     Trigintaduonion<T> max2valueSq;
@@ -140,7 +140,7 @@ void TrigintaduonionComparison(int trials) {
     T MAE_Exp = 0;
     T MRE_Exp = 0;
     T MAX_Exp = -1;
-    nion<T> maxExpNion;
+    nion<T,32> maxExpNion;
     Trigintaduonion<T> maxExpTrigintaduonion;
     Trigintaduonion<T> max1valueExp;
     Trigintaduonion<T> max2valueExp;
@@ -151,7 +151,7 @@ void TrigintaduonionComparison(int trials) {
     T MAE_Log = 0;
     T MRE_Log = 0;
     T MAX_Log = -1;
-    nion<T> maxLogNion;
+    nion<T,32> maxLogNion;
     Trigintaduonion<T> maxLogTrigintaduonion;
     Trigintaduonion<T> max1valueLog;
     Trigintaduonion<T> max2valueLog;
@@ -162,7 +162,7 @@ void TrigintaduonionComparison(int trials) {
     T MAE_Sin = 0;
     T MRE_Sin = 0;
     T MAX_Sin = -1;
-    nion<T> maxSinNion;
+    nion<T,32> maxSinNion;
     Trigintaduonion<T> maxSinTrigintaduonion;
     Trigintaduonion<T> max1valueSin;
     Trigintaduonion<T> max2valueSin;
@@ -173,7 +173,7 @@ void TrigintaduonionComparison(int trials) {
     T MAE_Asin = 0;
     T MRE_Asin = 0;
     T MAX_Asin = -1;
-    nion<T> maxAsinNion;
+    nion<T,32> maxAsinNion;
     Trigintaduonion<T> maxAsinTrigintaduonion;
     Trigintaduonion<T> max1valueAsin;
     Trigintaduonion<T> max2valueAsin;
@@ -184,7 +184,7 @@ void TrigintaduonionComparison(int trials) {
     T MAE_Cos = 0;
     T MRE_Cos = 0;
     T MAX_Cos = -1;
-    nion<T> maxCosNion;
+    nion<T,32> maxCosNion;
     Trigintaduonion<T> maxCosTrigintaduonion;
     Trigintaduonion<T> max1valueCos;
     Trigintaduonion<T> max2valueCos;
@@ -195,7 +195,7 @@ void TrigintaduonionComparison(int trials) {
     T MAE_Acos = 0;
     T MRE_Acos = 0;
     T MAX_Acos = -1;
-    nion<T> maxAcosNion;
+    nion<T,32> maxAcosNion;
     Trigintaduonion<T> maxAcosTrigintaduonion;
     Trigintaduonion<T> max1valueAcos;
     Trigintaduonion<T> max2valueAcos;
@@ -206,7 +206,7 @@ void TrigintaduonionComparison(int trials) {
     T MAE_Tan = 0;
     T MRE_Tan = 0;
     T MAX_Tan = -1;
-    nion<T> maxTanNion;
+    nion<T,32> maxTanNion;
     Trigintaduonion<T> maxTanTrigintaduonion;
     Trigintaduonion<T> max1valueTan;
     Trigintaduonion<T> max2valueTan;
@@ -217,7 +217,7 @@ void TrigintaduonionComparison(int trials) {
     T MAE_Atan = 0;
     T MRE_Atan = 0;
     T MAX_Atan = -1;
-    nion<T> maxAtanNion;
+    nion<T,32> maxAtanNion;
     Trigintaduonion<T> maxAtanTrigintaduonion;
     Trigintaduonion<T> max1valueAtan;
     Trigintaduonion<T> max2valueAtan;
@@ -228,7 +228,7 @@ void TrigintaduonionComparison(int trials) {
     T MAE_Sinh = 0;
     T MRE_Sinh = 0;
     T MAX_Sinh = -1;
-    nion<T> maxSinhNion;
+    nion<T,32> maxSinhNion;
     Trigintaduonion<T> maxSinhTrigintaduonion;
     Trigintaduonion<T> max1valueSinh;
     Trigintaduonion<T> max2valueSinh;
@@ -239,7 +239,7 @@ void TrigintaduonionComparison(int trials) {
     T MAE_Asinh = 0;
     T MRE_Asinh = 0;
     T MAX_Asinh = -1;
-    nion<T> maxAsinhNion;
+    nion<T,32> maxAsinhNion;
     Trigintaduonion<T> maxAsinhTrigintaduonion;
     Trigintaduonion<T> max1valueAsinh;
     Trigintaduonion<T> max2valueAsinh;
@@ -250,7 +250,7 @@ void TrigintaduonionComparison(int trials) {
     T MAE_Cosh = 0;
     T MRE_Cosh = 0;
     T MAX_Cosh = -1;
-    nion<T> maxCoshNion;
+    nion<T,32> maxCoshNion;
     Trigintaduonion<T> maxCoshTrigintaduonion;
     Trigintaduonion<T> max1valueCosh;
     Trigintaduonion<T> max2valueCosh;
@@ -261,7 +261,7 @@ void TrigintaduonionComparison(int trials) {
     T MAE_Acosh = 0;
     T MRE_Acosh = 0;
     T MAX_Acosh = -1;
-    nion<T> maxAcoshNion;
+    nion<T,32> maxAcoshNion;
     Trigintaduonion<T> maxAcoshTrigintaduonion;
     Trigintaduonion<T> max1valueAcosh;
     Trigintaduonion<T> max2valueAcosh;
@@ -272,7 +272,7 @@ void TrigintaduonionComparison(int trials) {
     T MAE_Tanh = 0;
     T MRE_Tanh = 0;
     T MAX_Tanh = -1;
-    nion<T> maxTanhNion;
+    nion<T,32> maxTanhNion;
     Trigintaduonion<T> maxTanhTrigintaduonion;
     Trigintaduonion<T> max1valueTanh;
     Trigintaduonion<T> max2valueTanh;
@@ -283,7 +283,7 @@ void TrigintaduonionComparison(int trials) {
     T MAE_Atanh = 0;
     T MRE_Atanh = 0;
     T MAX_Atanh = -1;
-    nion<T> maxAtanhNion;
+    nion<T,32> maxAtanhNion;
     Trigintaduonion<T> maxAtanhTrigintaduonion;
     Trigintaduonion<T> max1valueAtanh;
     Trigintaduonion<T> max2valueAtanh;
@@ -294,7 +294,7 @@ void TrigintaduonionComparison(int trials) {
     auto startTrigintaduonion = std::chrono::high_resolution_clock::now();
     auto endTrigintaduonion = std::chrono::high_resolution_clock::now();
 
-    nion<T> nionResult;
+    nion<T,32> nionResult;
     Trigintaduonion<T> trigintaduonion_result;
     T diff;
 
@@ -307,8 +307,8 @@ void TrigintaduonionComparison(int trials) {
             val1[j] = distribution(generator);
             val2[j] = distribution(generator);
         }
-        nion<T> nion1(val1, 32);
-        nion<T> nion2(val2, 32);
+        nion<T,32> nion1(val1, 32);
+        nion<T,32> nion2(val2, 32);
 
         Trigintaduonion<T> trigintaduonion1(val1[0], val1[1], val1[2], val1[3], val1[4], val1[5], val1[6], val1[7], val1[8], val1[9], val1[10], val1[11], val1[12], val1[13], val1[14], val1[15], val1[16], val1[17], val1[18], val1[19], val1[20], val1[21], val1[22], val1[23], val1[24], val1[25], val1[26], val1[27], val1[28], val1[29], val1[30], val1[31]);
         Trigintaduonion<T> trigintaduonion2(val2[0], val2[1], val2[2], val2[3], val2[4], val2[5], val2[6], val2[7], val2[8], val2[9], val2[10], val2[11], val2[12], val2[13], val2[14], val2[15], val2[16], val2[17], val2[18], val2[19], val2[20], val2[21], val2[22], val2[23], val2[24], val2[25], val2[26], val2[27], val2[28], val2[29], val2[30], val2[31]);

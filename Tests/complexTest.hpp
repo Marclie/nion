@@ -41,7 +41,7 @@ void printSpeedupComplex(const T& niontime, const T& othertime) {
 }
 
 template<typename T>
-T getMAEcomplex(nion<T> nion, std::complex<T> compare){
+T getMAEcomplex(nion<T,2> nion, std::complex<T> compare){
     int degree = nion.size_;
     T mae = 0;
     mae += std::pow(nion[0] - compare.real(), 2);
@@ -71,7 +71,7 @@ void stdComplexComparison(int trials) {
     T MAE_Add= 0;
     T MRE_Add = 0;
     T MAX_Add = -1;
-    nion<T> maxAddNion;
+    nion<T,2> maxAddNion;
     std::complex<T> maxAddStd;
     std::complex<T> max1valueAdd;
     std::complex<T> max2valueAdd;
@@ -82,7 +82,7 @@ void stdComplexComparison(int trials) {
     T MAE_Conj= 0;
     T MRE_Conj = 0;
     T MAX_Conj = -1;
-    nion<T> maxConjNion;
+    nion<T,2> maxConjNion;
     std::complex<T> maxConjStd;
     std::complex<T> max1valueConj;
     std::complex<T> max2valueConj;
@@ -93,7 +93,7 @@ void stdComplexComparison(int trials) {
     T MAE_Mul= 0;
     T MRE_Mul = 0;
     T MAX_Mul = -1;
-    nion<T> maxMulNion;
+    nion<T,2> maxMulNion;
     std::complex<T> maxMulStd;
     std::complex<T> max1valueMul;
     std::complex<T> max2valueMul;
@@ -104,7 +104,7 @@ void stdComplexComparison(int trials) {
     T MAE_Div= 0;
     T MRE_Div = 0;
     T MAX_Div = -1;
-    nion<T> maxDivNion;
+    nion<T,2> maxDivNion;
     std::complex<T> maxDivStd;
     std::complex<T> max1valueDiv;
     std::complex<T> max2valueDiv;
@@ -115,7 +115,7 @@ void stdComplexComparison(int trials) {
     T MAE_Pow= 0;
     T MRE_Pow = 0;
     T MAX_Pow = -1;
-    nion<T> maxPowNion;
+    nion<T,2> maxPowNion;
     std::complex<T> maxPowStd;
     std::complex<T> max1valuePow;
     std::complex<T> max2valuePow;
@@ -126,7 +126,7 @@ void stdComplexComparison(int trials) {
     T MAE_Exp= 0;
     T MRE_Exp = 0;
     T MAX_Exp = -1;
-    nion<T> maxExpNion;
+    nion<T,2> maxExpNion;
     std::complex<T> maxExpStd;
     std::complex<T> max1valueExp;
     std::complex<T> max2valueExp;
@@ -137,7 +137,7 @@ void stdComplexComparison(int trials) {
     T MAE_Log= 0;
     T MRE_Log = 0;
     T MAX_Log = -1;
-    nion<T> maxLogNion;
+    nion<T,2> maxLogNion;
     std::complex<T> maxLogStd;
     std::complex<T> max1valueLog;
     std::complex<T> max2valueLog;
@@ -148,7 +148,7 @@ void stdComplexComparison(int trials) {
     T MAE_Sin= 0;
     T MRE_Sin = 0;
     T MAX_Sin = -1;
-    nion<T> maxSinNion;
+    nion<T,2> maxSinNion;
     std::complex<T> maxSinStd;
     std::complex<T> max1valueSin;
     std::complex<T> max2valueSin;
@@ -159,7 +159,7 @@ void stdComplexComparison(int trials) {
     T MAE_Asin= 0;
     T MRE_Asin = 0;
     T MAX_Asin = -1;
-    nion<T> maxAsinNion;
+    nion<T,2> maxAsinNion;
     std::complex<T> maxAsinStd;
     std::complex<T> max1valueAsin;
     std::complex<T> max2valueAsin;
@@ -170,7 +170,7 @@ void stdComplexComparison(int trials) {
     T MAE_Cos= 0;
     T MRE_Cos = 0;
     T MAX_Cos = -1;
-    nion<T> maxCosNion;
+    nion<T,2> maxCosNion;
     std::complex<T> maxCosStd;
     std::complex<T> max1valueCos;
     std::complex<T> max2valueCos;
@@ -181,7 +181,7 @@ void stdComplexComparison(int trials) {
     T MAE_Acos= 0;
     T MRE_Acos = 0;
     T MAX_Acos = -1;
-    nion<T> maxAcosNion;
+    nion<T,2> maxAcosNion;
     std::complex<T> maxAcosStd;
     std::complex<T> max1valueAcos;
     std::complex<T> max2valueAcos;
@@ -192,7 +192,7 @@ void stdComplexComparison(int trials) {
     T MAE_Tan= 0;
     T MRE_Tan = 0;
     T MAX_Tan = -1;
-    nion<T> maxTanNion;
+    nion<T,2> maxTanNion;
     std::complex<T> maxTanStd;
     std::complex<T> max1valueTan;
     std::complex<T> max2valueTan;
@@ -203,7 +203,7 @@ void stdComplexComparison(int trials) {
     T MAE_Atan= 0;
     T MRE_Atan = 0;
     T MAX_Atan = -1;
-    nion<T> maxAtanNion;
+    nion<T,2> maxAtanNion;
     std::complex<T> maxAtanStd;
     std::complex<T> max1valueAtan;
     std::complex<T> max2valueAtan;
@@ -214,7 +214,7 @@ void stdComplexComparison(int trials) {
     T MAE_Sinh= 0;
     T MRE_Sinh = 0;
     T MAX_Sinh = -1;
-    nion<T> maxSinhNion;
+    nion<T,2> maxSinhNion;
     std::complex<T> maxSinhStd;
     std::complex<T> max1valueSinh;
     std::complex<T> max2valueSinh;
@@ -225,7 +225,7 @@ void stdComplexComparison(int trials) {
     T MAE_Asinh= 0;
     T MRE_Asinh = 0;
     T MAX_Asinh = -1;
-    nion<T> maxAsinhNion;
+    nion<T,2> maxAsinhNion;
     std::complex<T> maxAsinhStd;
     std::complex<T> max1valueAsinh;
     std::complex<T> max2valueAsinh;
@@ -236,7 +236,7 @@ void stdComplexComparison(int trials) {
     T MAE_Cosh= 0;
     T MRE_Cosh = 0;
     T MAX_Cosh = -1;
-    nion<T> maxCoshNion;
+    nion<T,2> maxCoshNion;
     std::complex<T> maxCoshStd;
     std::complex<T> max1valueCosh;
     std::complex<T> max2valueCosh;
@@ -247,7 +247,7 @@ void stdComplexComparison(int trials) {
     T MAE_Acosh= 0;
     T MRE_Acosh = 0;
     T MAX_Acosh = -1;
-    nion<T> maxAcoshNion;
+    nion<T,2> maxAcoshNion;
     std::complex<T> maxAcoshStd;
     std::complex<T> max1valueAcosh;
     std::complex<T> max2valueAcosh;
@@ -258,7 +258,7 @@ void stdComplexComparison(int trials) {
     T MAE_Tanh= 0;
     T MRE_Tanh = 0;
     T MAX_Tanh = -1;
-    nion<T> maxTanhNion;
+    nion<T,2> maxTanhNion;
     std::complex<T> maxTanhStd;
     std::complex<T> max1valueTanh;
     std::complex<T> max2valueTanh;
@@ -269,7 +269,7 @@ void stdComplexComparison(int trials) {
     T MAE_Atanh= 0;
     T MRE_Atanh = 0;
     T MAX_Atanh = -1;
-    nion<T> maxAtanhNion;
+    nion<T,2> maxAtanhNion;
     std::complex<T> maxAtanhStd;
     std::complex<T> max1valueAtanh;
     std::complex<T> max2valueAtanh;
@@ -280,7 +280,7 @@ void stdComplexComparison(int trials) {
     auto startStd = std::chrono::high_resolution_clock::now();
     auto endStd = std::chrono::high_resolution_clock::now();
 
-    nion < T > nionResult;
+    nion<T,2> nionResult;
     std::complex<T> stdResult;
     T diff;
 
@@ -296,8 +296,8 @@ void stdComplexComparison(int trials) {
         std::complex<T> complex2(val2_r, val2_i);
 
         // assign std::complex to nion
-        nion < T > nion_complex1({val1_r, val1_i});
-        nion < T > nion_complex2({val2_r, val2_i});
+        nion <T,2> nion_complex1({val1_r, val1_i});
+        nion <T,2> nion_complex2({val2_r, val2_i});
 
 
         // norm

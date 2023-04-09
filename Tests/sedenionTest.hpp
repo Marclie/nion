@@ -48,7 +48,7 @@ void printSpeedupSedenion(const T& niontime, const T& othertime) {
 }
 
 template<typename T>
-T getMAEsedenion(nion<T> nion, Sedenion<T> compare){
+T getMAEsedenion(nion<T,16> nion, Sedenion<T> compare){
     int degree = nion.size_;
     T mae = 0;
     for (int i = 0; i < degree; i++) {
@@ -79,7 +79,7 @@ void SedenionComparison(int trials) {
     T MAE_Add = 0;
     T MRE_Add = 0;
     T MAX_Add = -1;
-    nion<T> maxAddNion;
+    nion<T,16> maxAddNion;
     Sedenion<T> maxAddSedenion;
     Sedenion<T> max1valueAdd;
     Sedenion<T> max2valueAdd;
@@ -90,7 +90,7 @@ void SedenionComparison(int trials) {
     T MAE_Conj = 0;
     T MRE_Conj = 0;
     T MAX_Conj = -1;
-    nion<T> maxConjNion;
+    nion<T,16> maxConjNion;
     Sedenion<T> maxConjSedenion;
     Sedenion<T> max1valueConj;
     Sedenion<T> max2valueConj;
@@ -101,7 +101,7 @@ void SedenionComparison(int trials) {
     T MAE_Mul = 0;
     T MRE_Mul = 0;
     T MAX_Mul = -1;
-    nion<T> maxMulNion;
+    nion<T,16> maxMulNion;
     Sedenion<T> maxMulSedenion;
     Sedenion<T> max1valueMul;
     Sedenion<T> max2valueMul;
@@ -112,7 +112,7 @@ void SedenionComparison(int trials) {
     T MAE_Div = 0;
     T MRE_Div = 0;
     T MAX_Div = -1;
-    nion<T> maxDivNion;
+    nion<T,16> maxDivNion;
     Sedenion<T> maxDivSedenion;
     Sedenion<T> max1valueDiv;
     Sedenion<T> max2valueDiv;
@@ -123,7 +123,7 @@ void SedenionComparison(int trials) {
     T MAE_Pow = 0;
     T MRE_Pow = 0;
     T MAX_Pow = -1;
-    nion<T> maxPowNion;
+    nion<T,16> maxPowNion;
     Sedenion<T> maxPowSedenion;
     Sedenion<T> max1valuePow;
     Sedenion<T> max2valuePow;
@@ -134,7 +134,7 @@ void SedenionComparison(int trials) {
     T MAE_Exp = 0;
     T MRE_Exp = 0;
     T MAX_Exp = -1;
-    nion<T> maxExpNion;
+    nion<T,16> maxExpNion;
     Sedenion<T> maxExpSedenion;
     Sedenion<T> max1valueExp;
     Sedenion<T> max2valueExp;
@@ -145,7 +145,7 @@ void SedenionComparison(int trials) {
     T MAE_Log = 0;
     T MRE_Log = 0;
     T MAX_Log = -1;
-    nion<T> maxLogNion;
+    nion<T,16> maxLogNion;
     Sedenion<T> maxLogSedenion;
     Sedenion<T> max1valueLog;
     Sedenion<T> max2valueLog;
@@ -156,7 +156,7 @@ void SedenionComparison(int trials) {
     T MAE_Sin = 0;
     T MRE_Sin = 0;
     T MAX_Sin = -1;
-    nion<T> maxSinNion;
+    nion<T,16> maxSinNion;
     Sedenion<T> maxSinSedenion;
     Sedenion<T> max1valueSin;
     Sedenion<T> max2valueSin;
@@ -167,7 +167,7 @@ void SedenionComparison(int trials) {
     T MAE_Asin = 0;
     T MRE_Asin = 0;
     T MAX_Asin = -1;
-    nion<T> maxAsinNion;
+    nion<T,16> maxAsinNion;
     Sedenion<T> maxAsinSedenion;
     Sedenion<T> max1valueAsin;
     Sedenion<T> max2valueAsin;
@@ -178,7 +178,7 @@ void SedenionComparison(int trials) {
     T MAE_Cos = 0;
     T MRE_Cos = 0;
     T MAX_Cos = -1;
-    nion<T> maxCosNion;
+    nion<T,16> maxCosNion;
     Sedenion<T> maxCosSedenion;
     Sedenion<T> max1valueCos;
     Sedenion<T> max2valueCos;
@@ -189,7 +189,7 @@ void SedenionComparison(int trials) {
     T MAE_Acos = 0;
     T MRE_Acos = 0;
     T MAX_Acos = -1;
-    nion<T> maxAcosNion;
+    nion<T,16> maxAcosNion;
     Sedenion<T> maxAcosSedenion;
     Sedenion<T> max1valueAcos;
     Sedenion<T> max2valueAcos;
@@ -200,7 +200,7 @@ void SedenionComparison(int trials) {
     T MAE_Tan = 0;
     T MRE_Tan = 0;
     T MAX_Tan = -1;
-    nion<T> maxTanNion;
+    nion<T,16> maxTanNion;
     Sedenion<T> maxTanSedenion;
     Sedenion<T> max1valueTan;
     Sedenion<T> max2valueTan;
@@ -211,7 +211,7 @@ void SedenionComparison(int trials) {
     T MAE_Atan = 0;
     T MRE_Atan = 0;
     T MAX_Atan = -1;
-    nion<T> maxAtanNion;
+    nion<T,16> maxAtanNion;
     Sedenion<T> maxAtanSedenion;
     Sedenion<T> max1valueAtan;
     Sedenion<T> max2valueAtan;
@@ -222,7 +222,7 @@ void SedenionComparison(int trials) {
     T MAE_Sinh = 0;
     T MRE_Sinh = 0;
     T MAX_Sinh = -1;
-    nion<T> maxSinhNion;
+    nion<T,16> maxSinhNion;
     Sedenion<T> maxSinhSedenion;
     Sedenion<T> max1valueSinh;
     Sedenion<T> max2valueSinh;
@@ -233,7 +233,7 @@ void SedenionComparison(int trials) {
     T MAE_Asinh = 0;
     T MRE_Asinh = 0;
     T MAX_Asinh = -1;
-    nion<T> maxAsinhNion;
+    nion<T,16> maxAsinhNion;
     Sedenion<T> maxAsinhSedenion;
     Sedenion<T> max1valueAsinh;
     Sedenion<T> max2valueAsinh;
@@ -244,7 +244,7 @@ void SedenionComparison(int trials) {
     T MAE_Cosh = 0;
     T MRE_Cosh = 0;
     T MAX_Cosh = -1;
-    nion<T> maxCoshNion;
+    nion<T,16> maxCoshNion;
     Sedenion<T> maxCoshSedenion;
     Sedenion<T> max1valueCosh;
     Sedenion<T> max2valueCosh;
@@ -255,7 +255,7 @@ void SedenionComparison(int trials) {
     T MAE_Acosh = 0;
     T MRE_Acosh = 0;
     T MAX_Acosh = -1;
-    nion<T> maxAcoshNion;
+    nion<T,16> maxAcoshNion;
     Sedenion<T> maxAcoshSedenion;
     Sedenion<T> max1valueAcosh;
     Sedenion<T> max2valueAcosh;
@@ -266,7 +266,7 @@ void SedenionComparison(int trials) {
     T MAE_Tanh = 0;
     T MRE_Tanh = 0;
     T MAX_Tanh = -1;
-    nion<T> maxTanhNion;
+    nion<T,16> maxTanhNion;
     Sedenion<T> maxTanhSedenion;
     Sedenion<T> max1valueTanh;
     Sedenion<T> max2valueTanh;
@@ -277,7 +277,7 @@ void SedenionComparison(int trials) {
     T MAE_Atanh = 0;
     T MRE_Atanh = 0;
     T MAX_Atanh = -1;
-    nion<T> maxAtanhNion;
+    nion<T,16> maxAtanhNion;
     Sedenion<T> maxAtanhSedenion;
     Sedenion<T> max1valueAtanh;
     Sedenion<T> max2valueAtanh;
@@ -288,7 +288,7 @@ void SedenionComparison(int trials) {
     auto startSedenion = std::chrono::high_resolution_clock::now();
     auto endSedenion = std::chrono::high_resolution_clock::now();
 
-    nion<T> nionResult;
+    nion<T,16> nionResult;
     Sedenion<T> sedenion_result;
     T diff;
 
@@ -301,8 +301,8 @@ void SedenionComparison(int trials) {
             val1[j] = distribution(generator);
             val2[j] = distribution(generator);
         }
-        nion<T> nion1(val1, 16);
-        nion<T> nion2(val2, 16);
+        nion<T,16> nion1(val1, 16);
+        nion<T,16> nion2(val2, 16);
 
         Sedenion<T> sedenion1(val1[0], val1[1], val1[2], val1[3], val1[4], val1[5], val1[6], val1[7], val1[8], val1[9], val1[10], val1[11], val1[12], val1[13], val1[14], val1[15]);
         Sedenion<T> sedenion2(val2[0], val2[1], val2[2], val2[3], val2[4], val2[5], val2[6], val2[7], val2[8], val2[9], val2[10], val2[11], val2[12], val2[13], val2[14], val2[15]);
