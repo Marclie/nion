@@ -324,7 +324,7 @@
     }
 
     template<typename T, unsigned long int N, typename D, typename S>
-    extern constexpr inline nion<T,N,D> operator+(S scalar, const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> operator+(S scalar, const nion<T,N,D> &z) {
         return z + static_cast<T>(scalar);
     }
 
@@ -341,7 +341,7 @@
     }
 
     template<typename T, unsigned long int N, typename D, typename S>
-    extern constexpr inline nion<T,N,D> operator-(S scalar, const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> operator-(S scalar, const nion<T,N,D> &z) {
         return -z + static_cast<T>(scalar);
     }
 
@@ -524,7 +524,7 @@
     }
 
     template<typename T, unsigned long int N, typename D, typename S>
-    extern constexpr inline nion<T,N,D> operator*(S scalar, const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> operator*(S scalar, const nion<T,N,D> &z) {
         static_assert(std::is_arithmetic_v<S>, "scalar must be arithmetic");
         return z * static_cast<T>(scalar);
     }
@@ -572,7 +572,7 @@
     }
 
     template<typename T, unsigned long int N, typename D, typename S>
-    extern constexpr inline nion<T,N,D> operator/(S scalar, const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> operator/(S scalar, const nion<T,N,D> &z) {
         return z.inv() * static_cast<T>(scalar);
     }
 
@@ -792,37 +792,37 @@
 **********************************/
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline T real(const nion<T,N,D> &z) {
+    constexpr inline T real(const nion<T,N,D> &z) {
         return z.real();
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> imag(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> imag(const nion<T,N,D> &z) {
         return z.imag();
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> conj(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> conj(const nion<T,N,D> &z) {
         return z.conj();
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline T abs(const nion<T,N,D> &z) {
+    constexpr inline T abs(const nion<T,N,D> &z) {
         return z.abs();
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline T norm(const nion<T,N,D> &z) {
+    constexpr inline T norm(const nion<T,N,D> &z) {
         return z.norm();
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> inv(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> inv(const nion<T,N,D> &z) {
         return z.inv();
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline T dot(const nion<T,N,D> &lhs, const nion<T,N,D> &rhs) {
+    constexpr inline T dot(const nion<T,N,D> &lhs, const nion<T,N,D> &rhs) {
         T dotProduct = 0;
         D minDegree = std::min(lhs.size_, rhs.size_);
         for (D i = 0; i < minDegree; i++)
@@ -833,15 +833,15 @@
 
     /*
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D>
+    constexpr inline nion<T,N,D>
     cross(const nion<T,N,D> &lhs, const nion<T,N,D> &rhs){} //TODO: implement cross product
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D>
+    constexpr inline nion<T,N,D>
     wedge(const nion<T,N,D> &lhs, const nion<T,N,D> &rhs){} //TODO: implement wedge product
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D>
+    constexpr inline nion<T,N,D>
     outer(const nion<T,N,D> &lhs, const nion<T,N,D> &rhs){} //TODO: implement outer product
      */
 
@@ -851,7 +851,7 @@
     *****************************/
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> exp(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> exp(const nion<T,N,D> &z) {
 
         // get polar form of nion
         T r = z.real();
@@ -879,7 +879,7 @@
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> log(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> log(const nion<T,N,D> &z) {
 
         // get polar form of nion
         T r = z.real();
@@ -901,22 +901,22 @@
     }
 
     template<typename T, unsigned long int N, typename D, typename S>
-    extern constexpr inline nion<T,N,D> pow(const nion<T,N,D> &base, S power) {
+    constexpr inline nion<T,N,D> pow(const nion<T,N,D> &base, S power) {
         return exp(power * log(base));
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> pow(const nion<T,N,D> &base, const nion<T,N,D> &power) {
+    constexpr inline nion<T,N,D> pow(const nion<T,N,D> &base, const nion<T,N,D> &power) {
         return exp(power * log(base));
     }
 
     template<typename T, unsigned long int N, typename D, typename S>
-    extern constexpr inline nion<T,N,D> pow(S base, const nion<T,N,D> &power) {
+    constexpr inline nion<T,N,D> pow(S base, const nion<T,N,D> &power) {
         return exp(power * log(base));
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> sqr(const nion<T,N,D> &base) {
+    constexpr inline nion<T,N,D> sqr(const nion<T,N,D> &base) {
         // get polar form of nion
         T r = base.real();
         nion<T,N,D> i = base.imag();
@@ -949,12 +949,12 @@
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> sqrt(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> sqrt(const nion<T,N,D> &z) {
         return pow(z, static_cast<T>(0.5));
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> cbrt(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> cbrt(const nion<T,N,D> &z) {
         return pow(z, static_cast<T>(1.0) / static_cast<T>(3.0));
     }
 
@@ -963,7 +963,7 @@
     ********************************************/
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> sinh(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> sinh(const nion<T,N,D> &z) {
         // get polar form of nion
         nion<T,N,D> i = z.imag();
 
@@ -990,7 +990,7 @@
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> cosh(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> cosh(const nion<T,N,D> &z) {
         // get polar form of nion
         nion<T,N,D> i = z.imag();
 
@@ -1016,22 +1016,22 @@
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> tanh(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> tanh(const nion<T,N,D> &z) {
         return (exp(z*2) - 1) / (exp(z*2) + 1);
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> coth(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> coth(const nion<T,N,D> &z) {
         return tanh(z).inv();
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> sech(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> sech(const nion<T,N,D> &z) {
         return cosh(z).inv();
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> csch(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> csch(const nion<T,N,D> &z) {
         return sinh(z).inv();
     }
 
@@ -1041,7 +1041,7 @@
 
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> sin(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> sin(const nion<T,N,D> &z) {
         // get the polar form of the nion
         T r = real(z);
         nion<T,N,D> i = imag(z);
@@ -1059,7 +1059,7 @@
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> cos(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> cos(const nion<T,N,D> &z) {
         // get the polar form of the nion
         T r = real(z);
         nion<T,N,D> i = imag(z);
@@ -1077,7 +1077,7 @@
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> tan(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> tan(const nion<T,N,D> &z) {
         // get the polar form of the nion
         T r = real(z);
         nion<T,N,D> i = imag(z);
@@ -1095,17 +1095,17 @@
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> cot(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> cot(const nion<T,N,D> &z) {
         return tan(z).inv();
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> sec(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> sec(const nion<T,N,D> &z) {
         return cos(z).inv();
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> csc(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> csc(const nion<T,N,D> &z) {
         return sin(z).inv();
     }
 
@@ -1114,34 +1114,34 @@
     ****************************************************/
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> asinh(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> asinh(const nion<T,N,D> &z) {
         return log(z + sqrt(sqr(z) + static_cast<T>(1)));
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> acosh(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> acosh(const nion<T,N,D> &z) {
         // compute the inverse hyperbolic cosine of the nion
         return 2 * log(sqrt((z-1) * static_cast<T>(0.5)) + sqrt((z+1) * static_cast<T>(0.5)));
 
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> atanh(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> atanh(const nion<T,N,D> &z) {
         return (log(static_cast<T>(1) + z) - log(static_cast<T>(1) - z)) * static_cast<T>(0.5);
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> acoth(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> acoth(const nion<T,N,D> &z) {
         return (log(static_cast<T>(1) + inv(z)) - log(static_cast<T>(1) - inv(z))) * static_cast<T>(0.5);
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> asech(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> asech(const nion<T,N,D> &z) {
         return log(sqrt(1/sqr(z) - static_cast<T>(1)) + inv(z));
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> acsch(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> acsch(const nion<T,N,D> &z) {
         return log(sqrt(static_cast<T>(1) + 1/sqr(z)) + inv(z));
     }
 
@@ -1150,7 +1150,7 @@
     *****************************************/
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> asin(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> asin(const nion<T,N,D> &z) {
 
         // get the polar form of the nion
         T r = real(z);
@@ -1168,12 +1168,12 @@
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> acos(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> acos(const nion<T,N,D> &z) {
         return static_cast<T>(M_PI_2) - asin(z);
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> atan(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> atan(const nion<T,N,D> &z) {
         // get the polar form of the nion
         T r = real(z);
         nion<T,N,D> i = z.imag();
@@ -1191,22 +1191,22 @@
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> acot(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> acot(const nion<T,N,D> &z) {
         return static_cast<T>(M_PI_2) - atan(z);
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> asec(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> asec(const nion<T,N,D> &z) {
         return acos(inv(z));
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> acsc(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> acsc(const nion<T,N,D> &z) {
         return asin(inv(z));
     }
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> atan2(const nion<T,N,D> &y, const nion<T,N,D> &x) {
+    constexpr inline nion<T,N,D> atan2(const nion<T,N,D> &y, const nion<T,N,D> &x) {
         return atan(y / x);
     }
 
@@ -1215,7 +1215,7 @@
      **************************/
 
     template<typename T, unsigned long int N, typename D>
-    extern constexpr inline nion<T,N,D> gamma(const nion<T,N,D> &z) {
+    constexpr inline nion<T,N,D> gamma(const nion<T,N,D> &z) {
         // compute the gamma function of the nion
         return exp(-z) * sqrt(inv(z))
                * pow(static_cast<T>(1) / (static_cast<T>(12) * z - inv(static_cast<T>(10) * z)) + z, z)
