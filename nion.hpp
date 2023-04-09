@@ -104,7 +104,8 @@ namespace Nion {
          * @return A copy of the nion.
          * @note This is a deep copy.
          */
-        constexpr inline nion<T,N,D>(const nion<T,N,D> &other);
+        template<unsigned long int M> // M is the size of the other nion.
+        constexpr inline explicit nion<T,N,D>(const nion<T,M,D> &other);
 
         /**
          * @brief move constructor
@@ -112,7 +113,8 @@ namespace Nion {
          * @return A copy of the nion.
          * @note This is a deep copy.
          */
-        constexpr inline nion<T,N,D>(nion<T,N,D> &&other) noexcept;
+        template<unsigned long int M> // M is the size of the other nion.
+        constexpr inline explicit nion<T,N,D>(nion<T,M,D> &&other) noexcept;
 
         /**
          * @brief Construct a new nion object from a scalar with no imaginary components.
@@ -136,7 +138,8 @@ namespace Nion {
          * @return The nion constructed from the half size nions.
          * @note This is a convenience function for constructing a nion from pairing two half size nions.
          */
-        static constexpr inline nion<T,N,D> make_pair(const nion<T,N,D> &a, const nion<T,N,D> &b);
+        template<unsigned long int M, unsigned long int P> // M is the size of the first nion, P is the size of the second nion.
+        static constexpr inline nion<T,N,D> make_pair(const nion<T,M,D> &a, const nion<T,P,D> &b);
 
         /**
          * @brief resizes the nion to the given size.
@@ -150,7 +153,8 @@ namespace Nion {
          * @return A copy of the nion.
          * @note This is a deep copy.
          */
-        constexpr inline nion<T,N,D> &operator=(const nion<T,N,D> &other);
+        template<unsigned long int M> // M is the size of the other nion.
+        constexpr inline nion<T,N,D> &operator=(const nion<T,M,D> &other);
 
         /**
          * @brief assignment operator from initializer list
@@ -165,7 +169,8 @@ namespace Nion {
          * @return A copy of the nion.
          * @note This is a shallow copy.
          */
-        constexpr inline nion<T,N,D> &operator=(nion<T,N,D> &&other) noexcept;
+        template<unsigned long int M> // M is the size of the other nion.
+        constexpr inline nion<T,N,D> &operator=(nion<T,M,D> &&other) noexcept;
 
         /**
          * @brief convert scalar to nion
@@ -201,42 +206,48 @@ namespace Nion {
          * @param other The nion to add to this nion.
          * @return The sum of this nion and the other nion inplace.
          */
-        constexpr inline void operator+=(const nion<T,N,D> &other);
+        template<unsigned long int M> // M is the size of the other nion.
+        constexpr inline void operator+=(const nion<T,M,D> &other);
 
         /**
          * @breif overload the -= operator for nions.
          * @param other The nion to substract from this nion.
          * @return The subtraction of this nion and the other nion inplace.
          */
-        constexpr inline void operator-=(const nion<T,N,D> &other);
+        template<unsigned long int M> // M is the size of the other nion.
+        constexpr inline void operator-=(const nion<T,M,D> &other);
 
         /**
          * @breif overload the *= operator for nions.
          * @param other The nion to multiply this nion by.
          * @return The product of this nion and the other nion inplace.
          */
-        constexpr inline void operator*=(const nion<T,N,D> &other);
+        template<unsigned long int M> // M is the size of the other nion.
+        constexpr inline void operator*=(const nion<T,M,D> &other);
 
         /**
          * @breif overload the /= operator for nions.
          * @param other The nion to divide this nion by.
          * @return The division of this nion and the other nion inplace.
          */
-        constexpr inline void operator/=(const nion<T,N,D> &other);
+        template<unsigned long int M> // M is the size of the other nion.
+        constexpr inline void operator/=(const nion<T,M,D> &other);
 
         /**
          * @brief overload the + operator for nions.
          * @param other The nion to add to this nion.
          * @return The sum of this nion and the other nion.
          */
-        constexpr inline nion<T,N,D> operator+(const nion<T,N,D> &other) const;
+        template<unsigned long int M> // M is the size of the other nion.
+        constexpr inline nion<T,N,D> operator+(const nion<T,M,D> &other) const;
 
         /**
          * @brief overload the - operator for nions.
          * @param other The nion to substract this nion by.
          * @return The subtraction of this nion and the other nion.
          */
-        constexpr inline nion<T,N,D> operator-(const nion<T,N,D> &other) const;
+        template<unsigned long int M> // M is the size of the other nion.
+        constexpr inline nion<T,N,D> operator-(const nion<T,M,D> &other) const;
 
 
         /**
@@ -248,7 +259,8 @@ namespace Nion {
          * @note product has the same size as the larger size of the two nions.
          * @note This is recursive function and will call itself until the size is 1.
          */
-        constexpr inline nion<T,N,D> operator*(const nion<T,N,D> &other) const;
+        template<unsigned long int M> // M is the size of the other nion.
+        constexpr inline nion<T,N,D> operator*(const nion<T,M,D> &other) const;
 
         /**
          * @brief compute the inverse of the nion.
@@ -261,7 +273,8 @@ namespace Nion {
          * @param other The nion to divide this nion by.
          * @return The division of this nion and the other nion.
          */
-        constexpr inline nion<T,N,D> operator/(const nion<T,N,D> &other) const;
+        template<unsigned long int M> // M is the size of the other nion.
+        constexpr inline nion<T,N,D> operator/(const nion<T,M,D> &other) const;
 
         /**
          * @brief absolute value of the nion.
@@ -304,7 +317,8 @@ namespace Nion {
          * @return True if the nions are equal, false otherwise.
          * @details Two nions are equal if they have the same size and the same components.
          */
-        constexpr inline bool operator==(const nion<T,N,D> &other) const;
+        template<unsigned long int M> // M is the size of the other nion.
+        constexpr inline bool operator==(const nion<T,M,D> &other) const;
 
         /**
          * @brief overload the != operator for nions.
@@ -312,7 +326,8 @@ namespace Nion {
          * @return True if the nions are not equal, false otherwise.
          * @details Two nions are equal if they have the same size and the same components.
          */
-        constexpr inline bool operator!=(const nion<T,N,D> &other) const;
+        template<unsigned long int M> // M is the size of the other nion.
+        constexpr inline bool operator!=(const nion<T,M,D> &other) const;
 
         /**
          * @brief overload the > operator for nions.
@@ -321,7 +336,8 @@ namespace Nion {
          * @details sorting is undefined for nions with sizes greater than 1. However, we can still compare
          *         nions with sizes greater than 1 by comparing the projections of the nions onto the real line.
          */
-        constexpr inline bool operator>(const nion<T,N,D> &other) const;
+        template<unsigned long int M> // M is the size of the other nion.
+        constexpr inline bool operator>(const nion<T,M,D> &other) const;
 
         /**
          * @brief overload the < operator for nions.
@@ -330,7 +346,8 @@ namespace Nion {
          * @details sorting is undefined for nions with sizes greater than 1. However, we can still compare
          *         nions with sizes greater than 1 by comparing the rotations of the nions onto the real line.
          */
-        constexpr inline bool operator<(const nion<T,N,D> &other) const;
+        template<unsigned long int M> // M is the size of the other nion.
+        constexpr inline bool operator<(const nion<T,M,D> &other) const;
 
         /**
          * @brief overload the >= operator for nions.
@@ -339,7 +356,8 @@ namespace Nion {
          * @details sorting is undefined for nions with sizes greater than 1. However, we can still compare
          *         nions with sizes greater than 1 by comparing the rotations of the nions onto the real line.
          */
-        constexpr inline bool operator>=(const nion<T,N,D> &other) const;
+        template<unsigned long int M> // M is the size of the other nion.
+        constexpr inline bool operator>=(const nion<T,M,D> &other) const;
 
         /**
          * @brief overload the <= operator for nions.
@@ -348,7 +366,8 @@ namespace Nion {
          * @details sorting is undefined for nions with sizes greater than 1. However, we can still compare
          *         nions with sizes greater than 1 by comparing the rotations of the nions onto the real line.
          */
-        constexpr inline bool operator<=(const nion<T,N,D> &other) const;
+        template<unsigned long int M> // M is the size of the other nion.
+        constexpr inline bool operator<=(const nion<T,M,D> &other) const;
 
         /**
          * @brief overload the + operator for nions with scalars.
@@ -706,8 +725,8 @@ namespace Nion {
  * @param rhs The right hand side nion.
  * @return The dot product of the nions.
  */
-    template<typename T, unsigned long int N = 128, typename D = std::size_t>
-    extern constexpr inline T dot(const nion<T,N,D> &lhs, const nion<T,N,D> &rhs);
+    template<typename T, unsigned long int N = 128, typename D = std::size_t, unsigned long int M>
+    extern constexpr inline T dot(const nion<T,N,D> &lhs, const nion<T,M,D> &rhs);
 
 
 /**
@@ -790,8 +809,8 @@ namespace Nion {
  * @return The power of the nion.
  * @details The power of a nion is defined as z^p = e^(p * ln(z)).
  */
-    template<typename T, unsigned long int N = 128, typename D = std::size_t>
-    extern constexpr inline nion<T,N,D> pow(const nion<T,N,D> &base, const nion<T,N,D> &power);
+    template<typename T, unsigned long int N = 128, typename D = std::size_t, unsigned long int M>
+    extern constexpr inline nion<T,N,D> pow(const nion<T,N,D> &base, const nion<T,M,D> &power);
 
 /**
  * @brief compute the power of a scalar with a nion.
@@ -1122,8 +1141,8 @@ namespace Nion {
  * @param z The nion to compute the atan2 of.
  * @return The atan2 of the nion.
  */
-    template<typename T, unsigned long int N = 128, typename D = std::size_t>
-    extern constexpr inline nion<T,N,D> atan2(const nion<T,N,D> &y, const nion<T,N,D> &x);
+    template<typename T, unsigned long int N = 128, typename D = std::size_t, unsigned long int M>
+    extern constexpr inline nion<T,N,D> atan2(const nion<T,N,D> &y, const nion<T,M,D> &x);
 
 /***************************
     *  NION GAMMA FUNCTION *

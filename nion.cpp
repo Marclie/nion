@@ -56,13 +56,15 @@ namespace Nion {
     }
 
     template<typename T, unsigned long int N, typename D>
-    constexpr inline nion<T,N,D>::nion(const nion<T,N,D> &other) : size_(other.size_) {
+    template<unsigned long int M>
+    constexpr inline nion<T,N,D>::nion(const nion<T,M,D> &other) : size_(other.size_) {
         /// copy the values into the nion
         memcpy(elem_, other.elem_, size_ * sizeof(T));
     }
 
     template<typename T, unsigned long int N, typename D>
-    constexpr inline nion<T,N,D>::nion(nion<T,N,D> &&other) noexcept: size_(other.size_) {
+    template<unsigned long int M>
+    constexpr inline nion<T,N,D>::nion(nion<T,M,D> &&other) noexcept: size_(other.size_) {
         /// copy the values into the nion
         memcpy(elem_, other.elem_, size_ * sizeof(T));
     }
@@ -83,7 +85,8 @@ namespace Nion {
     }
 
     template<typename T, unsigned long int N, typename D>
-    constexpr inline nion<T,N,D> nion<T,N,D>::make_pair(const nion<T,N,D> &a, const nion<T,N,D> &b) {
+    template<unsigned long int M, unsigned long int P>
+    constexpr inline nion<T,N,D> nion<T,N,D>::make_pair(const nion<T,M,D> &a, const nion<T,P,D> &b) {
 
         /// initialize the nion pair
         nion<T,N,D> pair;
@@ -116,7 +119,8 @@ namespace Nion {
     *************************************/
     
     template<typename T, unsigned long int N, typename D>
-    constexpr inline nion<T,N,D> &nion<T,N,D>::operator=(const nion<T,N,D> &other) {
+    template<unsigned long int M>
+    constexpr inline nion<T,N,D> &nion<T,N,D>::operator=(const nion<T,M,D> &other) {
         /// check if the nions are the same
         if (&other == this) {
             return *this; // return the nion
@@ -142,7 +146,8 @@ namespace Nion {
     }
 
     template<typename T, unsigned long int N, typename D>
-    constexpr inline nion<T,N,D> &nion<T,N,D>::operator=(nion<T,N,D> &&other)  noexcept {
+    template<unsigned long int M>
+    constexpr inline nion<T,N,D> &nion<T,N,D>::operator=(nion<T,M,D> &&other)  noexcept {
         /// check if the nions are the same
         if (&other == this) {
             return *this; // return the nion
@@ -172,7 +177,8 @@ namespace Nion {
     *************************************/
 
     template<typename T, unsigned long int N, typename D>
-    constexpr inline void nion<T,N,D>::operator+=(const nion<T,N,D> &other) {
+    template<unsigned long int M>
+    constexpr inline void nion<T,N,D>::operator+=(const nion<T,M,D> &other) {
 
         // add the components of the other nion to this nion.
         if (size_ >= other.size_) {
@@ -190,7 +196,8 @@ namespace Nion {
     }
 
     template<typename T, unsigned long int N, typename D>
-    constexpr inline void nion<T,N,D>::operator-=(const nion<T,N,D> &other) {
+    template<unsigned long int M>
+    constexpr inline void nion<T,N,D>::operator-=(const nion<T,M,D> &other) {
 
         // subtract the components of the other nion to this nion.
         if (size_ >= other.size_) {
@@ -223,7 +230,8 @@ namespace Nion {
     *************************************/
 
     template<typename T, unsigned long int N, typename D>
-    constexpr inline nion<T,N,D> nion<T,N,D>::operator+(const nion<T,N,D> &other) const {
+    template<unsigned long int M>
+    constexpr inline nion<T,N,D> nion<T,N,D>::operator+(const nion<T,M,D> &other) const {
 
         nion<T,N,D> sum; // create a nion to store the sum
 
@@ -251,7 +259,8 @@ namespace Nion {
     }
 
     template<typename T, unsigned long int N, typename D>
-    constexpr inline nion<T,N,D> nion<T,N,D>::operator-(const nion<T,N,D> &other) const {
+    template<unsigned long int M>
+    constexpr inline nion<T,N,D> nion<T,N,D>::operator-(const nion<T,M,D> &other) const {
 
         nion<T,N,D> diff; // create a nion to store the difference
 
@@ -324,7 +333,8 @@ namespace Nion {
     *******************************************/
 
     template<typename T, unsigned long int N, typename D>
-    constexpr inline void nion<T,N,D>::operator*=(const nion<T,N,D> &other) {
+    template<unsigned long int M>
+    constexpr inline void nion<T,N,D>::operator*=(const nion<T,M,D> &other) {
         *this = *this * other;
     }
 
@@ -337,7 +347,8 @@ namespace Nion {
     }
 
     template<typename T, unsigned long int N, typename D>
-    constexpr inline void nion<T,N,D>::operator/=(const nion<T,N,D> &other) {
+    template<unsigned long int M>
+    constexpr inline void nion<T,N,D>::operator/=(const nion<T,M,D> &other) {
         *this = *this / other;
     }
 
@@ -374,7 +385,8 @@ namespace Nion {
     }
 
     template<typename T, unsigned long int N, typename D>
-    constexpr inline nion<T,N,D> nion<T,N,D>::operator*(const nion<T,N,D> &other) const {
+    template<unsigned long int M>
+    constexpr inline nion<T,N,D> nion<T,N,D>::operator*(const nion<T,M,D> &other) const {
 
         if (size_ == other.size_) {
             nion<T,N,D> product; // create a nion to store the product
@@ -523,7 +535,8 @@ namespace Nion {
     }
 
     template<typename T, unsigned long int N, typename D>
-    constexpr inline nion<T,N,D> nion<T,N,D>::operator/(const nion<T,N,D> &other) const {
+    template<unsigned long int M>
+    constexpr inline nion<T,N,D> nion<T,N,D>::operator/(const nion<T,M,D> &other) const {
         return *this * other.inv();
     }
 
@@ -563,7 +576,8 @@ namespace Nion {
     *******************************************/
 
     template<typename T, unsigned long int N, typename D>
-    constexpr inline bool nion<T,N,D>::operator==(const nion<T,N,D> &other) const {
+    template<unsigned long int M>
+    constexpr inline bool nion<T,N,D>::operator==(const nion<T,M,D> &other) const {
         if (this == &other) return true;
         if (size_ != other.size_) return false;
         
@@ -573,7 +587,8 @@ namespace Nion {
     }
 
     template<typename T, unsigned long int N, typename D>
-    constexpr inline bool nion<T,N,D>::operator!=(const nion<T,N,D> &other) const {
+    template<unsigned long int M>
+    constexpr inline bool nion<T,N,D>::operator!=(const nion<T,M,D> &other) const {
         if (this == &other) return false;
         if (size_ != other.size_) return true;
         
@@ -590,28 +605,32 @@ namespace Nion {
     }
 
     template<typename T, unsigned long int N, typename D>
-    constexpr inline bool nion<T,N,D>::operator>(const nion<T,N,D> &other) const {
+    template<unsigned long int M>
+    constexpr inline bool nion<T,N,D>::operator>(const nion<T,M,D> &other) const {
         // nions with degree > 1 are not ordered, but we can arbitrarily order them by their rotation to the real line
         // this is not a good idea, but it's better than nothing (and it's what I'm doing for now)
         return rotate_real() > other.rotate_real();
     }
 
     template<typename T, unsigned long int N, typename D>
-    constexpr inline bool nion<T,N,D>::operator<(const nion<T,N,D> &other) const {
+    template<unsigned long int M>
+    constexpr inline bool nion<T,N,D>::operator<(const nion<T,M,D> &other) const {
         // nions with degree > 1 are not ordered, but we can arbitrarily order them by their rotation to the real line
         // this is not a good idea, but it's better than nothing (and it's what I'm doing for now)
         return rotate_real() < other.rotate_real();
     }
 
     template<typename T, unsigned long int N, typename D>
-    constexpr inline bool nion<T,N,D>::operator>=(const nion<T,N,D> &other) const {
+    template<unsigned long int M>
+    constexpr inline bool nion<T,N,D>::operator>=(const nion<T,M,D> &other) const {
         if (rotate_real() > other.rotate_real())
             return true;
         return *this == *other;
     }
 
     template<typename T, unsigned long int N, typename D>
-    constexpr inline bool nion<T,N,D>::operator<=(const nion<T,N,D> &other) const {
+    template<unsigned long int M>
+    constexpr inline bool nion<T,N,D>::operator<=(const nion<T,M,D> &other) const {
         if (rotate_real() < other.rotate_real())
             return true;
         return *this == *other;
