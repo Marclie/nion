@@ -24,7 +24,6 @@
 #include "../nion.hpp"
 #include <iostream>
 
-using Nion::nion;
 
 template<typename T>
 void printSpeedupOctonion(const T& niontime, const T& othertime) {

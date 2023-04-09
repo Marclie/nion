@@ -31,7 +31,6 @@ limitations under the License.
 #include <iostream>
 
 
-using Nion::nion;
 
 template<typename T>
 void printSpeedupSedenion(const T& niontime, const T& othertime) {

@@ -25,7 +25,6 @@ limitations under the License.
 #include "../nion.hpp"
 #include <iostream>
 
-using Nion::nion;
 
 template<typename T>
 void printSpeedupTrigintaduonion(const T& niontime, const T& othertime) {

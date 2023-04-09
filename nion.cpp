@@ -14,9 +14,6 @@
         } \
     } while (false)
 
-using Nion::nion;
-namespace Nion {
-
     /***************************
     *  NION CONSTRUCTORS
     ***************************/
@@ -135,7 +132,7 @@ namespace Nion {
     }
 
     template<typename T, unsigned long int N, typename D>
-    constexpr nion<T,N,D> &Nion::nion<T,N,D>::operator=(const std::initializer_list<T> &vals) {
+    constexpr nion<T,N,D> &nion<T,N,D>::operator=(const std::initializer_list<T> &vals) {
 
         /// set the size of the nion
         size_ = vals.size();
@@ -1186,4 +1183,4 @@ namespace Nion {
                * pow(static_cast<T>(1) / (static_cast<T>(12) * z - inv(static_cast<T>(10) * z)) + z, z)
                * std::sqrt(static_cast<T>(2) * static_cast<T>(M_PI));
     }
-}
+

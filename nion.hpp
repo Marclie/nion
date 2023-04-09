@@ -24,8 +24,6 @@
 #include <stdexcept>
 #include <cstring>
 
-namespace Nion {
-
 /**
  * @brief evaluates if two values are similar to machine precision
  * @tparam T type of first value
@@ -1160,7 +1158,7 @@ namespace Nion {
     template<typename T, unsigned long int N = 128, typename D = std::size_t>
     extern constexpr inline nion<T,N,D> gamma(const nion<T,N,D> &z);
 
-}
+
 
 #include "nion.cpp"
 

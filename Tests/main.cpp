@@ -29,7 +29,6 @@
 #include <complex>
 #include "../nion.hpp"
 
-using Nion::nion;
 
 void order2Test() {
 
