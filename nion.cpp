@@ -363,10 +363,11 @@
 
     template<typename T, unsigned long int N, typename D>
     constexpr inline nion<T,N,D> nion<T,N,D>::conj() const {
-        nion<T,N,D> conjugate = *this; // copy this nion
+        nion<T,N,D> conjugate(size_); // copy this nion
 
         // negate all components except the first
-        for (D i = 1; i < size_; i++) conjugate.elem_[i] *= -1;
+        conjugate.elem_[0] = elem_[0];
+        for (D i = 1; i < size_; i++) conjugate.elem_[i] = -elem_[i];
 
         return conjugate;
     }
