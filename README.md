@@ -56,7 +56,8 @@ Nion is licensed under the Apache License. See the [LICENSE](./LICENSE) file for
 
 
 
-**Table of Contents**
+Table of Contents
+---------------------
 
 - [Nion] - A Library for Hyper-Complex Arithmetic
 - [Usage]
