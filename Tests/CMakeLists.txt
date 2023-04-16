@@ -3,15 +3,20 @@ project(nion)
 
 set(CMAKE_CXX_STANDARD 17)
 
-
+set(TEST_LARGE_DEGREE ON)
 if ( TEST_LARGE_DEGREE )
     # fetch content from Douglas Wilhelm Harder's NumberSystems library for comparison of our algorithms
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-narrowing")
     include(FetchContent)
     FetchContent_Declare(
             numbersystems
-            URL https://ece.uwaterloo.ca/~dwharder/C++/CQOST/src/NumberSystems.zip
-            DOWNLOAD_EXTRACT_TIMESTAMP NEW
+            URL https://ece.uwaterloo.ca/~dwharder/C%2B%2B/CQOST/src/NumberSystems.zip
+            DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/_deps
+            SOURCE_DIR ${CMAKE_BINARY_DIR}/_deps/numbersystems
+            CONFIGURE_COMMAND ""
+            BUILD_COMMAND ""
+            INSTALL_COMMAND ""
+            LOG_DOWNLOAD ON
     )
 
     FetchContent_GetProperties(numbersystems)
@@ -23,7 +28,7 @@ endif()
 add_executable(nion ../nion.hpp main.cpp)
 
 if ( TEST_LARGE_DEGREE )
-    target_include_directories(nion PRIVATE ${numbersystems_SOURCE_DIR})
-    file(GLOB_RECURSE number_systems_files ${numbersystems_SOURCE_DIR}/*.cpp)
+    target_include_directories(nion PRIVATE ${CMAKE_BINARY_DIR}/_deps/numbersystems)
+    file(GLOB_RECURSE number_systems_files ${CMAKE_BINARY_DIR}/_deps/numbersystems/*.cpp)
     target_sources(nion PRIVATE ${number_systems_files})
 endif()
