@@ -127,7 +127,7 @@
         /**
          * @brief Destroy the nion object
          */
-        ~nion<T,N,D>() = default;
+        ~nion() = default;
 
         /**
          * @brief Construct nion from half size nions. q = (a,b)
