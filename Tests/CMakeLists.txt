@@ -1,12 +1,25 @@
 cmake_minimum_required(VERSION 3.22)
 project(nion)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
+
+# test if concepts are supported
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-narrowing -fconcepts")
+include(CheckCXXSourceCompiles)
+check_cxx_source_compiles(
+        "
+        #include <concepts>
+        int main() {}
+        "
+        HAS_CONCEPTS
+)
+if ( NOT HAS_CONCEPTS )
+    message(FATAL_ERROR "Your compiler does not support concepts. Concepts are required for this library")
+endif()
 
 set(TEST_LARGE_DEGREE ON)
 if ( TEST_LARGE_DEGREE )
     # fetch content from Douglas Wilhelm Harder's NumberSystems library for comparison of our algorithms
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-narrowing")
     include(FetchContent)
     FetchContent_Declare(
             numbersystems
