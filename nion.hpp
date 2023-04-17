@@ -729,40 +729,6 @@ template<typename T, unsigned long int N>
     extern constexpr inline T dot(const nion<T,N> &lhs, const nion<T,M> &rhs);
 
 
-/**
- * @brief compute the cross product of two nions.
- * @tparam T type of the nions.
- * @param lhs The left hand side nion.
- * @param rhs The right hand side nion.
- * @return The cross product of the nions.
- */
-//    template<typename T, unsigned long int N = 128>
-//    extern constexpr inline nion<T,N>
-//    cross(const nion<T,N> &lhs, const nion<T,N> &rhs); //TODO: implement cross product
-
-/**
- * @brief compute the wedge product of two nions.
- * @tparam T type of the nions.
- * @param lhs The left hand side nion.
- * @param rhs The right hand side nion.
- * @return The wedge product of the nions.
- */
-//    template<typename T, unsigned long int N = 128>
-//    extern constexpr inline nion<T,N>
-//    wedge(const nion<T,N> &lhs, const nion<T,N> &rhs); //TODO: implement wedge product
-
-/**
- * @brief compute the outer product of two nions.
- * @tparam T type of the nions.
- * @param lhs The left hand side nion.
- * @param rhs The right hand side nion.
- * @return The outer product of the nions.
- */
-//    template<typename T, unsigned long int N = 128>
-//    extern constexpr inline nion<T,N>
-//    outer(const nion<T,N> &lhs, const nion<T,N> &rhs); //TODO: implement outer product
-
-
 /***************************
     *  NION ALGEBRAIC FUNCTIONS *
     ***************************/
