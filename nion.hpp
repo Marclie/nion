@@ -67,7 +67,7 @@ concept integral_type = std::is_integral_v<Z>;
  * @date 2022-10-08
  */
 template<arith_ops T, // type of the coefficients
-        std::size_t N = 128> // type of the size
+        std::size_t N = 32> // type of the size
 struct nion; // forward declaration
 
 
