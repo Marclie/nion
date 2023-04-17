@@ -165,7 +165,7 @@
     template<std::size_t M>
     constexpr inline nion<T,N> &nion<T,N>::operator=(nion<T,M> &&other)  noexcept {
         /// check if the nions are the same
-        if (&other == this) {
+        if (reinterpret_cast<void*>(&other) == reinterpret_cast<void*>(this)) {
             return *this; // return the nion
         }
 
@@ -436,8 +436,9 @@
     template<std::size_t M>
     constexpr inline nion<T,N> nion<T,N>::operator*(const nion<T,M> &other) const {
 
+        nion<T,N> product; // create a nion to store the product
         if (size_ == other.size_) {
-            nion<T,N> product; // create a nion to store the product
+
             product.size_ = size_;
 
 #ifdef __GNUC__
@@ -508,8 +509,14 @@
         } else { // If the matrix is not square, we need to do the recursive product.
 
             // if any of the sizes are 1, then the product is just the scalar product.
-            if (size_ == 1) return other * elem_[0];
-            if (other.size_ == 1) return *this * other.elem_[0];
+            if (size_ == 1) {
+                product = other * elem_[0];
+                return product;
+            }
+            if (other.size_ == 1) {
+                product = *this * other.elem_[0];
+                return product;
+            }
         }
 
         /// ********** Recursive Product ********** ///
@@ -537,10 +544,11 @@
         memcpy(d.elem_, other.elem_ + other_half_size, (other.size_ - other_half_size) * sizeof(T));
 
         /// calculate the cayley-dickson product
-        return make_pair(
+        product = make_pair(
                 (a * c) - (d.conj() * b), // add involution parameter for sign with macro? (split hypercomplex numbers)
                 (d * a) + (b * c.conj())
         );
+        return product;
     }
 
     template<arith_ops T, std::size_t N>

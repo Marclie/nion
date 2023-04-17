@@ -550,15 +550,13 @@ void ReadMeExamples(){
 
 int main() {
 
-    int a=5;
-//    ReadMeExamples();
+    ReadMeExamples();
 //    order2Test();
 //    mixedOrderTest();
-    split_nions();
-
+//    split_nions();
 
     int num_trials = 100000;
-//    benchmark(num_trials);
+    benchmark(num_trials);
 
 
     return 0;

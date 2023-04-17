@@ -131,6 +131,15 @@ template<arith_ops T, std::size_t N>
         };
 
         /**
+         * @brief cast nion of different max size to nion of the same max size
+         * @note This is a deep copy. This will throw an error if size is greater than new max size
+         */
+        template<std::size_t M> requires (M != N)
+        constexpr inline explicit operator nion<T,M>(){
+            return nion<T,M>(elem_, size_);
+        }
+
+        /**
          * @brief copy constructor
          * @param other The nion to copy.
          * @return A copy of the nion.
