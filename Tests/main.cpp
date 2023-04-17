@@ -319,6 +319,91 @@ void writeSinData(int N) {
     myfile.close();
 }
 
+void split_nions() {
+    std::cout << "\n####### Split Hypercomplex Numbers #######" << std::endl;
+
+    nion<nion<long double,2>,2> a = {{1, 2}, {3, 4}};
+    nion<nion<long double,2>,2> b = {{5, 6}, {7, 8}};
+    nion<nion<long double,2>,2> c = a + b;
+    std::cout << "a = " << a << std::endl;
+    std::cout << "b = " << b << std::endl;
+    std::cout << "--------------" << std::endl;
+    std::cout << "a + b = " << c << std::endl;
+    c = a - b;
+    std::cout << "a - b = " << c << std::endl;
+
+    c = a * b;
+    std::cout << "a * b = " << c << std::endl;
+
+    c = a / b;
+    std::cout << "a / b = " << c << std::endl;
+    std::cout << "abs(a) = " << abs(a) << std::endl;
+    std::cout << "abs(b) = " << abs(b) << std::endl;
+
+    c = a/a;
+    std::cout << "a/a = " << c << std::endl;
+    c = b/b;
+    std::cout << "b/b = " << c << std::endl << std::endl;
+
+    nion<nion<nion<nion<long double, 4>, 2>, 2>, 4> d =
+            {{{{1,2,2,2}, {3,4,4,4}}, {{5,6,6,6}, {7,8,8,8}}},
+             {{{1,2,2,2}, {3,4,4,4}}, {{5,6,6,6}, {7,8,8,8}}},
+             {{{1,2,2,2}, {3,4,4,4}}, {{5,6,6,6}, {7,8,8,8}}},
+             {{{1,2,2,2}, {3,4,4,4}}, {{5,6,6,6}, {7,8,8,8}}}};
+    nion<nion<nion<nion<long double, 4>, 2>, 2>, 4> e =
+            {{{{9,10,10,10}, {11,12,12,12}}, {{13,14,14,14}, {15,16,16,16}}},
+             {{{9,10,10,10}, {11,12,12,12}}, {{13,14,14,14}, {15,16,16,16}}},
+             {{{9,10,10,10}, {11,12,12,12}}, {{13,14,14,14}, {15,16,16,16}}},
+             {{{9,10,10,10}, {11,12,12,12}}, {{13,14,14,14}, {15,16,16,16}}}};
+    nion<nion<nion<nion<long double, 4>, 2>, 2>, 4> f = d + e;
+    std::cout << "d = " << d << std::endl;
+    std::cout << "e = " << e << std::endl;
+    std::cout << "--------------" << std::endl;
+    std::cout << "d + e = " << f << std::endl;
+    f = d - e;
+    std::cout << "d - e = " << f << std::endl;
+
+    f = d * e;
+    std::cout << "d * e = " << f << std::endl;
+
+    f = d / e;
+    std::cout << "d / e = " << f << std::endl;
+    std::cout << "abs(e) = " << abs(e) << std::endl;
+    std::cout << "abs(d) = " << abs(d) << std::endl;
+
+    f = d/d;
+    std::cout << "d/d = " << f << std::endl;
+    f = e/e;
+    std::cout << "e/e = " << f << std::endl << std::endl;
+
+    nion<std::complex<long double>> g = {{1, 2}, {3, 4}};
+    nion<std::complex<long double>> h = {{5, 6}, {7, 8}};
+    nion<std::complex<long double>> i = g + h;
+    std::cout << "g = " << g << std::endl;
+    std::cout << "h = " << h << std::endl;
+    std::cout << "--------------" << std::endl;
+    std::cout << "g + h = " << i << std::endl;
+    i = g - h;
+    std::cout << "g - h = " << i << std::endl;
+
+    i = g * h;
+    std::cout << "g * h = " << i << std::endl;
+
+    i = g / h;
+    std::cout << "g / h = " << i << std::endl;
+    std::cout << "abs(g) = " << abs(g) << std::endl;
+    std::cout << "abs(h) = " << abs(h) << std::endl;
+
+    i = g/g;
+    std::cout << "g/g = " << i << std::endl;
+    i = h/h;
+    std::cout << "h/h = " << i << std::endl << std::endl;
+
+
+
+
+}
+
 void benchmark(int trials){
     std::cout.precision(10);
 //
@@ -326,6 +411,7 @@ void benchmark(int trials){
     std::cout << "%%%%%%%%%%%%%%%%%%%%%%%%%% nion complex number library benchmarks %%%%%%%%%%%%%%%%%%%%%%%%%%\n\n" << std::endl;
     order2Test();
     mixedOrderTest();
+    split_nions();
 
     long double start;
     long double end;
@@ -462,87 +548,12 @@ void ReadMeExamples(){
     std::cout << "tan(a) = " << b << std::endl;
 }
 
-void split_nions() {
-    std::cout << "\n####### Split Hypercomplex Numbers #######" << std::endl;
-
-    nion<nion<long double,2>,2> a = {{1, 2}, {3, 4}};
-    nion<nion<long double,2>,2> b = {{5, 6}, {7, 8}};
-    nion<nion<long double,2>,2> c = a + b;
-    std::cout << "a = " << a << std::endl;
-    std::cout << "b = " << b << std::endl;
-    std::cout << "a + b = " << c << std::endl;
-    c = a - b;
-    std::cout << "a - b = " << c << std::endl;
-
-    c = a * b;
-    std::cout << "a * b = " << c << std::endl;
-
-    c = a / b;
-    std::cout << "a / b = " << c << std::endl;
-    std::cout << "abs(a) = " << abs(a) << std::endl;
-    std::cout << "abs(b) = " << abs(b) << std::endl;
-
-    c = a/a;
-    std::cout << "a/a = " << c << std::endl;
-    c = b/b;
-    std::cout << "b/b = " << c << std::endl << std::endl;
-
-//    Cannot have doubly split nions for now (segfaults, not sure why)
-    nion<nion<nion<long double, 2>, 2>, 2> d = {{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}};
-    nion<nion<nion<long double, 2>, 2>, 2> e = {{{9, 10}, {11, 12}}, {{13, 14}, {15, 16}}};
-    nion<nion<nion<long double, 2>, 2>, 2> f = d + e;
-    std::cout << "d = " << d << std::endl;
-    std::cout << "e = " << e << std::endl;
-    std::cout << "d + e = " << f << std::endl;
-    f = d - e;
-    std::cout << "d - e = " << f << std::endl;
-
-    f = d * e;
-    std::cout << "d * e = " << f << std::endl;
-
-    f = d / e;
-    std::cout << "d / e = " << f << std::endl;
-    std::cout << "abs(e) = " << abs(e) << std::endl;
-    std::cout << "abs(d) = " << abs(d) << std::endl;
-
-    f = d/d;
-    std::cout << "d/d = " << f << std::endl;
-    f = e/e;
-    std::cout << "e/e = " << f << std::endl << std::endl;
-
-    nion<std::complex<long double>> g = {{1, 2}, {3, 4}};
-    nion<std::complex<long double>> h = {{5, 6}, {7, 8}};
-    nion<std::complex<long double>> i = g + h;
-    std::cout << "g = " << g << std::endl;
-    std::cout << "h = " << h << std::endl;
-    std::cout << "g + h = " << i << std::endl;
-    i = g - h;
-    std::cout << "g - h = " << i << std::endl;
-
-    i = g * h;
-    std::cout << "g * h = " << i << std::endl;
-
-    i = g / h;
-    std::cout << "g / h = " << i << std::endl;
-    std::cout << "abs(g) = " << abs(g) << std::endl;
-    std::cout << "abs(h) = " << abs(h) << std::endl;
-
-    i = g/g;
-    std::cout << "g/g = " << i << std::endl;
-    i = h/h;
-    std::cout << "h/h = " << i << std::endl << std::endl;
-
-
-
-
-}
-
 int main() {
 
     int a=5;
-    ReadMeExamples();
-    order2Test();
-    mixedOrderTest();
+//    ReadMeExamples();
+//    order2Test();
+//    mixedOrderTest();
     split_nions();
 
 

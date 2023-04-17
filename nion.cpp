@@ -427,7 +427,7 @@
 
         // negate all components
         for (D i = 0; i < size_; i++)
-            negated.elem_[i] *= -1;
+            negated.elem_[i] = -negated.elem_[i];
 
         return negated;
     }
