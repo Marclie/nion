@@ -465,9 +465,9 @@ void ReadMeExamples(){
 void split_nions() {
     std::cout << "\n####### Split Hypercomplex Numbers #######" << std::endl;
 
-    nion<nion<long double>> a = {{1, 2}, {3, 4}};
-    nion<nion<long double>> b = {{5, 6}, {7, 8}};
-    nion<nion<long double>> c = a + b;
+    nion<nion<long double,2>,2> a = {{1, 2}, {3, 4}};
+    nion<nion<long double,2>,2> b = {{5, 6}, {7, 8}};
+    nion<nion<long double,2>,2> c = a + b;
     std::cout << "a = " << a << std::endl;
     std::cout << "b = " << b << std::endl;
     std::cout << "a + b = " << c << std::endl;
@@ -485,25 +485,30 @@ void split_nions() {
     c = a/a;
     std::cout << "a/a = " << c << std::endl;
     c = b/b;
-    std::cout << "b/b = " << c << std::endl;
+    std::cout << "b/b = " << c << std::endl << std::endl;
 
 //    Cannot have doubly split nions for now (segfaults, not sure why)
-//    nion<nion<nion<long double>>> d = {{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}};
-//    nion<nion<nion<long double>>> e = {{{9, 10}, {11, 12}}, {{13, 14}, {15, 16}}};
-//    nion<nion<nion<long double>>> f = d + e;
-//    std::cout << "d = " << d << std::endl;
-//    std::cout << "e = " << e << std::endl;
-//    std::cout << "d + e = " << f << std::endl;
-//    f = d - e;
-//    std::cout << "d - e = " << f << std::endl;
-//
-//    f = d * e;
-//    std::cout << "d * e = " << f << std::endl;
-//
-//    f = d / e;
-//    std::cout << "d / e = " << f << std::endl;
-//    std::cout << "abs(e) = " << abs(e) << std::endl;
-//    std::cout << "abs(d) = " << abs(d) << std::endl;
+    nion<nion<nion<long double, 2>, 2>, 2> d = {{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}};
+    nion<nion<nion<long double, 2>, 2>, 2> e = {{{9, 10}, {11, 12}}, {{13, 14}, {15, 16}}};
+    nion<nion<nion<long double, 2>, 2>, 2> f = d + e;
+    std::cout << "d = " << d << std::endl;
+    std::cout << "e = " << e << std::endl;
+    std::cout << "d + e = " << f << std::endl;
+    f = d - e;
+    std::cout << "d - e = " << f << std::endl;
+
+    f = d * e;
+    std::cout << "d * e = " << f << std::endl;
+
+    f = d / e;
+    std::cout << "d / e = " << f << std::endl;
+    std::cout << "abs(e) = " << abs(e) << std::endl;
+    std::cout << "abs(d) = " << abs(d) << std::endl;
+
+    f = d/d;
+    std::cout << "d/d = " << f << std::endl;
+    f = e/e;
+    std::cout << "e/e = " << f << std::endl << std::endl;
 
     nion<std::complex<long double>> g = {{1, 2}, {3, 4}};
     nion<std::complex<long double>> h = {{5, 6}, {7, 8}};
@@ -525,7 +530,7 @@ void split_nions() {
     i = g/g;
     std::cout << "g/g = " << i << std::endl;
     i = h/h;
-    std::cout << "h/h = " << i << std::endl;
+    std::cout << "h/h = " << i << std::endl << std::endl;
 
 
 
@@ -542,7 +547,7 @@ int main() {
 
 
     int num_trials = 100000;
-    benchmark(num_trials);
+//    benchmark(num_trials);
 
 
     return 0;
