@@ -25,30 +25,9 @@
 #include <cstring>
 #include <concepts>
 
-
-// Make a concept that checks if a type is a nion type (can have different template parameters)
-template <typename T, typename Z>
-concept nion_type = std::is_same_v<T, Z> && requires {
-    typename Z::nion_tag;
-    typename Z::value_type;
-    requires requires(Z z) {
-        { z.size_ } -> std::convertible_to<std::size_t>;
-        { z.elem_ } -> std::convertible_to<typename Z::value_type*>;
-    };
-};
-
 // Make a concept that checks if a type has arithmetic operations
 template<typename T>
 concept arith_ops = requires(T a, T b) {
-    { a + b } -> std::same_as<T>;
-    { a - b } -> std::same_as<T>;
-    { a * b } -> std::same_as<T>;
-    { a / b } -> std::same_as<T>;
-};
-
-// Make a concept that checks if two types are convertible
-template<typename T, typename Z>
-concept arith_conv = requires(T a, Z b) {
     { a + b } -> std::same_as<T>;
     { a - b } -> std::same_as<T>;
     { a * b } -> std::same_as<T>;
