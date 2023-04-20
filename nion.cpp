@@ -37,7 +37,7 @@
 
     template<arith_ops T, std::size_t N>
     template<integral_type I>
-    constexpr inline nion<T,N>::nion(T* vals, I size) : size_(size) {
+    constexpr inline nion<T,N>::nion(const T* vals, I size) : size_(size) {
 
         /// check if the degree is greater than zero and less than the maximum size
         ASSERT(size_ > 0, "The size of the nion must be greater than zero.");
@@ -71,17 +71,34 @@
     }
 
     template<arith_ops T, std::size_t N>
-    template<std::size_t M>
-    constexpr inline nion<T,N>::nion(const nion<T,M> &other) : size_(other.size_) {
+    template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S>)
+    constexpr inline nion<T,N>::nion(const nion<S,M> &other) : size_(other.size_) {
+        ASSERT(other.size_ <= N, "The size of the nion to copy is too large. "
+                                 "consider increasing template parameter, N.");
         /// copy the values into the nion
-        memcpy(elem_, other.elem_, size_ * sizeof(T));
+        if constexpr (std::is_same_v<T,S>) {
+            memcpy(elem_, other.elem_, size_ * sizeof(T));
+        }
+        else{
+            for (int i = 0; i < size_; ++i)
+                elem_[i] = other.elem_[i];
+        }
     }
 
     template<arith_ops T, std::size_t N>
-    template<std::size_t M>
-    constexpr inline nion<T,N>::nion(nion<T,M> &&other) noexcept: size_(other.size_) {
+    template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S>)
+    constexpr inline nion<T,N>::nion(nion<S,M> &&other) noexcept: size_(other.size_) {
+        ASSERT(other.size_ <= N, "The size of the nion to copy is too large. "
+                                 "consider increasing template parameter, N.");
         /// copy the values into the nion
-        memcpy(elem_, other.elem_, size_ * sizeof(T));
+        if constexpr (std::is_same_v<T,S>) {
+            memcpy(elem_, other.elem_, size_ * sizeof(T));
+        }
+        else{
+            for (int i = 0; i < size_; ++i) {
+                elem_[i] = other.elem_[i];
+            }
+        }
     }
 
     template<arith_ops T, std::size_t N>
@@ -135,18 +152,29 @@
     *************************************/
 
     template<arith_ops T, std::size_t N>
-    template<std::size_t M>
-    constexpr inline nion<T,N> &nion<T,N>::operator=(const nion<T,M> &other) {
+    template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S>)
+    constexpr inline nion<T,N> &nion<T,N>::operator=(const nion<S,M> &other) {
         /// check if the nions are the same
-        if (&other == this) {
-            return *this; // return the nion
+        if (reinterpret_cast<void*>(&other) == reinterpret_cast<void*>(this)) {
+            return *this; // return the nion if they are the same
         }
+
+        ASSERT(other.size_ <= N, "The size of the nion to assign is too large. "
+                                 "consider increasing template parameter, N.");
 
         /// set the size
         size_ = other.size_;
 
         /// copy the values into the nion
-        memcpy(elem_, other.elem_, size_ * sizeof(T));
+        if constexpr (std::is_same_v<T,S>) {
+            memcpy(elem_, other.elem_, size_ * sizeof(T));
+        }
+        else{
+            for (int i = 0; i < size_; ++i) {
+                elem_[i] = other.elem_[i];
+            }
+        }
+
         return *this; // return the nion
     }
 
@@ -162,18 +190,29 @@
     }
 
     template<arith_ops T, std::size_t N>
-    template<std::size_t M>
-    constexpr inline nion<T,N> &nion<T,N>::operator=(nion<T,M> &&other)  noexcept {
+    template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S>)
+    constexpr inline nion<T,N> &nion<T,N>::operator=(nion<S,M> &&other)  noexcept {
         /// check if the nions are the same
         if (reinterpret_cast<void*>(&other) == reinterpret_cast<void*>(this)) {
-            return *this; // return the nion
+            return *this; // return the nion if they are the same
         }
+
+        ASSERT(other.size_ <= N, "The size of the nion to assign is too large. "
+                                 "consider increasing template parameter, N.");
 
         /// set the size
         size_ = other.size_;
 
         /// copy the values into the nion
-        memcpy(elem_, other.elem_, size_ * sizeof(T));
+        if constexpr (std::is_same_v<T,S>) {
+            memcpy(elem_, other.elem_, size_ * sizeof(T));
+        }
+        else{
+            for (int i = 0; i < size_; ++i) {
+                elem_[i] = other.elem_[i];
+            }
+        }
+
         return *this; // return the nion
     }
 
@@ -525,23 +564,17 @@
         using E = typename nion<T,M>::D;
         using uint_com = std::common_type_t<D, E>;
 
-        nion<T,N-(N>>1)> a, b;
-        nion<T,M-(M>>1)> c, d; // the four halves of the nions
-
         // the elements of the first half of the nion
         uint_com this_half_size = size_ - (size_ >> 1);
         uint_com other_half_size = other.size_ - (other.size_ >> 1);
 
-        a.size_ = this_half_size; // the size of the first half of the nion
-        b.size_ = size_ - this_half_size; // the size of the second half of the nion (can be one less than the first half)
-        c.size_ = other_half_size; // same as a for the other nion
-        d.size_ = other.size_ - other_half_size; // same as b for the other nion
+        // pointers to the halves of the nions
+        const T *a_ptr = elem_,       *b_ptr = &elem_[this_half_size],
+                *c_ptr = other.elem_, *d_ptr = &other.elem_[other_half_size];
 
-        /// copy the elements of the nions into the halves ///
-        memcpy(a.elem_, elem_, this_half_size * sizeof(T));
-        memcpy(b.elem_, elem_ + this_half_size, (size_ - this_half_size) * sizeof(T));
-        memcpy(c.elem_, other.elem_, other_half_size * sizeof(T));
-        memcpy(d.elem_, other.elem_ + other_half_size, (other.size_ - other_half_size) * sizeof(T));
+        // construct halves of the nions
+        nion<T,N-(N>>1)> a(a_ptr, this_half_size),  b(b_ptr, size_ - this_half_size);
+        nion<T,M-(M>>1)> c(c_ptr, other_half_size), d(d_ptr, other.size_ - other_half_size);
 
         /// calculate the cayley-dickson product
         product = make_pair(

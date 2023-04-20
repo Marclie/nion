@@ -20,7 +20,7 @@
 #include "boostQuaternionTest.hpp"
 #include "boostOctonionTest.hpp"
 
-#if TEST_LARGE_DEGREE  == ON
+#ifdef TEST_LARGE_DEGREE
 #include "sedenionTest.hpp"
 #include "trigintaduonionTest.hpp"
 #endif
@@ -435,7 +435,7 @@ void benchmark(int trials){
     totalTime += (end - start) / CLOCKS_PER_SEC;
     std::cout << "\n --> octonion comparison took " << (end - start) / CLOCKS_PER_SEC << " seconds" << std::endl;
 
-#if TEST_LARGE_DEGREE == ON
+#ifdef TEST_LARGE_DEGREE
     start = clock();
     SedenionComparison<long double>(trials);
     end = clock();

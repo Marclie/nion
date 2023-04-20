@@ -63,7 +63,7 @@ template<arith_ops T, std::size_t N>
                 std::conditional_t<N_BITS <= 64, uint64_t, // max size of 18446744073709551616
                 std::conditional_t<N_BITS <= 128, __uint128_t, void>>>>>; // max size of 340282366920938463463374607431768211456
 
-                
+
         /// coefficients
         T elem_[N]; // declare array of coefficients on stack (where max size is N)
         D size_;
@@ -87,7 +87,7 @@ template<arith_ops T, std::size_t N>
          * @note The size of the nion must be greater than zero.
          */
         template<integral_type I>
-        constexpr inline explicit nion<T,N>(T *vals, I size=N);
+        constexpr inline explicit nion<T,N>(const T *vals, I size=N);
 
         /**
          * @brief Construct a new nion object from vector
@@ -110,12 +110,18 @@ template<arith_ops T, std::size_t N>
         };
 
         /**
-         * @brief cast nion of different max size to nion of the same max size
-         * @note This is a deep copy. This will throw an error if size is greater than new max size
+         * @brief cast nion if both arith_ops types are different and max size is different
          */
-        template<std::size_t M> requires (M != N)
-        constexpr inline explicit operator nion<T,M>(){
-            return nion<T,M>(elem_, size_);
+        template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S>)
+        constexpr inline explicit operator nion<S,M>(){
+            if constexpr (std::is_same_v<T, S>) // if types are the same, just copy the array
+                return nion<T,M>(elem_, size_);
+            else { // cast elem_ to S type and return new nion
+                S new_elem_[M];
+                for (D i = 0; i < size_; i++)
+                    new_elem_[i] = static_cast<S>(elem_[i]);
+                return nion<S, N>(new_elem_, size_);
+            }
         }
 
         /**
@@ -124,8 +130,8 @@ template<arith_ops T, std::size_t N>
          * @return A copy of the nion.
          * @note This is a deep copy.
          */
-        template<std::size_t M> // M is the size of the other nion.
-        constexpr inline explicit nion<T,N>(const nion<T,M> &other);
+        template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S>)
+        constexpr inline explicit nion<T,N>(const nion<S,M> &other);
 
         /**
          * @brief move constructor
@@ -133,8 +139,8 @@ template<arith_ops T, std::size_t N>
          * @return A copy of the nion.
          * @note This is a deep copy.
          */
-        template<std::size_t M> // M is the size of the other nion.
-        constexpr inline explicit nion<T,N>(nion<T,M> &&other) noexcept;
+        template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S>)
+        constexpr inline explicit nion<T,N>(nion<S,M> &&other) noexcept;
 
         /**
          * @brief Construct a new nion object from a scalar with no imaginary components.
@@ -173,8 +179,8 @@ template<arith_ops T, std::size_t N>
          * @return A copy of the nion.
          * @note This is a deep copy.
          */
-        template<std::size_t M> // M is the size of the other nion.
-        constexpr inline nion<T,N> &operator=(const nion<T,M> &other);
+        template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S>)
+        constexpr inline nion<T,N> &operator=(const nion<S,M> &other);
 
         /**
          * @brief assignment operator from initializer list
@@ -189,8 +195,8 @@ template<arith_ops T, std::size_t N>
          * @return A copy of the nion.
          * @note This is a shallow copy.
          */
-        template<std::size_t M> // M is the size of the other nion.
-        constexpr inline nion<T,N> &operator=(nion<T,M> &&other) noexcept;
+        template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S>)
+        constexpr inline nion<T,N> &operator=(nion<S,M> &&other) noexcept;
 
         /**
          * @brief convert scalar to nion
