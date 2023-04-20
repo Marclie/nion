@@ -79,7 +79,7 @@
         if constexpr (std::is_same_v<T,S>) {
             memcpy(elem_, other.elem_, size_ * sizeof(T));
         }
-        else{
+        else {
             for (int i = 0; i < size_; ++i)
                 elem_[i] = other.elem_[i];
         }
@@ -259,26 +259,7 @@
     template<arith_ops T, std::size_t N>
     template<std::size_t M>
     constexpr inline void nion<T,N>::operator-=(const nion<T,M> &other) {
-
-        // find common int type
-        using E = typename nion<T,M>::D;
-        using uint_com = std::common_type_t<D, E>;
-
-        // subtract the components of the other nion to this nion.
-        if (size_ >= other.size_) {
-            for (uint_com i = 0; i < other.size_; i++)
-                elem_[i] -= other.elem_[i];
-        } else {
-            for (uint_com i = 0; i < size_; i++)
-                elem_[i] -= other.elem_[i];
-
-            // copy the remaining values and negate them
-            for (uint_com i = size_; i < other.size_; i++)
-                elem_[i] = -other.elem_[i];
-
-            // set the new size of the nion
-            size_ = other.size_;
-        }
+        *this += -other;
     }
 
     template<arith_ops T, std::size_t N>
@@ -301,83 +282,44 @@
     template<std::size_t M>
     constexpr inline nion<T,N> nion<T,N>::operator+(const nion<T,M> &other) const {
 
-        nion<T,N> sum; // create a nion to store the sum
-
         // find common int type
         using E = typename nion<T,M>::D;
         using uint_com = std::common_type_t<D, E>;
 
         if (size_ >= other.size_) {
-            // set the size of the sum
-            sum.size_ = size_;
+            // create a nion to store the difference
+            nion<T,N> sum(*this);
 
             // add the components of the other nion and this nion.
             for (uint_com i = 0; i < other.size_; i++)
-                sum.elem_[i] = elem_[i] + other.elem_[i];
-
-            // copy the remaining values of this nion
-            memcpy(sum.elem_ + other.size_, elem_ + other.size_, (size_ - other.size_) * sizeof(T));
+                sum.elem_[i] += other.elem_[i];
+            return sum;
         } else {
-            // set the size of the sum
-            sum.size_ = other.size_;
+            // create a nion to store the difference
+            nion<T,N> sum(other);
 
             // add the components of the other nion and this nion.
             for (uint_com i = 0; i < size_; i++)
-                sum.elem_[i] = elem_[i] + other.elem_[i];
+                sum.elem_[i] += elem_[i];
 
-            // copy the remaining values of the other nion
-            memcpy(sum.elem_ + size_, other.elem_ + size_, (other.size_ - size_) * sizeof(T));
+            return sum;
         }
-
-        return sum;
     }
 
     template<arith_ops T, std::size_t N>
     template<std::size_t M>
     constexpr inline nion<T,N> nion<T,N>::operator-(const nion<T,M> &other) const {
-
-        // find common int type
-        using E = typename nion<T,M>::D;
-        using uint_com = std::common_type_t<D, E>;
-
-        nion<T,N> diff; // create a nion to store the difference
-
-        if (size_ >= other.size_) {
-            // set the size of the difference
-            diff.size_ = size_;
-
-            // subtract the components of the other nion and this nion.
-            for (uint_com i = 0; i < other.size_; i++)
-                diff.elem_[i] = elem_[i] - other.elem_[i];
-
-            // copy the remaining values of this nion
-            memcpy(diff.elem_ + other.size_, elem_ + other.size_, (size_ - other.size_) * sizeof(T));
-        } else {
-            // set the size of the difference
-            diff.size_ = other.size_;
-
-            // subtract the components of the other nion and this nion.
-            for (uint_com i = 0; i < size_; i++)
-                diff.elem_[i] = elem_[i] - other.elem_[i];
-
-            // copy the remaining values of the other nion and negate them
-            for (uint_com i = size_; i < other.size_; i++)
-                diff.elem_[i] = -other.elem_[i];
-        }
-
-        return diff;
+        return *this + -other;
     }
 
     template<arith_ops T, std::size_t N>
     template<typename S> requires (std::is_convertible_v<S,T>)
     constexpr inline nion<T,N> nion<T,N>::operator+(S scalar) const {
 
-        nion<T,N> sum(size_); // create a nion to store the sum
+        // create a nion to store the sum
+        nion<T,N> sum(*this);
 
-        /// copy the components of this nion to the sum nion.
-        memcpy(sum.elem_, elem_, size_ * sizeof(T));
-
-        /// add the scalar to the real component of the sum nion.
+        // add the scalar to the real component of the sum nion.
         sum.elem_[0] += scalar;
         return sum;
     }
@@ -388,7 +330,7 @@
     }
 
     template<arith_ops T, std::size_t N>
-    constexpr inline nion<T,N> nion<T,N>::operator++() {
+    constexpr inline nion<T,N> &nion<T,N>::operator++() {
         elem_[0]++;
         return *this;
     }
@@ -405,7 +347,7 @@
     }
 
     template<arith_ops T, std::size_t N>
-    constexpr inline nion<T,N> nion<T,N>::operator--() {
+    constexpr inline nion<T,N> &nion<T,N>::operator--() {
         elem_[0]--;
         return *this;
     }
@@ -423,10 +365,8 @@
     template<arith_ops T, std::size_t N>
     template<typename S> requires (std::is_convertible_v<S,T>)
     constexpr inline void nion<T,N>::operator*=(S scalar) {
-        T product_scalar = scalar;
         for (D i = 0; i < size_; i++)
-            elem_[i] *= product_scalar;
-
+            elem_[i] *= scalar;
     }
 
     template<arith_ops T, std::size_t N>
@@ -438,10 +378,8 @@
     template<arith_ops T, std::size_t N>
     template<typename S> requires (std::is_convertible_v<S,T>)
     constexpr inline void nion<T,N>::operator/=(S scalar) {
-        T quotient_scalar = scalar;
         for (D i = 0; i < size_; i++)
-            elem_[i] /= quotient_scalar;
-
+            elem_[i] /= scalar;
     }
 
     /******************************************
@@ -450,23 +388,35 @@
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> nion<T,N>::conj() const {
-        nion<T,N> conjugate(size_);
+        nion<T,N> conjugate(*this); // copy this nion
 
         // negate all components except the first
-        conjugate.elem_[0] = elem_[0];
-        for (D i = 1; i < size_; i++)
-            conjugate.elem_[i] = -elem_[i];
+        if constexpr (std::is_arithmetic_v<T>) {
+            for (D i = 1; i < size_; i++)
+                // negate the component by multiplying by -1 (faster than negation, but only works for arithmetic types)
+                conjugate.elem_[i] *= -1;
+        } else {
+            for (D i = 1; i < size_; i++)
+                conjugate.elem_[i] = -conjugate.elem_[i]; // negate the component
+        }
 
         return conjugate;
     }
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> nion<T,N>::operator-() const {
-        nion<T,N> negated = *this; // copy this nion
+        nion<T,N> negated(*this); // copy this nion
 
         // negate all components
-        for (D i = 0; i < size_; i++)
-            negated.elem_[i] = -negated.elem_[i];
+        // negate all components except the first
+        if constexpr (std::is_arithmetic_v<T>) {
+            for (D i = 0; i < size_; i++)
+                // negate the component by multiplying by -1 (faster than negation, but only works for arithmetic types)
+                negated.elem_[i] *= -1;
+        } else {
+            for (D i = 0; i < size_; i++)
+                negated.elem_[i] = -negated.elem_[i]; // negate the component
+        }
 
         return negated;
     }
@@ -475,10 +425,8 @@
     template<std::size_t M>
     constexpr inline nion<T,N> nion<T,N>::operator*(const nion<T,M> &other) const {
 
-        nion<T,N> product; // create a nion to store the product
         if (size_ == other.size_) {
-
-            product.size_ = size_;
+            nion<T,N> product(*this); // create a nion to store the product
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -549,12 +497,10 @@
 
             // if any of the sizes are 1, then the product is just the scalar product.
             if (size_ == 1) {
-                product = other * elem_[0];
-                return product;
+                return other * elem_[0];
             }
             if (other.size_ == 1) {
-                product = *this * other.elem_[0];
-                return product;
+                return *this * other.elem_[0];
             }
         }
 
@@ -577,23 +523,20 @@
         nion<T,M-(M>>1)> c(c_ptr, other_half_size), d(d_ptr, other.size_ - other_half_size);
 
         /// calculate the cayley-dickson product
-        product = make_pair(
+        return make_pair(
                 (a * c) - (d.conj() * b), // add involution parameter for sign with macro? (split hypercomplex numbers)
                 (d * a) + (b * c.conj())
         );
-        return product;
     }
 
     template<arith_ops T, std::size_t N>
     template<typename S> requires (std::is_convertible_v<S,T>)
     constexpr inline nion<T,N> nion<T,N>::operator*(S scalar) const {
-        nion<T,N> product;
-        product.size_ = size_;
-        T product_scalar = scalar;
+        nion<T,N> product(*this);
 
         // compute the product of each element of the nion with the scalar
         for (D i = 0; i < size_; i++)
-            product.elem_[i] = elem_[i] * product_scalar;
+            product.elem_[i] *= scalar;
 
         return product;
     }
@@ -616,20 +559,19 @@
 
     template<arith_ops T, std::size_t N>
     constexpr inline T nion<T,N>::norm() const {
-        return std::sqrt(abs());
+        return sqrt(abs());
     }
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> nion<T,N>::inv() const {
 
         T absolute = abs();
-        nion<T,N> inverse;
-        inverse.size_ = size_;
+        nion<T,N> inverse(*this);
 
-        for (D i = 0; i < size_; i++)
-            inverse.elem_[i] = -elem_[i] / absolute;
+        inverse.elem_[0] /= absolute;
+        for (D i = 1; i < size_; i++)
+            inverse.elem_[i] /= -absolute;
 
-        inverse.elem_[0] = elem_[0] / absolute;
         return inverse;
     }
 
@@ -642,13 +584,11 @@
     template<arith_ops T, std::size_t N>
     template<typename S> requires (std::is_convertible_v<S,T>)
     constexpr inline nion<T,N> nion<T,N>::operator/(S scalar) const {
-        nion<T,N> quotient;
-        quotient.size_ = size_;
-        T quotient_scalar = scalar;
+        nion<T,N> quotient(*this);
 
         // compute the product of each element of the nion with the scalar
         for (D i = 0; i < size_; i++)
-            quotient.elem_[i] = elem_[i] / quotient_scalar;
+            quotient.elem_[i] /= scalar;
 
         return quotient;
     }
@@ -673,7 +613,7 @@
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> nion<T,N>::imag() const {
-        nion<T,N> imag = *this;
+        nion<T,N> imag(*this);
         imag.elem_[0] = 0;
         return imag;
     }

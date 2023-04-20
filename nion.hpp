@@ -408,7 +408,7 @@ template<arith_ops T, std::size_t N>
          * @brief overload the ++ operator for nions.
          * @return The nion incremented by 1.
          */
-        constexpr inline nion<T,N> operator++();
+        constexpr inline nion<T,N> &operator++();
 
         /**
          * @brief overload the - operator for nions with scalars.
@@ -423,7 +423,7 @@ template<arith_ops T, std::size_t N>
          * @brief overload the -- operator for nions.
          * @return The real component of the nion decremented by 1.
          */
-        constexpr inline nion<T,N> operator--();
+        constexpr inline nion<T,N> &operator--();
 
         /**
          * @brief overload the * operator for nions with scalars.
