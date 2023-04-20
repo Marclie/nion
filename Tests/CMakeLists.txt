@@ -17,7 +17,14 @@ if ( NOT HAS_CONCEPTS )
     message(FATAL_ERROR "Your compiler does not support concepts. Concepts are required for this library")
 endif()
 
-set(TEST_LARGE_DEGREE ON)
+if (TEST_LARGE_DEGREE)
+    add_definitions(-DTEST_LARGE_DEGREE)
+endif()
+
+if (FULL_RECURSION)
+    add_definitions(-DFULL_RECURSION)
+endif()
+
 if ( TEST_LARGE_DEGREE )
     # fetch content from Douglas Wilhelm Harder's NumberSystems library for comparison of our algorithms
     include(FetchContent)
