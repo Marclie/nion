@@ -80,10 +80,8 @@
             memcpy(elem_, other.elem_, size_ * sizeof(T));
         }
         else{
-            for (int i = 0; i < N; ++i) {
-                if (i >= size_) break;
+            for (int i = 0; i < size_; ++i)
                 elem_[i] = other.elem_[i];
-            }
         }
     }
 
@@ -97,8 +95,7 @@
             memcpy(elem_, other.elem_, size_ * sizeof(T));
         }
         else{
-            for (int i = 0; i < N; ++i) {
-                if (i >= size_) break;
+            for (int i = 0; i < size_; ++i) {
                 elem_[i] = other.elem_[i];
             }
         }
@@ -173,8 +170,7 @@
             memcpy(elem_, other.elem_, size_ * sizeof(T));
         }
         else{
-            for (int i = 0; i < N; ++i) {
-                if (i >= size_) break;
+            for (int i = 0; i < size_; ++i) {
                 elem_[i] = other.elem_[i];
             }
         }
@@ -212,8 +208,7 @@
             memcpy(elem_, other.elem_, size_ * sizeof(T));
         }
         else{
-            for (int i = 0; i < N; ++i) {
-                if (i >= size_) break;
+            for (int i = 0; i < size_; ++i) {
                 elem_[i] = other.elem_[i];
             }
         }
@@ -246,15 +241,11 @@
 
         // add the components of the other nion to this nion.
         if (size_ >= other.size_) {
-            for (uint_com i = 0; i < M; i++) {
-                if (i >= other.size_) break;
+            for (uint_com i = 0; i < other.size_; i++)
                 elem_[i] += other.elem_[i];
-            }
         } else {
-            for (uint_com i = 0; i < size_; i++){
-                if (i >= size_) break;
+            for (uint_com i = 0; i < size_; i++)
                 elem_[i] += other.elem_[i];
-            }
 
             // copy the remaining values
             memcpy(elem_ + size_, other.elem_ + size_, (other.size_ - size_) * sizeof(T));
@@ -275,21 +266,15 @@
 
         // subtract the components of the other nion to this nion.
         if (size_ >= other.size_) {
-            for (uint_com i = 0; i < M; i++) {
-                if (i >= other.size_) break;
+            for (uint_com i = 0; i < other.size_; i++)
                 elem_[i] -= other.elem_[i];
-            }
         } else {
-            for (uint_com i = 0; i < N; i++) {
-                if (i >= size_) break;
+            for (uint_com i = 0; i < size_; i++)
                 elem_[i] -= other.elem_[i];
-            }
 
             // copy the remaining values and negate them
-            for (uint_com i = size_; i < M; i++) {
-                if (i >= other.size_) break;
+            for (uint_com i = size_; i < other.size_; i++)
                 elem_[i] = -other.elem_[i];
-            }
 
             // set the new size of the nion
             size_ = other.size_;
@@ -327,10 +312,8 @@
             sum.size_ = size_;
 
             // add the components of the other nion and this nion.
-            for (uint_com i = 0; i < M; i++) {
-                if (i >= other.size_) break;
+            for (uint_com i = 0; i < other.size_; i++)
                 sum.elem_[i] = elem_[i] + other.elem_[i];
-            }
 
             // copy the remaining values of this nion
             memcpy(sum.elem_ + other.size_, elem_ + other.size_, (size_ - other.size_) * sizeof(T));
@@ -339,10 +322,8 @@
             sum.size_ = other.size_;
 
             // add the components of the other nion and this nion.
-            for (uint_com i = 0; i < N; i++) {
-                if (i >= size_) break;
+            for (uint_com i = 0; i < size_; i++)
                 sum.elem_[i] = elem_[i] + other.elem_[i];
-            }
 
             // copy the remaining values of the other nion
             memcpy(sum.elem_ + size_, other.elem_ + size_, (other.size_ - size_) * sizeof(T));
@@ -366,10 +347,8 @@
             diff.size_ = size_;
 
             // subtract the components of the other nion and this nion.
-            for (uint_com i = 0; i < M; i++) {
-                if (i >= other.size_) break;
+            for (uint_com i = 0; i < other.size_; i++)
                 diff.elem_[i] = elem_[i] - other.elem_[i];
-            }
 
             // copy the remaining values of this nion
             memcpy(diff.elem_ + other.size_, elem_ + other.size_, (size_ - other.size_) * sizeof(T));
@@ -378,16 +357,12 @@
             diff.size_ = other.size_;
 
             // subtract the components of the other nion and this nion.
-            for (uint_com i = 0; i < N; i++) {
-                if (i >= size_) break;
+            for (uint_com i = 0; i < size_; i++)
                 diff.elem_[i] = elem_[i] - other.elem_[i];
-            }
 
             // copy the remaining values of the other nion and negate them
-            for (uint_com i = size_; i < M; i++) {
-                if (i >= size_) break;
+            for (uint_com i = size_; i < other.size_; i++)
                 diff.elem_[i] = -other.elem_[i];
-            }
         }
 
         return diff;
@@ -449,10 +424,8 @@
     template<typename S> requires (std::is_convertible_v<S,T>)
     constexpr inline void nion<T,N>::operator*=(S scalar) {
         T product_scalar = scalar;
-        for (D i = 0; i < N; i++) {
-            if (i >= size_) break;
+        for (D i = 0; i < size_; i++)
             elem_[i] *= product_scalar;
-        }
 
     }
 
@@ -466,10 +439,8 @@
     template<typename S> requires (std::is_convertible_v<S,T>)
     constexpr inline void nion<T,N>::operator/=(S scalar) {
         T quotient_scalar = scalar;
-        for (D i = 0; i < N; i++) {
-            if (i >= size_) break;
+        for (D i = 0; i < size_; i++)
             elem_[i] /= quotient_scalar;
-        }
 
     }
 
@@ -483,10 +454,8 @@
 
         // negate all components except the first
         conjugate.elem_[0] = elem_[0];
-        for (D i = 1; i < N; i++) {
-            if (i >= size_) break;
+        for (D i = 1; i < size_; i++)
             conjugate.elem_[i] = -elem_[i];
-        }
 
         return conjugate;
     }
@@ -496,10 +465,8 @@
         nion<T,N> negated = *this; // copy this nion
 
         // negate all components
-        for (D i = 0; i < N; i++) {
-            if (i >= size_) break;
+        for (D i = 0; i < size_; i++)
             negated.elem_[i] = -negated.elem_[i];
-        }
 
         return negated;
     }
@@ -625,10 +592,8 @@
         T product_scalar = scalar;
 
         // compute the product of each element of the nion with the scalar
-        for (D i = 0; i < N; i++) {
-            if (i >= size_) break;
+        for (D i = 0; i < size_; i++)
             product.elem_[i] = elem_[i] * product_scalar;
-        }
 
         return product;
     }
@@ -643,10 +608,8 @@
 
         T absVal = T();
 
-        for (D i = 0; i < N; i++) {
-            if (i >= size_) break;
+        for (D i = 0; i < size_; i++)
             absVal += elem_[i] * elem_[i];
-        }
 
         return absVal;
     }
@@ -663,10 +626,8 @@
         nion<T,N> inverse;
         inverse.size_ = size_;
 
-        for (D i = 0; i < N; i++) {
-            if (i >= size_) break;
+        for (D i = 0; i < size_; i++)
             inverse.elem_[i] = -elem_[i] / absolute;
-        }
 
         inverse.elem_[0] = elem_[0] / absolute;
         return inverse;
@@ -686,10 +647,8 @@
         T quotient_scalar = scalar;
 
         // compute the product of each element of the nion with the scalar
-        for (D i = 0; i < N; i++) {
-            if (i >= size_) break;
+        for (D i = 0; i < size_; i++)
             quotient.elem_[i] = elem_[i] / quotient_scalar;
-        }
 
         return quotient;
     }
@@ -744,10 +703,8 @@
         if (this == &other) return true;
         if (size_ != other.size_) return false;
 
-        for (D i = 0; i < N; i++) {
-            if (i >= size_) break;
+        for (D i = 0; i < size_; i++)
             if (!value_is_similar(elem_[i], other.elem_[i])) return false;
-        }
         return true;
     }
 
@@ -757,10 +714,8 @@
         if (this == &other) return false;
         if (size_ != other.size_) return true;
 
-        for (D i = 0; i < N; i++) {
-            if (i >= size_) break;
+        for (D i = 0; i < size_; i++)
             if (!value_is_similar(elem_[i], other.elem_[i])) return true;
-        }
         return false;
     }
 
@@ -805,10 +760,8 @@
 
     template<arith_ops T, std::size_t N>
     constexpr inline bool nion<T,N>::is_real() const {
-        for (D i = 1; i < N; i++) {
-            if (i >= size_) break;
+        for (D i = 1; i < size_; i++)
             if (!value_is_similar(elem_[i], 0)) return false;
-        }
         return true;
     }
 
@@ -895,8 +848,7 @@
         T component = z.elem_[0];
         os << "(" << component;
         using D = typename nion<T,N>::D;
-        for (D i = 1; i < N; i++) {
-            if (i >= z.size_) break;
+        for (D i = 1; i < z.size_; i++) {
             component = z.elem_[i];
             os << "," << component;
         }
@@ -907,8 +859,7 @@
     template<arith_ops T, std::size_t N>
     std::istream &operator>>(std::istream &is, nion<T,N> &z) {
         using D = typename nion<T,N>::D;
-        for (D i = 0; i < N; i++) {
-            if (i >= z.size_) break;
+        for (D i = 0; i < z.size_; i++) {
             is >> z.elem_[i];
         }
         return is;
@@ -921,8 +872,7 @@
     template<arith_ops T, std::size_t N>
     inline std::string nion<T,N>::to_string() const {
         std::string nion_string = "(" + std::to_string(elem_[0]);
-        for (D i = 1; i < N; i++) {
-            if (i >= size_) break;
+        for (D i = 1; i < size_; i++) {
             nion_string += "," + std::to_string(elem_[i]);
         }
         nion_string += ")";
