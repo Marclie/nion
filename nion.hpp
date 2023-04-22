@@ -338,6 +338,13 @@ template<arith_ops T, std::size_t N>
         constexpr inline nion<T,N> imag() const;
 
         /**
+         * @brief Compute the argument of the nion.
+         * @return The argument of the nion.
+         * @details The argument of a nion is the angle between the real axis and the nion.
+         */
+        constexpr inline T arg() const;
+
+        /**
          * @brief overload the == operator for nions.
          * @param other The nion to compare this nion to.
          * @return True if the nions are equal, false otherwise.

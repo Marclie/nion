@@ -618,6 +618,20 @@
         return imag;
     }
 
+    template<arith_ops T, std::size_t N>
+    constexpr inline T nion<T,N>::arg() const {
+        // get polar form of nion
+        T r = elem_[0];
+
+        // compute norms
+        T z_abs = abs();
+        T i_norm = sqrt(z_abs - r * r);
+
+        // compute argument
+        T theta = atan2(i_norm, r);
+        return theta;
+    }
+
     /******************************************
     *            COMPARISON OPERATORS
     *******************************************/
