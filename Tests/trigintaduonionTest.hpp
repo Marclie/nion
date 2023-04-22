@@ -133,6 +133,17 @@ void TrigintaduonionComparison(int trials) {
     Trigintaduonion<T> max1valueSq;
     Trigintaduonion<T> max2valueSq;
 
+    // timers for square root
+    T SqrtNionTimer = 0;
+    T SqrtTrigintaduonionTimer = 0;
+    T MAE_Sqrt = 0;
+    T MRE_Sqrt = 0;
+    T MAX_Sqrt = -1;
+    nion<T,32> maxSqrtNion;
+    Trigintaduonion<T> maxSqrtTrigintaduonion;
+    Trigintaduonion<T> max1valueSqrt;
+    Trigintaduonion<T> max2valueSqrt;
+
     // timers for exponential
     T expNionTimer = 0;
     T expTrigintaduonionTimer = 0;
@@ -329,7 +340,7 @@ void TrigintaduonionComparison(int trials) {
 
             // get difference between nion and Trigintaduonion norms. Add to MAE_ normdifference
             diff = std::abs(nionNorm - stdNorm);
-            MRE_Norm += diff;
+            MRE_Norm +=  diff / norm(trigintaduonion_result);
             diff /= stdNorm;
             MAE_Norm += diff;
 
@@ -358,8 +369,8 @@ void TrigintaduonionComparison(int trials) {
 
             // get difference between nion and Trigintaduonion norms. Add to MAE_ additiondifference
             diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
-            MRE_Add += diff;
-            diff /= norm(trigintaduonion_result);
+            MRE_Add +=  diff / norm(trigintaduonion_result);
+            
             MAE_Add += diff;
 
             // get max difference between nion and Trigintaduonion addition
@@ -387,8 +398,8 @@ void TrigintaduonionComparison(int trials) {
 
             // get difference between nion and Trigintaduonion norms. Add to MAE_ conjugatedifference
             diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
-            MRE_Conj += diff;
-            diff /= norm(trigintaduonion_result);
+            MRE_Conj +=  diff / norm(trigintaduonion_result);
+            
             MAE_Conj += diff;
 
             // get max difference between nion and Trigintaduonion conjugate
@@ -418,8 +429,8 @@ void TrigintaduonionComparison(int trials) {
 
             // get difference between nion and Trigintaduonion norms. Add to MAE_ multiplicationdifference
             diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
-            MRE_Mul += diff;
-            diff /= norm(trigintaduonion_result);
+            MRE_Mul +=  diff / norm(trigintaduonion_result);
+            
             MAE_Mul += diff;
 
             // get max difference between nion and Trigintaduonion multiplication
@@ -449,8 +460,8 @@ void TrigintaduonionComparison(int trials) {
 
             // get difference between nion and Trigintaduonion norms. Add to MAE_ divisiondifference
             diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
-            MRE_Div += diff;
-            diff /= norm(trigintaduonion_result);
+            MRE_Div +=  diff / norm(trigintaduonion_result);
+            
             MAE_Div += diff;
 
             // get max difference between nion and Trigintaduonion division
@@ -479,8 +490,8 @@ void TrigintaduonionComparison(int trials) {
 
             // get difference between nion and Trigintaduonion norms. Add to MAE_ powerdifference
             diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
-            MRE_Pow += diff;
-            diff /= norm(trigintaduonion_result);
+            MRE_Pow +=  diff / norm(trigintaduonion_result);
+            
             MAE_Pow += diff;
 
             // get max difference between nion and Trigintaduonion power
@@ -509,8 +520,8 @@ void TrigintaduonionComparison(int trials) {
 
             // get difference between nion and Trigintaduonion norms. Add to MAE_ squaredifference
             diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
-            MRE_Sq += diff;
-            diff /= norm(trigintaduonion_result);
+            MRE_Sq +=  diff / norm(trigintaduonion_result);
+            
             MAE_Sq += diff;
 
             // get max difference between nion and Trigintaduonion square
@@ -520,6 +531,36 @@ void TrigintaduonionComparison(int trials) {
                 maxSqTrigintaduonion = trigintaduonion_result;
                 max1valueSq = trigintaduonion1;
                 max2valueSq = trigintaduonion2;
+            }
+        }
+
+        /// square root
+        {
+            // evaluate nion square, and time
+            startNion = std::chrono::high_resolution_clock::now();
+            nionResult = pow(nion1, 0.5);
+            endNion = std::chrono::high_resolution_clock::now();
+            SqrtNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
+
+            // evaluate Trigintaduonion square, and time
+            startTrigintaduonion = std::chrono::high_resolution_clock::now();
+            trigintaduonion_result = pow(trigintaduonion1, 0.5l);
+            endTrigintaduonion = std::chrono::high_resolution_clock::now();
+            SqrtTrigintaduonionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endTrigintaduonion - startTrigintaduonion).count();
+
+            // get difference between nion and Trigintaduonion norms. Add to MAE_ squaredifference
+            diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
+            MRE_Sqrt +=  diff / norm(trigintaduonion_result);
+            
+            MAE_Sqrt += diff;
+
+            // get max difference between nion and Trigintaduonion square
+            if (diff > MAX_Sqrt) {
+                MAX_Sqrt = diff;
+                maxSqrtNion = nionResult;
+                maxSqrtTrigintaduonion = trigintaduonion_result;
+                max1valueSqrt = trigintaduonion1;
+                max2valueSqrt = trigintaduonion2;
             }
         }
 
@@ -539,8 +580,8 @@ void TrigintaduonionComparison(int trials) {
 
             // get difference between nion and Trigintaduonion norms. Add to MAE_ exponentialdifference
             diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
-            MRE_Exp += diff;
-            diff /= norm(trigintaduonion_result);
+            MRE_Exp +=  diff / norm(trigintaduonion_result);
+            
             MAE_Exp += diff;
 
             // get max difference between nion and Trigintaduonion exponential
@@ -569,8 +610,8 @@ void TrigintaduonionComparison(int trials) {
 
             // get difference between nion and Trigintaduonion norms. Add to MAE_ logarithmdifference
             diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
-            MRE_Log += diff;
-            diff /= norm(trigintaduonion_result);
+            MRE_Log +=  diff / norm(trigintaduonion_result);
+            
             MAE_Log += diff;
 
             // get max difference between nion and Trigintaduonion logarithm
@@ -599,8 +640,8 @@ void TrigintaduonionComparison(int trials) {
 
             // get difference between nion and Trigintaduonion norms. Add to MAE_ sinedifference
             diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
-            MRE_Sin += diff;
-            diff /= norm(trigintaduonion_result);
+            MRE_Sin +=  diff / norm(trigintaduonion_result);
+            
             MAE_Sin += diff;
 
             // get max difference between nion and Trigintaduonion sine
@@ -629,8 +670,8 @@ void TrigintaduonionComparison(int trials) {
 
             // get difference between nion and Trigintaduonion norms. Add to MAE_ asinedifference
             diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
-            MRE_Asin += diff;
-            diff /= norm(trigintaduonion_result);
+            MRE_Asin +=  diff / norm(trigintaduonion_result);
+            
             MAE_Asin += diff;
 
             // get max difference between nion and Trigintaduonion asine
@@ -659,8 +700,8 @@ void TrigintaduonionComparison(int trials) {
 
             // get difference between nion and Trigintaduonion norms. Add to MAE_ cosinedifference
             diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
-            MRE_Cos += diff;
-            diff /= norm(trigintaduonion_result);
+            MRE_Cos +=  diff / norm(trigintaduonion_result);
+            
             MAE_Cos += diff;
 
             // get max difference between nion and Trigintaduonion cosine
@@ -689,8 +730,8 @@ void TrigintaduonionComparison(int trials) {
 
             // get difference between nion and Trigintaduonion norms. Add to MAE_ acosinedifference
             diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
-            MRE_Acos += diff;
-            diff /= norm(trigintaduonion_result);
+            MRE_Acos +=  diff / norm(trigintaduonion_result);
+            
             MAE_Acos += diff;
 
             // get max difference between nion and Trigintaduonion acosine
@@ -719,8 +760,8 @@ void TrigintaduonionComparison(int trials) {
 
             // get difference between nion and Trigintaduonion norms. Add to MAE_ tangentdifference
             diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
-            MRE_Tan += diff;
-            diff /= norm(trigintaduonion_result);
+            MRE_Tan +=  diff / norm(trigintaduonion_result);
+            
             MAE_Tan += diff;
 
             // get max difference between nion and Trigintaduonion tangent
@@ -749,8 +790,8 @@ void TrigintaduonionComparison(int trials) {
 
             // get difference between nion and Trigintaduonion norms. Add to MAE_ atandifference
             diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
-            MRE_Atan += diff;
-            diff /= norm(trigintaduonion_result);
+            MRE_Atan +=  diff / norm(trigintaduonion_result);
+            
             MAE_Atan += diff;
 
             // get max difference between nion and Trigintaduonion atan
@@ -779,8 +820,8 @@ void TrigintaduonionComparison(int trials) {
 
             // get difference between nion and Trigintaduonion norms. Add to MAE_ hyperbolicsine difference
             diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
-            MRE_Sinh += diff;
-            diff /= norm(trigintaduonion_result);
+            MRE_Sinh +=  diff / norm(trigintaduonion_result);
+            
             MAE_Sinh += diff;
 
             // get max difference between nion and Trigintaduonion hyperbolic sine
@@ -809,8 +850,8 @@ void TrigintaduonionComparison(int trials) {
 
             // get difference between nion and Trigintaduonion norms. Add to MAE_ hyperboliccosine difference
             diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
-            MRE_Cosh += diff;
-            diff /= norm(trigintaduonion_result);
+            MRE_Cosh +=  diff / norm(trigintaduonion_result);
+            
             MAE_Cosh += diff;
 
             // get max difference between nion and Trigintaduonion hyperbolic cosine
@@ -839,8 +880,8 @@ void TrigintaduonionComparison(int trials) {
 
             // get difference between nion and Trigintaduonion norms. Add to MAE_ hyperbolictangent difference
             diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
-            MRE_Tanh += diff;
-            diff /= norm(trigintaduonion_result);
+            MRE_Tanh +=  diff / norm(trigintaduonion_result);
+            
             MAE_Tanh += diff;
 
             // get max difference between nion and Trigintaduonion hyperbolic tangent
@@ -869,8 +910,8 @@ void TrigintaduonionComparison(int trials) {
 
             // get difference between nion and Trigintaduonion norms. Add to MAE_ hyperbolicarc sine difference
             diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
-            MRE_Asinh += diff;
-            diff /= norm(trigintaduonion_result);
+            MRE_Asinh +=  diff / norm(trigintaduonion_result);
+            
             MAE_Asinh += diff;
 
             // get max difference between nion and Trigintaduonion hyperbolic arc sine
@@ -899,8 +940,8 @@ void TrigintaduonionComparison(int trials) {
 
             // get difference between nion and Trigintaduonion norms. Add to MAE_ hyperbolicarc cosine difference
             diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
-            MRE_Acosh += diff;
-            diff /= norm(trigintaduonion_result);
+            MRE_Acosh +=  diff / norm(trigintaduonion_result);
+            
             MAE_Acosh += diff;
 
             // get max difference between nion and Trigintaduonion hyperbolic arc cosine
@@ -929,8 +970,8 @@ void TrigintaduonionComparison(int trials) {
 
             // get difference between nion and Trigintaduonion norms. Add to MAE_ hyperbolicarc tangent difference
             diff = getMAEtrigintaduonion<T>(nionResult, trigintaduonion_result);
-            MRE_Atanh += diff;
-            diff /= norm(trigintaduonion_result);
+            MRE_Atanh +=  diff / norm(trigintaduonion_result);
+            
             MAE_Atanh += diff;
 
             // get max difference between nion and Trigintaduonion hyperbolic arc tangent
@@ -1029,6 +1070,17 @@ void TrigintaduonionComparison(int trials) {
     std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Sq << std::endl;
     std::cout << "nion: " << maxSqNion << "\nTrigintaduonion: " << maxSqTrigintaduonion << std::endl;
     std::cout << "input: " << max1valueSq << std::endl;
+
+    /*** square Root ***/
+    std::cout << "\n\n---> Square root <--- " << std::endl;
+    std::cout << "Average square time for nion: " << SqrtNionTimer / trialfp << " ns" << std::endl;
+    std::cout << "Average square time for Trigintaduonion: " << SqrtTrigintaduonionTimer / trialfp << " ns" << std::endl;
+    printSpeedupComplex(SqrtNionTimer, SqrtTrigintaduonionTimer);
+    std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Sqrt / trialfp << std::endl;
+    std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Sqrt / trialfp << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Sqrt << std::endl;
+    std::cout << "nion: " << maxSqrtNion << "\nTrigintaduonion: " << maxSqrtTrigintaduonion << std::endl;
+    std::cout << "input: " << max1valueSqrt << std::endl;
 
 
     /*** exponential ***/

@@ -943,17 +943,17 @@
 
     template<arith_ops T, std::size_t N, typename S> requires (std::is_convertible_v<S,T>)
     constexpr inline nion<T,N> pow(const nion<T,N> &base, S power) {
-        return exp(power * log(base));
+        return exp(log(base) * power);
     }
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> pow(const nion<T,N> &base, const nion<T,N> &power) {
-        return exp(power * log(base));
+        return exp(log(base) * power);
     }
 
     template<arith_ops T, std::size_t N, typename S> requires (std::is_convertible_v<S,T>)
     constexpr inline nion<T,N> pow(S base, const nion<T,N> &power) {
-        return exp(power * log(base));
+        return exp(log(base) * power);
     }
 
     template<arith_ops T, std::size_t N>
@@ -970,7 +970,7 @@
         T i_abs = base_abs - r * r;
         T i_norm = std::sqrt(i_abs);
 
-        T power_t = 2;
+        T power_t = 2l;
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
 
         T x2 = r * r;
@@ -978,9 +978,9 @@
         if (x2 + y2 <= denorm_min)
             return nion<T,N>(base_norm * base_norm, base.size_); // if base is zero return zero (0^2 = 0)
 
-        T denom = 1 / (x2 + y2);
+        T denom = 1l / (x2 + y2);
         T cos_2theta = (x2 - y2) * denom;
-        T sin_2theta = 2 * r * i_norm * denom;
+        T sin_2theta = 2l * r * i_norm * denom;
 
         // compute power of nion
         if (i_abs <= denorm_min)
@@ -991,12 +991,12 @@
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> sqrt(const nion<T,N> &z) {
-        return pow(z, 0.5);
+        return pow(z, 0.5l);
     }
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> cbrt(const nion<T,N> &z) {
-        return pow(z, 1.0 / 3.0);
+        return pow(z, 1.0l / 3.0l);
     }
 
     /*******************************************
@@ -1013,8 +1013,8 @@
         T i_norm = std::sqrt(i_abs);
 
         // calculate scalars
-        T e_z = std::exp(z.elem_[0]) / 2;
-        T e_mz = std::exp(-z.elem_[0]) / 2;
+        T e_z = std::exp(z.elem_[0]) / 2l;
+        T e_mz = std::exp(-z.elem_[0]) / 2l;
 
         // compute exponential of nion
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
@@ -1040,8 +1040,8 @@
         T i_norm = std::sqrt(i_abs);
 
         // calculate scalars
-        T e_z = std::exp(z.elem_[0]) / 2;
-        T e_mz = std::exp(-z.elem_[0]) / 2;
+        T e_z = std::exp(z.elem_[0]) / 2l;
+        T e_mz = std::exp(-z.elem_[0]) / 2l;
 
         // compute exponential of nion
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
@@ -1058,7 +1058,7 @@
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> tanh(const nion<T,N> &z) {
-        return (exp(z*2) - 1) / (exp(z*2) + 1);
+        return (exp(z*2l) - 1l) / (exp(z*2l) + 1l);
     }
 
     template<arith_ops T, std::size_t N>
@@ -1156,34 +1156,34 @@
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> asinh(const nion<T,N> &z) {
-        return log(z + sqrt(sqr(z) + 1));
+        return log(z + sqrt(sqr(z) + 1l));
     }
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> acosh(const nion<T,N> &z) {
         // compute the inverse hyperbolic cosine of the nion
-        return 2 * log(sqrt((z-1) * 0.5) + sqrt((z+1) * 0.5));
+        return 2 * log(sqrt((z-1) * 0.5l) + sqrt((z+1l) * 0.5l));
 
     }
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> atanh(const nion<T,N> &z) {
-        return (log(1 + z) - log(1 - z)) * 0.5;
+        return (log(1l + z) - log(1l - z)) * 0.5l;
     }
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> acoth(const nion<T,N> &z) {
-        return (log(1 + inv(z)) - log(1 - inv(z))) * 0.5;
+        return (log(1l + inv(z)) - log(1l - inv(z))) * 0.5l;
     }
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> asech(const nion<T,N> &z) {
-        return log(sqrt(1/sqr(z) - 1) + inv(z));
+        return log(sqrt(1l/sqr(z) - 1l) + inv(z));
     }
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> acsch(const nion<T,N> &z) {
-        return log(sqrt(1 + 1/sqr(z)) + inv(z));
+        return log(sqrt(1l + 1l/sqr(z)) + inv(z));
     }
 
     /****************************************
@@ -1205,7 +1205,7 @@
             i /= i_norm;
 
         // compute the inv sine of the nion
-        return -i * log(sqrt(1 - sqr(z)) + (i * r) - i_norm);
+        return -i * log(sqrt(1l - sqr(z)) + (i * r) - i_norm);
     }
 
     template<arith_ops T, std::size_t N>
@@ -1228,7 +1228,7 @@
 
         // compute the inv tangent of the nion:
         T one = 1;
-        return 0.5 * i * (-log((one - i_norm) + (i * r) ) + log((one + i_norm) + (i * -r) ));
+        return 0.5l * i * (-log((one - i_norm) + (i * r) ) + log((one + i_norm) + (i * -r) ));
     }
 
     template<arith_ops T, std::size_t N>
@@ -1259,7 +1259,7 @@
     constexpr inline nion<T,N> gamma(const nion<T,N> &z) {
         // compute the gamma function of the nion
         return exp(-z) * sqrt(inv(z))
-               * pow(1 / (12 * z - inv(10 * z)) + z, z)
-               * std::sqrt(2 * M_PI);
+               * pow(1l / (12l * z - inv(10l * z)) + z, z)
+               * std::sqrt(2l * M_PI);
     }
 
