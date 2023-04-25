@@ -548,9 +548,9 @@
     template<arith_ops T, std::size_t N>
     constexpr inline T nion<T,N>::abs() const {
 
-        T absVal = T();
+        T absVal = elem_[0] * elem_[0];
 
-        for (D i = 0; i < size_; i++)
+        for (D i = 1; i < size_; i++)
             absVal += elem_[i] * elem_[i];
 
         return absVal;
