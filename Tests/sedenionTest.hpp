@@ -311,13 +311,13 @@ void SedenionComparison(int trials) {
         {
             // evaluate nion norm, and time
             startNion = std::chrono::high_resolution_clock::now();
-            T nionNorm = nion1.norm();
+            T nionNorm = nion1.abs();
             endNion = std::chrono::high_resolution_clock::now();
             normNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
 
             // evaluate Sedenion norm, and time
             startSedenion = std::chrono::high_resolution_clock::now();
-            T stdNorm = abs(sedenion1);
+            T stdNorm = norm(sedenion1);
             endSedenion = std::chrono::high_resolution_clock::now();
             normSedenionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endSedenion - startSedenion).count();
 
@@ -381,8 +381,9 @@ void SedenionComparison(int trials) {
 
             // get difference between nion and Sedenion norms. Add to MAE_ conjugatedifference
             diff = getMAEsedenion<T>(nionResult, sedenion_result);
+            MRE_Conj += diff;
+            diff /= norm(sedenion_result);
             MAE_Conj += diff;
-            MRE_Conj += diff / norm(sedenion_result);
 
             // get max difference between nion and Sedenion conjugate
             if (diff > MAX_Conj) {
@@ -411,8 +412,9 @@ void SedenionComparison(int trials) {
 
             // get difference between nion and Sedenion norms. Add to MAE_ multiplicationdifference
             diff = getMAEsedenion<T>(nionResult, sedenion_result);
+            MRE_Mul += diff;
+            diff /= norm(sedenion_result);
             MAE_Mul += diff;
-            MRE_Mul += diff / norm(sedenion_result);
 
             // get max difference between nion and Sedenion multiplication
             if (diff > MAX_Mul) {
@@ -917,7 +919,7 @@ void SedenionComparison(int trials) {
     printSpeedupComplex(normNionTimer, normSedenionTimer);
     std::cout << "Average difference between nion and Sedenion: " << MRE_Norm / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Sedenion: " << MAE_Norm / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Sedenion: " << MAX_Norm << std::endl;
+    std::cout << "\nMaximum difference between nion and Sedenion: " << MAX_Norm << std::endl;
     std::cout << "nion: " << maxNormNion << "\nSedenion: " << maxNormSedenion << std::endl;
     std::cout << "input: " << max1valueNorm << std::endl;
 
@@ -929,7 +931,7 @@ void SedenionComparison(int trials) {
     printSpeedupComplex(addNionTimer, addSedenionTimer);
     std::cout << "Average difference between nion and Sedenion: " << MRE_Add / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Sedenion: " << MAE_Add / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Sedenion: " << MAX_Add << std::endl;
+    std::cout << "\nMaximum difference between nion and Sedenion: " << MAX_Add << std::endl;
     std::cout << "nion: " << maxAddNion << "\nSedenion: " << maxAddSedenion << std::endl;
     std::cout << "input1: " << max1valueAdd << "\ninput2: " << max2valueAdd << std::endl;
 
@@ -941,7 +943,7 @@ void SedenionComparison(int trials) {
     printSpeedupComplex(conjNionTimer, conjSedenionTimer);
     std::cout << "Average difference between nion and Sedenion: " << MRE_Conj / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Sedenion: " << MAE_Conj / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Sedenion: " << MAX_Conj << std::endl;
+    std::cout << "\nMaximum difference between nion and Sedenion: " << MAX_Conj << std::endl;
     std::cout << "nion: " << maxConjNion << "\nSedenion: " << maxConjSedenion << std::endl;
     std::cout << "input: " << max2valueConj << std::endl;
 
@@ -953,7 +955,7 @@ void SedenionComparison(int trials) {
     printSpeedupComplex(mulNionTimer, mulSedenionTimer);
     std::cout << "Average difference between nion and Sedenion: " << MRE_Mul / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Sedenion: " << MAE_Mul / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Sedenion: " << MAX_Mul << std::endl;
+    std::cout << "\nMaximum difference between nion and Sedenion: " << MAX_Mul << std::endl;
     std::cout << "nion: " << maxMulNion << "\nSedenion: " << maxMulSedenion << std::endl;
     std::cout << "input1: " << max1valueMul << "\ninput2: " << max2valueMul << std::endl;
 
@@ -965,7 +967,7 @@ void SedenionComparison(int trials) {
     printSpeedupComplex(divNionTimer, divSedenionTimer);
     std::cout << "Average difference between nion and Sedenion: " << MRE_Div / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Sedenion: " << MAE_Div / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Sedenion: " << MAX_Div << std::endl;
+    std::cout << "\nMaximum difference between nion and Sedenion: " << MAX_Div << std::endl;
     std::cout << "nion: " << maxDivNion << "\nSedenion: " << maxDivSedenion << std::endl;
     std::cout << "input1: " << max1valueDiv << "\ninput2: " << max2valueDiv << std::endl;
 
@@ -977,7 +979,7 @@ void SedenionComparison(int trials) {
     printSpeedupComplex(powNionTimer, powSedenionTimer);
     std::cout << "Average difference between nion and Sedenion: " << MRE_Pow / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Sedenion: " << MAE_Pow / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Sedenion: " << MAX_Pow << std::endl;
+    std::cout << "\nMaximum difference between nion and Sedenion: " << MAX_Pow << std::endl;
     std::cout << "nion: " << maxPowNion << "\nSedenion: " << maxPowSedenion << std::endl;
     std::cout << "input1: " << max1valuePow << "\ninput2: " << max2valuePow << std::endl;
 
@@ -989,7 +991,7 @@ void SedenionComparison(int trials) {
     printSpeedupComplex(expNionTimer, expSedenionTimer);
     std::cout << "Average difference between nion and Sedenion: " << MRE_Exp / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Sedenion: " << MAE_Exp / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Sedenion: " << MAX_Exp << std::endl;
+    std::cout << "\nMaximum difference between nion and Sedenion: " << MAX_Exp << std::endl;
     std::cout << "nion: " << maxExpNion << "\nSedenion: " << maxExpSedenion << std::endl;
     std::cout << "input: " << max1valueExp << std::endl;
 
@@ -1001,7 +1003,7 @@ void SedenionComparison(int trials) {
     printSpeedupComplex(logNionTimer, logSedenionTimer);
     std::cout << "Average difference between nion and Sedenion: " << MRE_Log / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Sedenion: " << MAE_Log / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Sedenion: " << MAX_Log << std::endl;
+    std::cout << "\nMaximum difference between nion and Sedenion: " << MAX_Log << std::endl;
     std::cout << "nion: " << maxLogNion << "\nSedenion: " << maxLogSedenion << std::endl;
     std::cout << "input: " << max1valueLog << std::endl;
 
@@ -1013,7 +1015,7 @@ void SedenionComparison(int trials) {
     printSpeedupComplex(sinNionTimer, sinSedenionTimer);
     std::cout << "Average difference between nion and Sedenion: " << MRE_Sin / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Sedenion: " << MAE_Sin / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Sedenion: " << MAX_Sin << std::endl;
+    std::cout << "\nMaximum difference between nion and Sedenion: " << MAX_Sin << std::endl;
     std::cout << "nion: " << maxSinNion << "\nSedenion: " << maxSinSedenion << std::endl;
     std::cout << "input: " << max1valueSin << std::endl;
 
@@ -1025,7 +1027,7 @@ void SedenionComparison(int trials) {
     printSpeedupComplex(asinNionTimer, asinSedenionTimer);
     std::cout << "Average difference between nion and Sedenion: " << MRE_Asin / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Sedenion: " << MAE_Asin / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Sedenion: " << MAX_Asin << std::endl;
+    std::cout << "\nMaximum difference between nion and Sedenion: " << MAX_Asin << std::endl;
     std::cout << "nion: " << maxAsinNion << "\nSedenion: " << maxAsinSedenion << std::endl;
     std::cout << "input: " << max1valueAsin << std::endl;
 
@@ -1037,7 +1039,7 @@ void SedenionComparison(int trials) {
     printSpeedupComplex(cosNionTimer, cosSedenionTimer);
     std::cout << "Average difference between nion and Sedenion: " << MRE_Cos / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Sedenion: " << MAE_Cos / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Sedenion: " << MAX_Cos << std::endl;
+    std::cout << "\nMaximum difference between nion and Sedenion: " << MAX_Cos << std::endl;
     std::cout << "nion: " << maxCosNion << "\nSedenion: " << maxCosSedenion << std::endl;
     std::cout << "input: " << max1valueCos << std::endl;
 
@@ -1049,7 +1051,7 @@ void SedenionComparison(int trials) {
     printSpeedupComplex(acosNionTimer, acosSedenionTimer);
     std::cout << "Average difference between nion and Sedenion: " << MRE_Acos / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Sedenion: " << MAE_Acos / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Sedenion: " << MAX_Acos << std::endl;
+    std::cout << "\nMaximum difference between nion and Sedenion: " << MAX_Acos << std::endl;
     std::cout << "nion: " << maxAcosNion << "\nSedenion: " << maxAcosSedenion << std::endl;
     std::cout << "input: " << max1valueAcos << std::endl;
 
@@ -1061,7 +1063,7 @@ void SedenionComparison(int trials) {
     printSpeedupComplex(tanNionTimer, tanSedenionTimer);
     std::cout << "Average difference between nion and Sedenion: " << MRE_Tan / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Sedenion: " << MAE_Tan / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Sedenion: " << MAX_Tan << std::endl;
+    std::cout << "\nMaximum difference between nion and Sedenion: " << MAX_Tan << std::endl;
     std::cout << "nion: " << maxTanNion << "\nSedenion: " << maxTanSedenion << std::endl;
     std::cout << "input: " << max1valueTan << std::endl;
 
@@ -1073,7 +1075,7 @@ void SedenionComparison(int trials) {
     printSpeedupComplex(atanNionTimer, atanSedenionTimer);
     std::cout << "Average difference between nion and Sedenion: " << MRE_Atan / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Sedenion: " << MAE_Atan / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Sedenion: " << MAX_Atan << std::endl;
+    std::cout << "\nMaximum difference between nion and Sedenion: " << MAX_Atan << std::endl;
     std::cout << "nion: " << maxAtanNion << "\nSedenion: " << maxAtanSedenion << std::endl;
     std::cout << "input: " << max1valueAtan << std::endl;
 
@@ -1085,7 +1087,7 @@ void SedenionComparison(int trials) {
     printSpeedupComplex(sinhNionTimer, sinhSedenionTimer);
     std::cout << "Average difference between nion and Sedenion: " << MRE_Sinh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Sedenion: " << MAE_Sinh / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Sedenion: " << MAX_Sinh << std::endl;
+    std::cout << "\nMaximum difference between nion and Sedenion: " << MAX_Sinh << std::endl;
     std::cout << "nion: " << maxSinhNion << "\nSedenion: " << maxSinhSedenion << std::endl;
     std::cout << "input: " << max1valueSinh << std::endl;
 
@@ -1097,7 +1099,7 @@ void SedenionComparison(int trials) {
     printSpeedupComplex(asinhNionTimer, asinhSedenionTimer);
     std::cout << "Average difference between nion and Sedenion: " << MRE_Asinh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Sedenion: " << MAE_Asinh / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Sedenion: " << MAX_Asinh << std::endl;
+    std::cout << "\nMaximum difference between nion and Sedenion: " << MAX_Asinh << std::endl;
     std::cout << "nion: " << maxAsinhNion << "\nSedenion: " << maxAsinhSedenion << std::endl;
     std::cout << "input: " << max1valueAsinh << std::endl;
 
@@ -1109,7 +1111,7 @@ void SedenionComparison(int trials) {
     printSpeedupComplex(coshNionTimer, coshSedenionTimer);
     std::cout << "Average difference between nion and Sedenion: " << MRE_Cosh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Sedenion: " << MAE_Cosh / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Sedenion: " << MAX_Cosh << std::endl;
+    std::cout << "\nMaximum difference between nion and Sedenion: " << MAX_Cosh << std::endl;
     std::cout << "nion: " << maxCoshNion << "\nSedenion: " << maxCoshSedenion << std::endl;
     std::cout << "input: " << max1valueCosh << std::endl;
 
@@ -1121,7 +1123,7 @@ void SedenionComparison(int trials) {
     printSpeedupComplex(acoshNionTimer, acoshSedenionTimer);
     std::cout << "Average difference between nion and Sedenion: " << MRE_Acosh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Sedenion: " << MAE_Acosh / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Sedenion: " << MAX_Acosh << std::endl;
+    std::cout << "\nMaximum difference between nion and Sedenion: " << MAX_Acosh << std::endl;
     std::cout << "nion: " << maxAcoshNion << "\nSedenion: " << maxAcoshSedenion << std::endl;
     std::cout << "input: " << max1valueAcosh << std::endl;
 
@@ -1133,7 +1135,7 @@ void SedenionComparison(int trials) {
     printSpeedupComplex(tanhNionTimer, tanhSedenionTimer);
     std::cout << "Average difference between nion and Sedenion: " << MRE_Tanh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Sedenion: " << MAE_Tanh / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Sedenion: " << MAX_Tanh << std::endl;
+    std::cout << "\nMaximum difference between nion and Sedenion: " << MAX_Tanh << std::endl;
     std::cout << "nion: " << maxTanhNion << "\nSedenion: " << maxTanhSedenion << std::endl;
     std::cout << "input: " << max1valueTanh << std::endl;
 
@@ -1145,7 +1147,7 @@ void SedenionComparison(int trials) {
     printSpeedupComplex(atanhNionTimer, atanhSedenionTimer);
     std::cout << "Average difference between nion and Sedenion: " << MRE_Atanh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Sedenion: " << MAE_Atanh / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Sedenion: " << MAX_Atanh << std::endl;
+    std::cout << "\nMaximum difference between nion and Sedenion: " << MAX_Atanh << std::endl;
     std::cout << "nion: " << maxAtanhNion << "\nSedenion: " << maxAtanhSedenion << std::endl;
     std::cout << "input: " << max1valueAtanh << std::endl;
 }

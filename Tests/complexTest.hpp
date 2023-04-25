@@ -303,13 +303,13 @@ void stdComplexComparison(int trials) {
         {
             // evaluate nion norm, and time
             startNion = std::chrono::high_resolution_clock::now();
-            T nionNorm = nion_complex1.norm();
+            T nionNorm = nion_complex1.abs();
             endNion = std::chrono::high_resolution_clock::now();
             normNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
 
             // evaluate std::complex norm, and time
             startStd = std::chrono::high_resolution_clock::now();
-            T stdNorm = abs(complex1);
+            T stdNorm = norm(complex1);
             endStd = std::chrono::high_resolution_clock::now();
             normStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 

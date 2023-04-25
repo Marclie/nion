@@ -328,13 +328,13 @@ void TrigintaduonionComparison(int trials) {
         {
             // evaluate nion norm, and time
             startNion = std::chrono::high_resolution_clock::now();
-            T nionNorm = nion1.norm();
+            T nionNorm = nion1.abs();
             endNion = std::chrono::high_resolution_clock::now();
             normNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
 
             // evaluate Trigintaduonion norm, and time
             startTrigintaduonion = std::chrono::high_resolution_clock::now();
-            T stdNorm = abs(trigintaduonion1);
+            T stdNorm = norm(trigintaduonion1);
             endTrigintaduonion = std::chrono::high_resolution_clock::now();
             normTrigintaduonionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endTrigintaduonion - startTrigintaduonion).count();
 
@@ -996,7 +996,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(normNionTimer, normTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Norm / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Norm / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Norm << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Norm << std::endl;
     std::cout << "nion: " << maxNormNion << "\nTrigintaduonion: " << maxNormTrigintaduonion << std::endl;
     std::cout << "input: " << max1valueNorm << std::endl;
 
@@ -1008,7 +1008,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(addNionTimer, addTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Add / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Add / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Add << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Add << std::endl;
     std::cout << "nion: " << maxAddNion << "\nTrigintaduonion: " << maxAddTrigintaduonion << std::endl;
     std::cout << "input1: " << max1valueAdd << "\ninput2: " << max2valueAdd << std::endl;
 
@@ -1020,7 +1020,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(conjNionTimer, conjTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Conj / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Conj / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Conj << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Conj << std::endl;
     std::cout << "nion: " << maxConjNion << "\nTrigintaduonion: " << maxConjTrigintaduonion << std::endl;
     std::cout << "input: " << max2valueConj << std::endl;
 
@@ -1032,7 +1032,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(mulNionTimer, mulTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Mul / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Mul / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Mul << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Mul << std::endl;
     std::cout << "nion: " << maxMulNion << "\nTrigintaduonion: " << maxMulTrigintaduonion << std::endl;
     std::cout << "input1: " << max1valueMul << "\ninput2: " << max2valueMul << std::endl;
 
@@ -1044,7 +1044,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(divNionTimer, divTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Div / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Div / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Div << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Div << std::endl;
     std::cout << "nion: " << maxDivNion << "\nTrigintaduonion: " << maxDivTrigintaduonion << std::endl;
     std::cout << "input1: " << max1valueDiv << "\ninput2: " << max2valueDiv << std::endl;
 
@@ -1056,7 +1056,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(powNionTimer, powTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Pow / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Pow / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Pow << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Pow << std::endl;
     std::cout << "nion: " << maxPowNion << "\nTrigintaduonion: " << maxPowTrigintaduonion << std::endl;
     std::cout << "input1: " << max1valuePow << "\ninput2: " << max2valuePow << std::endl;
 
@@ -1067,7 +1067,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(SqNionTimer, SqTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Sq / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Sq / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Sq << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Sq << std::endl;
     std::cout << "nion: " << maxSqNion << "\nTrigintaduonion: " << maxSqTrigintaduonion << std::endl;
     std::cout << "input: " << max1valueSq << std::endl;
 
@@ -1078,7 +1078,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(SqrtNionTimer, SqrtTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Sqrt / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Sqrt / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Sqrt << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Sqrt << std::endl;
     std::cout << "nion: " << maxSqrtNion << "\nTrigintaduonion: " << maxSqrtTrigintaduonion << std::endl;
     std::cout << "input: " << max1valueSqrt << std::endl;
 
@@ -1090,7 +1090,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(expNionTimer, expTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Exp / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Exp / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Exp << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Exp << std::endl;
     std::cout << "nion: " << maxExpNion << "\nTrigintaduonion: " << maxExpTrigintaduonion << std::endl;
     std::cout << "input: " << max1valueExp << std::endl;
 
@@ -1102,7 +1102,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(logNionTimer, logTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Log / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Log / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Log << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Log << std::endl;
     std::cout << "nion: " << maxLogNion << "\nTrigintaduonion: " << maxLogTrigintaduonion << std::endl;
     std::cout << "input: " << max1valueLog << std::endl;
 
@@ -1114,7 +1114,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(sinNionTimer, sinTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Sin / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Sin / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Sin << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Sin << std::endl;
     std::cout << "nion: " << maxSinNion << "\nTrigintaduonion: " << maxSinTrigintaduonion << std::endl;
     std::cout << "input: " << max1valueSin << std::endl;
 
@@ -1126,7 +1126,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(asinNionTimer, asinTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Asin / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Asin / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Asin << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Asin << std::endl;
     std::cout << "nion: " << maxAsinNion << "\nTrigintaduonion: " << maxAsinTrigintaduonion << std::endl;
     std::cout << "input: " << max1valueAsin << std::endl;
 
@@ -1138,7 +1138,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(cosNionTimer, cosTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Cos / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Cos / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Cos << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Cos << std::endl;
     std::cout << "nion: " << maxCosNion << "\nTrigintaduonion: " << maxCosTrigintaduonion << std::endl;
     std::cout << "input: " << max1valueCos << std::endl;
 
@@ -1150,7 +1150,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(acosNionTimer, acosTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Acos / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Acos / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Acos << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Acos << std::endl;
     std::cout << "nion: " << maxAcosNion << "\nTrigintaduonion: " << maxAcosTrigintaduonion << std::endl;
     std::cout << "input: " << max1valueAcos << std::endl;
 
@@ -1162,7 +1162,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(tanNionTimer, tanTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Tan / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Tan / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Tan << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Tan << std::endl;
     std::cout << "nion: " << maxTanNion << "\nTrigintaduonion: " << maxTanTrigintaduonion << std::endl;
     std::cout << "input: " << max1valueTan << std::endl;
 
@@ -1174,7 +1174,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(atanNionTimer, atanTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Atan / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Atan / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Atan << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Atan << std::endl;
     std::cout << "nion: " << maxAtanNion << "\nTrigintaduonion: " << maxAtanTrigintaduonion << std::endl;
     std::cout << "input: " << max1valueAtan << std::endl;
 
@@ -1186,7 +1186,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(sinhNionTimer, sinhTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Sinh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Sinh / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Sinh << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Sinh << std::endl;
     std::cout << "nion: " << maxSinhNion << "\nTrigintaduonion: " << maxSinhTrigintaduonion << std::endl;
     std::cout << "input: " << max1valueSinh << std::endl;
 
@@ -1198,7 +1198,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(asinhNionTimer, asinhTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Asinh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Asinh / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Asinh << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Asinh << std::endl;
     std::cout << "nion: " << maxAsinhNion << "\nTrigintaduonion: " << maxAsinhTrigintaduonion << std::endl;
     std::cout << "input: " << max1valueAsinh << std::endl;
 
@@ -1210,7 +1210,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(coshNionTimer, coshTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Cosh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Cosh / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Cosh << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Cosh << std::endl;
     std::cout << "nion: " << maxCoshNion << "\nTrigintaduonion: " << maxCoshTrigintaduonion << std::endl;
     std::cout << "input: " << max1valueCosh << std::endl;
 
@@ -1222,7 +1222,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(acoshNionTimer, acoshTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Acosh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Acosh / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Acosh << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Acosh << std::endl;
     std::cout << "nion: " << maxAcoshNion << "\nTrigintaduonion: " << maxAcoshTrigintaduonion << std::endl;
     std::cout << "input: " << max1valueAcosh << std::endl;
 
@@ -1234,7 +1234,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(tanhNionTimer, tanhTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Tanh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Tanh / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Tanh << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Tanh << std::endl;
     std::cout << "nion: " << maxTanhNion << "\nTrigintaduonion: " << maxTanhTrigintaduonion << std::endl;
     std::cout << "input: " << max1valueTanh << std::endl;
 
@@ -1246,7 +1246,7 @@ void TrigintaduonionComparison(int trials) {
     printSpeedupComplex(atanhNionTimer, atanhTrigintaduonionTimer);
     std::cout << "Average difference between nion and Trigintaduonion: " << MRE_Atanh / trialfp << std::endl;
     std::cout << "Average relative difference between nion and Trigintaduonion: " << MAE_Atanh / trialfp << std::endl;
-    std::cout << "\nMaximum relative difference between nion and Trigintaduonion: " << MAX_Atanh << std::endl;
+    std::cout << "\nMaximum difference between nion and Trigintaduonion: " << MAX_Atanh << std::endl;
     std::cout << "nion: " << maxAtanhNion << "\nTrigintaduonion: " << maxAtanhTrigintaduonion << std::endl;
     std::cout << "input: " << max1valueAtanh << std::endl;
 }

@@ -546,26 +546,25 @@
     }
 
     template<arith_ops T, std::size_t N>
-    constexpr inline nion<T,N> nion<T,N>::abs() const {
-        return *this * conj();
+    constexpr inline T nion<T,N>::abs() const {
+
+        T absVal = T();
+
+        for (D i = 0; i < size_; i++)
+            absVal += elem_[i] * elem_[i];
+
+        return absVal;
     }
 
     template<arith_ops T, std::size_t N>
     constexpr inline T nion<T,N>::norm() const {
-        T normVal = T(0);
-        for (D i = 0; i < size_; i++)
-            normVal += elem_[i] * elem_[i];
-
-        return sqrt(normVal);
+        return sqrt(abs());
     }
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> nion<T,N>::inv() const {
 
-        T absolute = elem_[0] * elem_[0];
-        for (D i = 1; i < size_; i++)
-            absolute += elem_[i] * elem_[i];
-
+        T absolute = abs();
         nion<T,N> inverse(*this);
 
         inverse.elem_[0] /= absolute;
@@ -853,7 +852,7 @@
     }
 
     template<arith_ops T, std::size_t N>
-    constexpr inline nion<T,N> abs(const nion<T,N> &z) {
+    constexpr inline T abs(const nion<T,N> &z) {
         return z.abs();
     }
 
@@ -913,7 +912,8 @@
         nion<T,N> i = z.imag();
 
         // make unit vector
-        T i_norm = norm(i);
+        T i_abs = i.abs();
+        T i_norm = std::sqrt(i_abs);
 
         // compute exponential of nion
         T cos_theta;
@@ -921,7 +921,7 @@
         T exp_r = std::exp(r);
 
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
-        if (i_norm < denorm_min)
+        if (i_abs < denorm_min)
             return nion<T,N>(exp_r, z.size_);
 
         // compute exponential of nion
@@ -940,13 +940,15 @@
         nion<T,N> i = z.imag();
 
         // compute norms
-        T z_norm = norm(z);
-        T i_norm = norm(i);
+        T z_abs = z.abs();
+        T z_norm = std::sqrt(z_abs);
+        T i_abs = z_abs - r * r;
+        T i_norm = std::sqrt(z_abs - r * r);
         T theta = std::atan2(i_norm, r);
 
         // compute natural logarithm of nion
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
-        if (i_norm <= denorm_min)
+        if (i_abs <= denorm_min)
             return std::log(z_norm) + i * theta;
         else
             return i * (theta / i_norm) + std::log(z_norm);
@@ -974,16 +976,18 @@
         nion<T,N> i = base.imag();
 
         // compute norms
-        T base_norm = base.norm();
+        T base_abs = base.abs();
+        T base_norm = std::sqrt(base_abs);
 
         // make unit vector
-        T i_norm = i.norm();
+        T i_abs = base_abs - r * r;
+        T i_norm = std::sqrt(i_abs);
 
         T power_t = 2l;
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
 
         T x2 = r * r;
-        T y2 = i_norm * i_norm;
+        T y2 = i_abs;
         if (x2 + y2 <= denorm_min)
             return nion<T,N>(base_norm * base_norm, base.size_); // if base is zero return zero (0^2 = 0)
 
@@ -992,7 +996,7 @@
         T sin_2theta = 2l * r * i_norm * denom;
 
         // compute power of nion
-        if (i_norm <= denorm_min)
+        if (i_abs <= denorm_min)
             return std::pow(base_norm, power_t) * (cos_2theta + i * sin_2theta);
         else
             return std::pow(base_norm, power_t) * (cos_2theta + i * (sin_2theta / i_norm));
@@ -1018,7 +1022,8 @@
         nion<T,N> i = z.imag();
 
         // make unit vector
-        T i_norm = i.norm();
+        T i_abs = i.abs();
+        T i_norm = std::sqrt(i_abs);
 
         // calculate scalars
         T e_z = std::exp(z.elem_[0]) / 2l;
@@ -1026,7 +1031,7 @@
 
         // compute exponential of nion
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
-        if (i_norm <= denorm_min) {
+        if (i_abs <= denorm_min) {
             nion<T,N> sin_nion = i * ((e_z + e_mz) * std::sin(i_norm));
             sin_nion += std::cos(i_norm) * (e_z - e_mz);
             return sin_nion;
@@ -1044,7 +1049,8 @@
         nion<T,N> i = z.imag();
 
         // make unit vector
-        T i_norm = i.norm();
+        T i_abs = i.abs();
+        T i_norm = std::sqrt(i_abs);
 
         // calculate scalars
         T e_z = std::exp(z.elem_[0]) / 2l;
@@ -1052,7 +1058,7 @@
 
         // compute exponential of nion
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
-        if (i_norm <= denorm_min) {
+        if (i_abs <= denorm_min) {
             nion<T,N> cos_nion = i * ((e_z - e_mz) * std::sin(i_norm));
             cos_nion += std::cos(i_norm) * (e_z + e_mz);
             return cos_nion;
@@ -1095,11 +1101,12 @@
         nion<T,N> i = imag(z);
 
         // make unit vector
-        T i_norm = norm(i);
+        T i_abs = i.abs();
+        T i_norm = std::sqrt(i_abs);
 
         // compute the sine of the nion
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
-        if (i_norm <= denorm_min)
+        if (i_abs <= denorm_min)
             return i * (std::sinh(i_norm) * std::cos(r)) + std::sin(r) * std::cosh(i_norm);
         else
             return i * (std::sinh(i_norm) * std::cos(r) / i_norm) + std::sin(r) * std::cosh(i_norm);
@@ -1112,11 +1119,12 @@
         nion<T,N> i = imag(z);
 
         // make unit vector
-        T i_norm = i.norm();
+        T i_abs = i.abs();
+        T i_norm = std::sqrt(i_abs);
 
         // compute the cosine of the nion
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
-        if (i_norm <= denorm_min)
+        if (i_abs <= denorm_min)
             return -i * (std::sinh(i_norm) * std::sin(r)) + std::cos(r) * std::cosh(i_norm);
         else
             return -i * (std::sinh(i_norm) * std::sin(r) / i_norm) + std::cos(r) * std::cosh(i_norm);
@@ -1129,7 +1137,8 @@
         nion<T,N> i = imag(z);
 
         // make unit vector
-        T i_norm = i.norm();
+        T i_abs = i.abs();
+        T i_norm = std::sqrt(i_abs);
 
         // compute the tangent of the nion
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
@@ -1202,9 +1211,10 @@
         nion<T,N> i = z.imag();
 
         // make unit vector
-        T i_norm = i.norm();
+        T i_abs = i.abs();
+        T i_norm = std::sqrt(i_abs);
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
-        if (i_norm > denorm_min)
+        if (i_abs > denorm_min)
             i /= i_norm;
 
         // compute the inv sine of the nion
@@ -1223,9 +1233,10 @@
         nion<T,N> i = z.imag();
 
         // make unit vector
-        T i_norm = i.norm();
+        T i_abs = i.abs();
+        T i_norm = std::sqrt(i_abs);
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
-        if (i_norm > denorm_min)
+        if (i_abs > denorm_min)
             i /= i_norm;
 
         // compute the inv tangent of the nion:
