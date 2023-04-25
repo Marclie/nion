@@ -102,7 +102,7 @@
     }
 
     template<arith_ops T, std::size_t N>
-    template<typename S> requires (std::is_convertible_v<S,T>)
+    template<typename S> requires (std::is_convertible_v<S,T> && !std::is_pointer_v<S>)
     constexpr inline nion<T,N>::nion(S realVal, D size) : size_(size) {
         // check if the degree is greater than zero
         ASSERT(size_ > 0, "The degree of the nion must be greater than zero.");

@@ -149,7 +149,7 @@ template<arith_ops T, std::size_t N>
          * @return nion<T,N> The nion object.
          * @note This is a convenience function for creating a nion from a scalar.
          */
-        template<typename S = T> requires (std::is_convertible_v<S,T>)
+        template<typename S = T> requires (std::is_convertible_v<S,T> && !std::is_pointer_v<S>)
         constexpr inline explicit nion<T,N>(S realVal, D size);
 
         /**
