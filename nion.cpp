@@ -36,8 +36,7 @@
     ***************************/
 
     template<arith_ops T, std::size_t N>
-    template<integral_type I>
-    constexpr inline nion<T,N>::nion(const T* vals, I size) : size_(size) {
+    constexpr inline nion<T,N>::nion(const T* vals, size_t size) : size_(size) {
 
         /// check if the degree is greater than zero and less than the maximum size
         ASSERT(size_ > 0, "The size of the nion must be greater than zero.");

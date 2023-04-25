@@ -86,8 +86,7 @@ template<arith_ops T, std::size_t N>
          * @note The size of the nion is the number of components.
          * @note The size of the nion must be greater than zero.
          */
-        template<integral_type I>
-        constexpr inline explicit nion<T,N>(const T *vals, I size=N);
+        constexpr inline nion<T,N>(const T *vals, size_t size);
 
         /**
          * @brief Construct a new nion object from vector
@@ -150,7 +149,7 @@ template<arith_ops T, std::size_t N>
          * @note This is a convenience function for creating a nion from a scalar.
          */
         template<typename S = T> requires (std::is_convertible_v<S,T> && !std::is_pointer_v<S>)
-        constexpr inline explicit nion<T,N>(S realVal, D size);
+        constexpr inline nion<T,N>(S realVal, D size);
 
         /**
          * @brief Destroy the nion object
