@@ -304,9 +304,11 @@ template<arith_ops T, std::size_t N>
         /**
          * @brief absolute value of the nion.
          * @return The absolute value of the nion.
-         * @details The absolute value of the nion is the sum of the squares of its components.
+         * @details The absolute value of the nion (defined as the sqrt of the product of the nion and its conjugate).
+         *          note, this must be explicitly called since the sum of the squares of the components
+         *          does not work for higher dimensional nions.
          */
-        constexpr inline T abs() const;
+        constexpr inline nion<T,N> abs() const;
 
         /**
          * @brief norm of the nion.
@@ -570,7 +572,7 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to multiply the scalar by.
  * @return
  */
-    template<arith_ops T, std::size_t N = 128, typename S = T> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 32, typename S = T> requires (std::is_convertible_v<S,T>)
     extern constexpr inline nion<T,N> operator*(S scalar, const nion<T,N> &z);
 
 /**
@@ -581,7 +583,7 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to divide the scalar by.
  * @return
  */
-    template<arith_ops T, std::size_t N = 128, typename S = T> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 32, typename S = T> requires (std::is_convertible_v<S,T>)
     extern constexpr inline nion<T,N> operator/(S scalar, const nion<T,N> &z);
 
 /**
@@ -591,7 +593,7 @@ template<arith_ops T, std::size_t N>
  * @param scalar type of the scalar.
  * @param z The nion to add the scalar by.
 */
-    template<arith_ops T, std::size_t N = 128, typename S = T> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 32, typename S = T> requires (std::is_convertible_v<S,T>)
     extern constexpr inline nion<T,N> operator+(S scalar, const nion<T,N> &z);
 
 /**
@@ -601,7 +603,7 @@ template<arith_ops T, std::size_t N>
  * @param scalar type of the scalar.
  * @param z The nion to subtract the scalar by.
 */
-    template<arith_ops T, std::size_t N = 128, typename S = T> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 32, typename S = T> requires (std::is_convertible_v<S,T>)
     extern constexpr inline nion<T,N> operator-(S scalar, const nion<T,N> &z);
 
 /**
@@ -614,7 +616,7 @@ template<arith_ops T, std::size_t N>
  * @details A nion is equal to a scalar if the scalar is equal to the first component of the nion
  *         and all other components are equal to zero.
  */
-    template<arith_ops T, std::size_t N = 128, typename S = T> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 32, typename S = T> requires (std::is_convertible_v<S,T>)
     extern constexpr inline bool operator==(S scalar, const nion<T,N> &z);
 
 /**
@@ -627,7 +629,7 @@ template<arith_ops T, std::size_t N>
  * @details A nion is equal to a scalar if the scalar is equal to the first component of the nion
  *         and all other components are equal to zero.
  */
-    template<arith_ops T, std::size_t N = 128, typename S = T> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 32, typename S = T> requires (std::is_convertible_v<S,T>)
     extern constexpr inline bool operator!=(S scalar, const nion<T,N> &z);
 
 /**
@@ -638,7 +640,7 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to compare the scalar to.
  * @return True if the scalar is greater than the nion, false otherwise.
  */
-    template<arith_ops T, std::size_t N = 128, typename S = T> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 32, typename S = T> requires (std::is_convertible_v<S,T>)
     extern constexpr inline bool operator>(S scalar, const nion<T,N> &z);
 
 /**
@@ -649,7 +651,7 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to compare the scalar to.
  * @return True if the scalar is less than the nion, false otherwise.
  */
-    template<arith_ops T, std::size_t N = 128, typename S = T> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 32, typename S = T> requires (std::is_convertible_v<S,T>)
     extern constexpr inline bool operator<(S scalar, const nion<T,N> &z);
 
 /**
@@ -660,7 +662,7 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to compare the scalar to.
  * @return True if the scalar is greater than or equal to the nion, false otherwise.
  */
-    template<arith_ops T, std::size_t N = 128, typename S = T> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 32, typename S = T> requires (std::is_convertible_v<S,T>)
     extern constexpr inline bool operator>=(S scalar, const nion<T,N> &z);
 
 /**
@@ -671,7 +673,7 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to compare the scalar to.
  * @return True if the scalar is less than or equal to the nion, false otherwise.
  */
-    template<arith_ops T, std::size_t N = 128, typename S = T> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 32, typename S = T> requires (std::is_convertible_v<S,T>)
     extern constexpr inline bool operator<=(S scalar, const nion<T,N> &z);
 
 /**
@@ -680,7 +682,7 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to print.
  * @return The output stream.
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern std::ostream &operator<<(std::ostream &os, const nion<T,N> &z);
 
 /**
@@ -689,7 +691,7 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to read into.
  * @return The input stream.
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern std::istream &operator>>(std::istream &is, nion<T,N> &z);
 
 /***************************
@@ -702,7 +704,7 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to calculate the real part of.
  * @return The real part of the nion.
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline T real(const nion<T,N> &z);
 
 /**
@@ -711,7 +713,7 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to calculate the imaginary part of.
  * @return The imaginary part of the nion.
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> imag(const nion<T,N> &z);
 
 /**
@@ -720,7 +722,7 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to compute the conjugate of.
  * @return The conjugate of the nion.
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> conj(const nion<T,N> &z);
 
 /**
@@ -729,8 +731,8 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to compute the absolute value of.
  * @return The absolute value of the nion.
  */
-    template<arith_ops T, std::size_t N = 128>
-    extern constexpr inline T abs(const nion<T,N> &z);
+    template<arith_ops T, std::size_t N = 32>
+    extern constexpr inline nion<T,N> abs(const nion<T,N> &z);
 
 /**
  * @brief compute the norm of a nion.
@@ -738,7 +740,7 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to compute the norm of.
  * @return The norm of the nion.
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline T norm(const nion<T,N> &z);
 
 /**
@@ -747,7 +749,7 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to compute the inverse of.
  * @return The inverse of the nion.
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> inv(const nion<T,N> &z);
 
 /**
@@ -757,7 +759,7 @@ template<arith_ops T, std::size_t N>
  * @param rhs The right hand side nion.
  * @return The dot product of the nions.
  */
-    template<arith_ops T, std::size_t N = 128, std::size_t M = N>
+    template<arith_ops T, std::size_t N = 32, std::size_t M = N>
     extern constexpr inline T dot(const nion<T,N> &lhs, const nion<T,M> &rhs);
 
 
@@ -773,7 +775,7 @@ template<arith_ops T, std::size_t N>
  * @details The exponential of a nion is defined as e^z = e^r * (cos|v| + v/|v| * sin|v|).
  *          where a is the real component and v is the imaginary components.
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> exp(const nion<T,N> &z);
 
 /**
@@ -784,7 +786,7 @@ template<arith_ops T, std::size_t N>
  * @details The natural logarithm of a nion is defined as ln(z) = ln(|z|) + v/|v| * atan(|v|/r).
  *          where a is the real component and v is the imaginary components.
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> log(const nion<T,N> &z);
 
 /**
@@ -796,7 +798,7 @@ template<arith_ops T, std::size_t N>
  * @return The power of the nion.
  * @details The power of a nion is defined as z^p = e^(p * ln(z)).
  */
-    template<arith_ops T, std::size_t N = 128, typename S> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 32, typename S> requires (std::is_convertible_v<S,T>)
     extern constexpr inline nion<T,N> pow(const nion<T,N> &base, S power);
 
 /**
@@ -807,7 +809,7 @@ template<arith_ops T, std::size_t N>
  * @return The power of the nion.
  * @details The power of a nion is defined as z^p = e^(p * ln(z)).
  */
-    template<arith_ops T, std::size_t N = 128, std::size_t M = N>
+    template<arith_ops T, std::size_t N = 32, std::size_t M = N>
     extern constexpr inline nion<T,N> pow(const nion<T,N> &base, const nion<T,M> &power);
 
 /**
@@ -819,7 +821,7 @@ template<arith_ops T, std::size_t N>
  * @return The power of the nion.
  * @details The power of with a nion is defined as x^z = e^(z * ln(x)).
  */
-    template<arith_ops T, std::size_t N = 128, typename S = T>
+    template<arith_ops T, std::size_t N = 32, typename S = T>
     extern constexpr inline nion<T,N> pow(S base, const nion<T,N> &power);
 
 /**
@@ -828,7 +830,7 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to compute the square  of.
  * @return The square of the nion.
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> sqr(const nion<T,N> &base);
 
 /**
@@ -838,7 +840,7 @@ template<arith_ops T, std::size_t N>
  * @return The square root of the nion.
  * @details The square root of a nion is defined as sqrt(z) = z^(1/2).
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> sqrt(const nion<T,N> &z);
 
 /**
@@ -848,7 +850,7 @@ template<arith_ops T, std::size_t N>
  * @return The cube root of the nion.
  * @details The cube root of a nion is defined as cbrt(z) = z^(1/3).
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> cbrt(const nion<T,N> &z);
 
 /***************************
@@ -862,7 +864,7 @@ template<arith_ops T, std::size_t N>
  * @return The hyperbolic sine of the nion.
  * @details The hyperbolic sine of a nion is defined as sinh(z) = (e^z - e^-z) / 2.
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> sinh(const nion<T,N> &z);
 
 /**
@@ -872,7 +874,7 @@ template<arith_ops T, std::size_t N>
  * @return The hyperbolic cosine of the nion.
  * @details The hyperbolic cosine of a nion is defined as cosh(z) = (e^z + e^-z) / 2.
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> cosh(const nion<T,N> &z);
 
 /**
@@ -882,7 +884,7 @@ template<arith_ops T, std::size_t N>
  * @return The hyperbolic tangent of the nion.
  * @details The hyperbolic tangent of a nion is defined as tanh(z) = sinh(z) / cosh(z).
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> tanh(const nion<T,N> &z);
 
 /**
@@ -892,7 +894,7 @@ template<arith_ops T, std::size_t N>
  * @return The hyperbolic cotangent of the nion.
  * @details The hyperbolic cotangent of a nion is defined as coth(z) = 1 / tanh(z).
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> coth(const nion<T,N> &z);
 
 /**
@@ -902,7 +904,7 @@ template<arith_ops T, std::size_t N>
  * @return The hyperbolic secant of the nion.
  * @details The hyperbolic secant of a nion is defined as sech(z) = 1 / cosh(z).
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> sech(const nion<T,N> &z);
 
 /**
@@ -912,7 +914,7 @@ template<arith_ops T, std::size_t N>
  * @return The hyperbolic cosecant of the nion.
  * @details The hyperbolic cosecant of a nion is defined as csch(z) = 1 / sinh(z).
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> csch(const nion<T,N> &z);
 
 /***************************
@@ -929,7 +931,7 @@ template<arith_ops T, std::size_t N>
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://en.wikipedia.org/wiki/Sine_and_cosine#Relationship_to_complex_numbers
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> sin(const nion<T,N> &z);
 
 /**
@@ -941,7 +943,7 @@ template<arith_ops T, std::size_t N>
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://en.wikipedia.org/wiki/Sine_and_cosine#Relationship_to_complex_numbers
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> cos(const nion<T,N> &z);
 
 /**
@@ -953,7 +955,7 @@ template<arith_ops T, std::size_t N>
  * tan(z) = tan(a + bi) = (tan(a) + tanh(b)i) / (1 - tan(a) * tanh(b) i).
  * @see https://en.wikipedia.org/wiki/Proofs_of_trigonometric_identities#Angle_sum_identities
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> tan(const nion<T,N> &z);
 
 /**
@@ -963,7 +965,7 @@ template<arith_ops T, std::size_t N>
  * @return The cotangent of the nion.
  * @details The cotangent of the nion is defined as cot(z) = 1 / tan(z).
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> cot(const nion<T,N> &z);
 
 /**
@@ -973,7 +975,7 @@ template<arith_ops T, std::size_t N>
  * @return The secant of the nion.
  * @details The secant of the nion is defined as sec(z) = 1 / cos(z).
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> sec(const nion<T,N> &z);
 
 /**
@@ -983,7 +985,7 @@ template<arith_ops T, std::size_t N>
  * @return The cosecant of the nion.
  * @details The cosecant of the nion is defined as csc(z) = 1 / sin(z).
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> csc(const nion<T,N> &z);
 
 /***************************
@@ -999,7 +1001,7 @@ template<arith_ops T, std::size_t N>
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions#Principal_values_in_the_complex_plane
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> asinh(const nion<T,N> &z);
 
 /**
@@ -1011,7 +1013,7 @@ template<arith_ops T, std::size_t N>
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://mathworld.wolfram.com/InverseHyperbolicCosine.html
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> acosh(const nion<T,N> &z);
 
 /**
@@ -1023,7 +1025,7 @@ template<arith_ops T, std::size_t N>
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://mathworld.wolfram.com/InverseHyperbolicTangent.html
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> atanh(const nion<T,N> &z);
 
 /**
@@ -1035,7 +1037,7 @@ template<arith_ops T, std::size_t N>
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://mathworld.wolfram.com/InverseHyperbolicCotangent.html
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> acoth(const nion<T,N> &z);
 
 /**
@@ -1047,7 +1049,7 @@ template<arith_ops T, std::size_t N>
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://mathworld.wolfram.com/InverseHyperbolicSecant.html
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> asech(const nion<T,N> &z);
 
 /**
@@ -1059,7 +1061,7 @@ template<arith_ops T, std::size_t N>
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://mathworld.wolfram.com/InverseHyperbolicCosecant.html
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> acsch(const nion<T,N> &z);
 
 /***************************
@@ -1074,7 +1076,7 @@ template<arith_ops T, std::size_t N>
  * @details The inverse sine of the nion is defined as asin(z) = asin(r + v) = v/|v| * ln(sqrt(1 - z^2) - v/|v| * z).
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Logarithmic_forms
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> asin(const nion<T,N> &z);
 
 /**
@@ -1085,7 +1087,7 @@ template<arith_ops T, std::size_t N>
  * @details The inverse cosine of the nion is defined as acos(z) = pi/2 - asin(z).
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_complex_plane
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> acos(const nion<T,N> &z);
 
 /**
@@ -1097,7 +1099,7 @@ template<arith_ops T, std::size_t N>
  * @note where r is the real part of z and v is the complex components of z in polar form.
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Logarithmic_forms
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> atan(const nion<T,N> &z);
 
 /**
@@ -1108,7 +1110,7 @@ template<arith_ops T, std::size_t N>
  * @details The inverse cotangent of the nion is defined as acot(z) = pi/2 - atan(z).
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_complex_plane
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> acot(const nion<T,N> &z);
 
 /**
@@ -1119,7 +1121,7 @@ template<arith_ops T, std::size_t N>
  * @details The inverse secant of the nion is defined as asec(z) = acos(1/z).
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_complex_plane
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> asec(const nion<T,N> &z);
 
 /**
@@ -1130,7 +1132,7 @@ template<arith_ops T, std::size_t N>
  * @details The inverse cosecant of the nion is defined as acsc(z) = asin(1/z).
  * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_complex_plane
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> acsc(const nion<T,N> &z);
 
 /**
@@ -1139,7 +1141,7 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to compute the atan2 of.
  * @return The atan2 of the nion.
  */
-    template<arith_ops T, std::size_t N = 128, std::size_t M = N>
+    template<arith_ops T, std::size_t N = 32, std::size_t M = N>
     extern constexpr inline nion<T,N> atan2(const nion<T,N> &y, const nion<T,M> &x);
 
 /***************************
@@ -1155,7 +1157,7 @@ template<arith_ops T, std::size_t N>
  *     gamma(z) ≈ sqrt(2 π) e^(-z) sqrt(1/(z)) (1/(12 (z) - 1/(10 (z))) + z)^(z)
  * @see https://www.wolframalpha.com/input?i=gamma%28a+%2B+b+i%29
  */
-    template<arith_ops T, std::size_t N = 128>
+    template<arith_ops T, std::size_t N = 32>
     extern constexpr inline nion<T,N> gamma(const nion<T,N> &z);
 
 

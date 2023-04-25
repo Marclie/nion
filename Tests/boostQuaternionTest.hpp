@@ -238,8 +238,8 @@ void boostQuaternionComparison(int trials) {
             endBoost = std::chrono::high_resolution_clock::now();
             normBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
-            nionNorm = abs(nionResult);
-            boostNorm = boost::math::norm(boostResult);
+            nionNorm = norm(nionResult);
+            boostNorm = boost::math::abs(boostResult);
 
             diff = fabs(nionNorm - boostNorm);
             MRE_Norm += diff;

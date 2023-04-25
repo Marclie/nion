@@ -498,7 +498,7 @@ void ReadMeExamples(){
     std::cout << "inv(a) = " << b << std::endl;
 
     a = {1, 2, 3, 4};
-    float r = a.abs();
+    nion<float> r = a.abs();
     std::cout << "abs(a) = " << r << std::endl;
 
     a = {1, 2, 3, 4};

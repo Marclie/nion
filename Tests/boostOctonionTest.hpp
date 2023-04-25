@@ -231,12 +231,12 @@ void boostOctonionComparison(int trials){
         // norm
         {
             startNion = std::chrono::high_resolution_clock::now();
-            T nionNorm = nion1.abs();
+            T nionNorm = nion1.norm();
             endNion = std::chrono::high_resolution_clock::now();
             normNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
 
             startBoost = std::chrono::high_resolution_clock::now();
-            T boostNorm = boost::math::norm(boost1);
+            T boostNorm = boost::math::abs(boost1);
             endBoost = std::chrono::high_resolution_clock::now();
             normBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
 
