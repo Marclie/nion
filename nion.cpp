@@ -36,7 +36,8 @@
     ***************************/
 
     template<arith_ops T, std::size_t N>
-    constexpr inline nion<T,N>::nion(const T* vals, size_t size) : size_(size) {
+    template <arith_ops S> requires (std::is_convertible_v<S, T>)
+    constexpr inline nion<T,N>::nion(const S* vals, size_t size) : size_(size) {
 
         /// check if the degree is greater than zero and less than the maximum size
         ASSERT(size_ > 0, "The size of the nion must be greater than zero.");
@@ -44,7 +45,13 @@
                                           "consider increasing template parameter, N.");
 
         /// copy the values into the nion
-        memcpy(elem_, vals, size_ * sizeof(T));
+        if constexpr (std::same_as<T, S>) {
+            memcpy(elem_, vals, size_ * sizeof(T));
+        } else {
+            for (size_t i = 0; i < size_; ++i) {
+                elem_[i] = static_cast<T>(vals[i]);
+            }
+        }
     }
 
     template<arith_ops T, std::size_t N>
@@ -101,7 +108,7 @@
     }
 
     template<arith_ops T, std::size_t N>
-    template<typename S> requires (std::is_convertible_v<S,T> && !std::is_pointer_v<S>)
+    template<not_nion<T,N> S> requires (std::is_convertible_v<S,T> && !std::is_pointer_v<S>)
     constexpr inline nion<T,N>::nion(S realVal, D size) : size_(size) {
         // check if the degree is greater than zero
         ASSERT(size_ > 0, "The degree of the nion must be greater than zero.");
@@ -216,7 +223,7 @@
     }
 
     template<arith_ops T, std::size_t N>
-    template<typename S> requires (std::is_convertible_v<S,T>)
+    template<not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline nion<T,N> &nion<T,N>::operator=(S scalar) {
         /// check if the nion is initialized
         if (size_ <= 0) size_ = 1; // set the degree
@@ -262,13 +269,13 @@
     }
 
     template<arith_ops T, std::size_t N>
-    template<typename S> requires (std::is_convertible_v<S,T>)
+    template<not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline void nion<T,N>::operator+=(S scalar) {
         elem_[0] += scalar;
     }
 
     template<arith_ops T, std::size_t N>
-    template<typename S> requires (std::is_convertible_v<S,T>)
+    template<not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline void nion<T,N>::operator-=(S scalar) {
         elem_[0] -= scalar;
     }
@@ -312,7 +319,7 @@
     }
 
     template<arith_ops T, std::size_t N>
-    template<typename S> requires (std::is_convertible_v<S,T>)
+    template<not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline nion<T,N> nion<T,N>::operator+(S scalar) const {
 
         // create a nion to store the sum
@@ -323,7 +330,7 @@
         return sum;
     }
 
-    template<arith_ops T, std::size_t N, typename S> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N, not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline nion<T,N> operator+(S scalar, const nion<T,N> &z) {
         return z + scalar;
     }
@@ -335,12 +342,12 @@
     }
 
     template<arith_ops T, std::size_t N>
-    template<typename S> requires (std::is_convertible_v<S,T>)
+    template<not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline nion<T,N> nion<T,N>::operator-(S scalar) const {
         return *this + -scalar;
     }
 
-    template<arith_ops T, std::size_t N, typename S> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N, not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline nion<T,N> operator-(S scalar, const nion<T,N> &z) {
         return -z + scalar;
     }
@@ -362,7 +369,7 @@
     }
 
     template<arith_ops T, std::size_t N>
-    template<typename S> requires (std::is_convertible_v<S,T>)
+    template<not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline void nion<T,N>::operator*=(S scalar) {
         for (D i = 0; i < size_; i++)
             elem_[i] *= scalar;
@@ -375,7 +382,7 @@
     }
 
     template<arith_ops T, std::size_t N>
-    template<typename S> requires (std::is_convertible_v<S,T>)
+    template<not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline void nion<T,N>::operator/=(S scalar) {
         for (D i = 0; i < size_; i++)
             elem_[i] /= scalar;
@@ -529,7 +536,7 @@
     }
 
     template<arith_ops T, std::size_t N>
-    template<typename S> requires (std::is_convertible_v<S,T>)
+    template<not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline nion<T,N> nion<T,N>::operator*(S scalar) const {
         nion<T,N> product(*this);
 
@@ -540,7 +547,7 @@
         return product;
     }
 
-    template<arith_ops T, std::size_t N, typename S> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N, not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline nion<T,N> operator*(S scalar, const nion<T,N> &z) {
         return z * scalar;
     }
@@ -581,7 +588,7 @@
     }
 
     template<arith_ops T, std::size_t N>
-    template<typename S> requires (std::is_convertible_v<S,T>)
+    template<not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline nion<T,N> nion<T,N>::operator/(S scalar) const {
         nion<T,N> quotient(*this);
 
@@ -592,7 +599,7 @@
         return quotient;
     }
 
-    template<arith_ops T, std::size_t N, typename S> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N, not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline nion<T,N> operator/(S scalar, const nion<T,N> &z) {
         return scalar * z.inv();
     }
@@ -644,7 +651,7 @@
     * @param epsilon tolerance
     * @return true if similar, false otherwise
     */
-    template<arith_ops T, std::size_t N = 128, typename S = T> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 128, not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
     constexpr inline bool value_is_similar(T a, S b){
         constexpr T epsilon = std::numeric_limits<T>::epsilon();
         return std::fabs(a - b) <= epsilon;
@@ -719,19 +726,19 @@
     }
 
     template<arith_ops T, std::size_t N>
-    template<typename S> requires (std::is_convertible_v<S,T>)
+    template<not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline bool nion<T,N>::operator==(S scalar) const {
         if (!value_is_similar(real(), scalar)) return false;
         return is_real();
     }
 
-    template<arith_ops T, std::size_t N, typename S>
+    template<arith_ops T, std::size_t N, not_nion<T,N> S>
     constexpr inline bool operator==(S scalar, const nion<T,N> &z) {
         return z == scalar;
     }
 
     template<arith_ops T, std::size_t N>
-    template<typename S> requires (std::is_convertible_v<S,T>)
+    template<not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline bool nion<T,N>::operator!=(S scalar) const {
         if (!value_is_similar(real(), scalar)) {
             return true;
@@ -739,55 +746,55 @@
         return !is_real();
     }
 
-    template<arith_ops T, std::size_t N, typename S>
+    template<arith_ops T, std::size_t N, not_nion<T,N> S>
     constexpr inline bool operator!=(S scalar, const nion<T,N> &z) {
         return z != scalar;
     }
 
     template<arith_ops T, std::size_t N>
-    template<typename S> requires (std::is_convertible_v<S,T>)
+    template<not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline bool nion<T,N>::operator>(S scalar) const{
         return rotate_real() > scalar;
     }
 
-    template<arith_ops T, std::size_t N, typename S>
+    template<arith_ops T, std::size_t N, not_nion<T,N> S>
     constexpr inline bool operator>(S scalar, const nion<T,N> &z) {
         return z < scalar;
     }
 
     template<arith_ops T, std::size_t N>
-    template<typename S> requires (std::is_convertible_v<S,T>)
+    template<not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline bool nion<T,N>::operator<(S scalar) const{
         return rotate_real() < scalar;
     }
 
-    template<arith_ops T, std::size_t N, typename S>
+    template<arith_ops T, std::size_t N, not_nion<T,N> S>
     constexpr inline bool operator<(S scalar, const nion<T,N> &z) {
         return z > scalar;
     }
 
     template<arith_ops T, std::size_t N>
-    template<typename S> requires (std::is_convertible_v<S,T>)
+    template<not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline bool nion<T,N>::operator>=(S scalar) const{
         if (*this == nion<T,N>(scalar, this->size_))
             return true;
         return rotate_real() > scalar;
     }
 
-    template<arith_ops T, std::size_t N, typename S>
+    template<arith_ops T, std::size_t N, not_nion<T,N> S>
     constexpr inline bool operator>=(S scalar, const nion<T,N> &z) {
         return z <= scalar;
     }
 
     template<arith_ops T, std::size_t N>
-    template<typename S> requires (std::is_convertible_v<S,T>)
+    template<not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline bool nion<T,N>::operator<=(S scalar) const{
         if (*this == nion<T,N>(scalar, this->size_))
             return true;
         return rotate_real() < scalar;
     }
 
-    template<arith_ops T, std::size_t N, typename S>
+    template<arith_ops T, std::size_t N, not_nion<T,N> S>
     constexpr inline bool operator<=(S scalar, const nion<T,N> &z) {
         return z >= scalar;
     }
@@ -913,20 +920,20 @@
 
         // make unit vector
         T i_abs = i.abs();
-        T i_norm = std::sqrt(i_abs);
+        T i_norm = sqrt(i_abs);
 
         // compute exponential of nion
         T cos_theta;
         T sin_theta;
-        T exp_r = std::exp(r);
+        T exp_r = exp(r);
 
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
         if (i_abs < denorm_min)
             return nion<T,N>(exp_r, z.size_);
 
         // compute exponential of nion
-        cos_theta = std::cos(i_norm);
-        sin_theta = std::sin(i_norm);
+        cos_theta = cos(i_norm);
+        sin_theta = sin(i_norm);
 
         return i*(exp_r * sin_theta / i_norm) + exp_r * cos_theta;
 
@@ -941,20 +948,20 @@
 
         // compute norms
         T z_abs = z.abs();
-        T z_norm = std::sqrt(z_abs);
+        T z_norm = sqrt(z_abs);
         T i_abs = z_abs - r * r;
-        T i_norm = std::sqrt(z_abs - r * r);
-        T theta = std::atan2(i_norm, r);
+        T i_norm = sqrt(z_abs - r * r);
+        T theta = atan2(i_norm, r);
 
         // compute natural logarithm of nion
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
         if (i_abs <= denorm_min)
-            return std::log(z_norm) + i * theta;
+            return log(z_norm) + i * theta;
         else
-            return i * (theta / i_norm) + std::log(z_norm);
+            return i * (theta / i_norm) + log(z_norm);
     }
 
-    template<arith_ops T, std::size_t N, typename S> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N, not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline nion<T,N> pow(const nion<T,N> &base, S power) {
         return exp(log(base) * power);
     }
@@ -964,7 +971,7 @@
         return exp(log(base) * power);
     }
 
-    template<arith_ops T, std::size_t N, typename S> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N, not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline nion<T,N> pow(S base, const nion<T,N> &power) {
         return exp(log(base) * power);
     }
@@ -977,13 +984,13 @@
 
         // compute norms
         T base_abs = base.abs();
-        T base_norm = std::sqrt(base_abs);
+        T base_norm = sqrt(base_abs);
 
         // make unit vector
         T i_abs = base_abs - r * r;
-        T i_norm = std::sqrt(i_abs);
+        T i_norm = sqrt(i_abs);
 
-        T power_t = 2l;
+        T power_t = 2.0l;
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
 
         T x2 = r * r;
@@ -991,15 +998,15 @@
         if (x2 + y2 <= denorm_min)
             return nion<T,N>(base_norm * base_norm, base.size_); // if base is zero return zero (0^2 = 0)
 
-        T denom = 1l / (x2 + y2);
+        T denom = 1.0l / (x2 + y2);
         T cos_2theta = (x2 - y2) * denom;
-        T sin_2theta = 2l * r * i_norm * denom;
+        T sin_2theta = 2.0l * r * i_norm * denom;
 
         // compute power of nion
         if (i_abs <= denorm_min)
-            return std::pow(base_norm, power_t) * (cos_2theta + i * sin_2theta);
+            return pow(base_norm, power_t) * (cos_2theta + i * sin_2theta);
         else
-            return std::pow(base_norm, power_t) * (cos_2theta + i * (sin_2theta / i_norm));
+            return pow(base_norm, power_t) * (cos_2theta + i * (sin_2theta / i_norm));
     }
 
     template<arith_ops T, std::size_t N>
@@ -1023,21 +1030,21 @@
 
         // make unit vector
         T i_abs = i.abs();
-        T i_norm = std::sqrt(i_abs);
+        T i_norm = sqrt(i_abs);
 
         // calculate scalars
-        T e_z = std::exp(z.elem_[0]) / 2l;
-        T e_mz = std::exp(-z.elem_[0]) / 2l;
+        T e_z = exp(z.elem_[0]) / 2.0l;
+        T e_mz = exp(-z.elem_[0]) / 2.0l;
 
         // compute exponential of nion
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
         if (i_abs <= denorm_min) {
-            nion<T,N> sin_nion = i * ((e_z + e_mz) * std::sin(i_norm));
-            sin_nion += std::cos(i_norm) * (e_z - e_mz);
+            nion<T,N> sin_nion = i * ((e_z + e_mz) * sin(i_norm));
+            sin_nion += cos(i_norm) * (e_z - e_mz);
             return sin_nion;
         } else {
-            nion<T,N> sin_nion = i * ((e_z + e_mz) * std::sin(i_norm) / i_norm);
-            sin_nion += std::cos(i_norm) * (e_z - e_mz);
+            nion<T,N> sin_nion = i * ((e_z + e_mz) * sin(i_norm) / i_norm);
+            sin_nion += cos(i_norm) * (e_z - e_mz);
             return sin_nion;
         }
 
@@ -1050,28 +1057,28 @@
 
         // make unit vector
         T i_abs = i.abs();
-        T i_norm = std::sqrt(i_abs);
+        T i_norm = sqrt(i_abs);
 
         // calculate scalars
-        T e_z = std::exp(z.elem_[0]) / 2l;
-        T e_mz = std::exp(-z.elem_[0]) / 2l;
+        T e_z = exp(z.elem_[0]) / 2.0l;
+        T e_mz = exp(-z.elem_[0]) / 2.0l;
 
         // compute exponential of nion
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
         if (i_abs <= denorm_min) {
-            nion<T,N> cos_nion = i * ((e_z - e_mz) * std::sin(i_norm));
-            cos_nion += std::cos(i_norm) * (e_z + e_mz);
+            nion<T,N> cos_nion = i * ((e_z - e_mz) * sin(i_norm));
+            cos_nion += cos(i_norm) * (e_z + e_mz);
             return cos_nion;
         } else {
-            nion<T,N> cos_nion = i * ((e_z - e_mz) * std::sin(i_norm) / i_norm);
-            cos_nion += std::cos(i_norm) * (e_z + e_mz);
+            nion<T,N> cos_nion = i * ((e_z - e_mz) * sin(i_norm) / i_norm);
+            cos_nion += cos(i_norm) * (e_z + e_mz);
             return cos_nion;
         }
     }
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> tanh(const nion<T,N> &z) {
-        return (exp(z*2l) - 1l) / (exp(z*2l) + 1l);
+        return (exp(z*2.0l) - 1.0l) / (exp(z*2.0l) + 1.0l);
     }
 
     template<arith_ops T, std::size_t N>
@@ -1102,14 +1109,14 @@
 
         // make unit vector
         T i_abs = i.abs();
-        T i_norm = std::sqrt(i_abs);
+        T i_norm = sqrt(i_abs);
 
         // compute the sine of the nion
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
         if (i_abs <= denorm_min)
-            return i * (std::sinh(i_norm) * std::cos(r)) + std::sin(r) * std::cosh(i_norm);
+            return i * (sinh(i_norm) * cos(r)) + sin(r) * cosh(i_norm);
         else
-            return i * (std::sinh(i_norm) * std::cos(r) / i_norm) + std::sin(r) * std::cosh(i_norm);
+            return i * (sinh(i_norm) * cos(r) / i_norm) + sin(r) * cosh(i_norm);
     }
 
     template<arith_ops T, std::size_t N>
@@ -1120,14 +1127,14 @@
 
         // make unit vector
         T i_abs = i.abs();
-        T i_norm = std::sqrt(i_abs);
+        T i_norm = sqrt(i_abs);
 
         // compute the cosine of the nion
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
         if (i_abs <= denorm_min)
-            return -i * (std::sinh(i_norm) * std::sin(r)) + std::cos(r) * std::cosh(i_norm);
+            return -i * (sinh(i_norm) * sin(r)) + cos(r) * cosh(i_norm);
         else
-            return -i * (std::sinh(i_norm) * std::sin(r) / i_norm) + std::cos(r) * std::cosh(i_norm);
+            return -i * (sinh(i_norm) * sin(r) / i_norm) + cos(r) * cosh(i_norm);
     }
 
     template<arith_ops T, std::size_t N>
@@ -1138,14 +1145,14 @@
 
         // make unit vector
         T i_abs = i.abs();
-        T i_norm = std::sqrt(i_abs);
+        T i_norm = sqrt(i_abs);
 
         // compute the tangent of the nion
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
         if (i_norm <= denorm_min)
-            return (std::tan(r) + i * std::tanh(i_norm)) / (1 - i * (std::tan(r) * std::tanh(i_norm)));
+            return (tan(r) + i * tanh(i_norm)) / (1 - i * (tan(r) * tanh(i_norm)));
         else
-            return (std::tan(r) + i * (std::tanh(i_norm) / i_norm)) / (1 - i * (std::tan(r) / i_norm * std::tanh(i_norm)));
+            return (tan(r) + i * (tanh(i_norm) / i_norm)) / (1 - i * (tan(r) / i_norm * tanh(i_norm)));
     }
 
     template<arith_ops T, std::size_t N>
@@ -1169,34 +1176,34 @@
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> asinh(const nion<T,N> &z) {
-        return log(z + sqrt(sqr(z) + 1l));
+        return log(z + sqrt(sqr(z) + 1.0l));
     }
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> acosh(const nion<T,N> &z) {
         // compute the inverse hyperbolic cosine of the nion
-        return 2 * log(sqrt((z-1) * 0.5l) + sqrt((z+1l) * 0.5l));
+        return 2 * log(sqrt((z-1) * 0.5l) + sqrt((z+1.0l) * 0.5l));
 
     }
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> atanh(const nion<T,N> &z) {
-        return (log(1l + z) - log(1l - z)) * 0.5l;
+        return (log(1.0l + z) - log(1.0l - z)) * 0.5l;
     }
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> acoth(const nion<T,N> &z) {
-        return (log(1l + inv(z)) - log(1l - inv(z))) * 0.5l;
+        return (log(1.0l + inv(z)) - log(1.0l - inv(z))) * 0.5l;
     }
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> asech(const nion<T,N> &z) {
-        return log(sqrt(1l/sqr(z) - 1l) + inv(z));
+        return log(sqrt(1.0l/sqr(z) - 1.0l) + inv(z));
     }
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> acsch(const nion<T,N> &z) {
-        return log(sqrt(1l + 1l/sqr(z)) + inv(z));
+        return log(sqrt(1.0l + 1.0l/sqr(z)) + inv(z));
     }
 
     /****************************************
@@ -1212,13 +1219,13 @@
 
         // make unit vector
         T i_abs = i.abs();
-        T i_norm = std::sqrt(i_abs);
+        T i_norm = sqrt(i_abs);
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
         if (i_abs > denorm_min)
             i /= i_norm;
 
         // compute the inv sine of the nion
-        return -i * log(sqrt(1l - sqr(z)) + (i * r) - i_norm);
+        return -i * log(sqrt(1.0l - sqr(z)) + (i * r) - i_norm);
     }
 
     template<arith_ops T, std::size_t N>
@@ -1234,7 +1241,7 @@
 
         // make unit vector
         T i_abs = i.abs();
-        T i_norm = std::sqrt(i_abs);
+        T i_norm = sqrt(i_abs);
         constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
         if (i_abs > denorm_min)
             i /= i_norm;
@@ -1272,7 +1279,7 @@
     constexpr inline nion<T,N> gamma(const nion<T,N> &z) {
         // compute the gamma function of the nion
         return exp(-z) * sqrt(inv(z))
-               * pow(1l / (12l * z - inv(10l * z)) + z, z)
-               * std::sqrt(2l * M_PI);
+               * pow(1.0l / (12.0l * z - inv(10.0l * z)) + z, z)
+               * sqrt(2.0l * M_PI);
     }
 

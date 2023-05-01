@@ -49,514 +49,518 @@ template<arith_ops T, // type of the coefficients
         std::size_t N = 32> // type of the size
 struct nion; // forward declaration
 
+// create a concept that checks if a type is the same as this nion type
+template<typename S, typename T, std::size_t N>
+concept not_nion = !std::is_same_v<T, nion<T, N>>;
 
 template<arith_ops T, std::size_t N>
-    struct nion {
+struct nion {
 
-        // determine minimum number of bits required to represent N at compile time
-        static constexpr std::size_t N_BITS = std::numeric_limits<std::size_t>::digits - __builtin_clzl(N);
+    // determine minimum number of bits required to represent N at compile time
+    static constexpr std::size_t N_BITS = std::numeric_limits<std::size_t>::digits - __builtin_clzl(N);
 
-        // set the internal integer type to the smallest width that can hold N
-        using D = std::conditional_t<N_BITS <= 8, uint8_t, // max size of 256
-                std::conditional_t<N_BITS <= 16, uint16_t, // max size of 65536
-                std::conditional_t<N_BITS <= 32, uint32_t, // max size of 4294967296
-                std::conditional_t<N_BITS <= 64, uint64_t, // max size of 18446744073709551616
-                std::conditional_t<N_BITS <= 128, __uint128_t, void>>>>>; // max size of 340282366920938463463374607431768211456
+    // set the internal integer type to the smallest width that can hold N
+    using D = std::conditional_t<N_BITS <= 8, uint8_t, // max size of 256
+            std::conditional_t<N_BITS <= 16, uint16_t, // max size of 65536
+            std::conditional_t<N_BITS <= 32, uint32_t, // max size of 4294967296
+            std::conditional_t<N_BITS <= 64, uint64_t, // max size of 18446744073709551616
+            std::conditional_t<N_BITS <= 128, __uint128_t, void>>>>>; // max size of 340282366920938463463374607431768211456
 
 
-        /// coefficients
-        T elem_[N]; // declare array of coefficients on stack (where max size is N)
-        D size_;
+    /// coefficients
+    T elem_[N]; // declare array of coefficients on stack (where max size is N)
+    D size_;
 
-        /***************************
-        *  NION CONSTRUCTORS
-        ***************************/
+    /***************************
+    *  NION CONSTRUCTORS
+    ***************************/
 
-        /**
-         * @brief Default constructor.
-         * @details Constructs a null nion object.
-         */
-        constexpr inline nion<T,N>() : size_(1) { zero();}
+    /**
+     * @brief Default constructor.
+     * @details Constructs a null nion object.
+     */
+    constexpr inline nion<T,N>() : size_(1) { zero();}
 
-        /**
-         * @brief Construct a new nion object from vector
-         * @param components The components of the nion.
-         * @param size The size of the nion.
-         * @details Constructs a nion object from a vector of components.
-         * @note The size of the nion is the number of components.
-         * @note The size of the nion must be greater than zero.
-         */
-        constexpr inline nion<T,N>(const T *vals, size_t size);
-
-        /**
-         * @brief Construct a new nion object from vector
-         * @param components The components of the nion as an initializer list.
-         * @note The size of the nion is determined by the size of the initializer list.
-         */
-        constexpr inline nion<T,N>(const std::initializer_list<T> &vals);
-
-        /**
-         * @brief Construct an empty nion object
-         * @param size The size of the nion.
-         */
-        constexpr inline explicit nion<T,N>(D size);
-
-        /**
-         * @brief zero nion
-         */
-        constexpr inline void zero(){
-            memset(elem_, 0, sizeof(T) * size_);
-        };
-
-        /**
-         * @brief cast nion if both arith_ops types are different and max size is different
-         */
-        template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S>)
-        constexpr inline explicit operator nion<S,M>(){
-            if constexpr (std::is_same_v<T, S>) // if types are the same, just copy the array
-                return nion<T,M>(elem_, size_);
-            else { // cast elem_ to S type and return new nion
-                S new_elem_[M];
-                for (D i = 0; i < size_; i++)
-                    new_elem_[i] = static_cast<S>(elem_[i]);
-                return nion<S, N>(new_elem_, size_);
-            }
+    /**
+     * @brief cast nion if both arith_ops types are different and max size is different
+     */
+    template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S>)
+    constexpr inline explicit operator nion<S,M>(){
+        if constexpr (std::is_same_v<T, S>) // if types are the same, just copy the array
+            return nion<T,M>(elem_, size_);
+        else { // cast elem_ to S type and return new nion
+            S new_elem_[M];
+            for (D i = 0; i < size_; i++)
+                new_elem_[i] = static_cast<S>(elem_[i]);
+            return nion<S, N>(new_elem_, size_);
         }
+    }
 
-        /**
-         * @brief copy constructor
-         * @param other The nion to copy.
-         * @return A copy of the nion.
-         * @note This is a deep copy.
-         */
-        template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S>)
-        constexpr inline explicit nion<T,N>(const nion<S,M> &other);
+    /**
+     * @brief Construct a new nion object from vector
+     * @param components The components of the nion.
+     * @param size The size of the nion.
+     * @details Constructs a nion object from a vector of components.
+     * @note The size of the nion is the number of components.
+     * @note The size of the nion must be greater than zero.
+     */
+    template <arith_ops S> requires (std::is_convertible_v<S, T>)
+    constexpr inline nion<T,N>(const S *vals, size_t size);
 
-        /**
-         * @brief move constructor
-         * @param other The nion to copy.
-         * @return A copy of the nion.
-         * @note This is a deep copy.
-         */
-        template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S>)
-        constexpr inline explicit nion<T,N>(nion<S,M> &&other) noexcept;
+    /**
+     * @brief Construct a new nion object from vector
+     * @param components The components of the nion as an initializer list.
+     * @note The size of the nion is determined by the size of the initializer list.
+     */
+    constexpr inline nion<T,N>(const std::initializer_list<T> &vals);
 
-        /**
-         * @brief Construct a new nion object from a scalar with no imaginary components.
-         * @param size The size of the nion.
-         * @param scalar The scalar value of the nion.
-         * @return nion<T,N> The nion object.
-         * @note This is a convenience function for creating a nion from a scalar.
-         */
-        template<typename S = T> requires (std::is_convertible_v<S,T> && !std::is_pointer_v<S>)
-        constexpr inline nion<T,N>(S realVal, D size);
+    /**
+     * @brief Construct an empty nion object
+     * @param size The size of the nion.
+     */
+    constexpr inline explicit nion<T,N>(D size);
 
-        /**
-         * @brief Destroy the nion object
-         */
-        ~nion() = default;
+    /**
+     * @brief zero nion
+     */
+    constexpr inline void zero(){
+        memset(elem_, 0, sizeof(T) * size_);
+    };
 
-        /**
-         * @brief Construct nion from half size nions. q = (a,b)
-         * @param a The first half size nion in pair.
-         * @param b The second half size nion in pair.
-         * @return The nion constructed from the half size nions.
-         * @note This is a convenience function for constructing a nion from pairing two half size nions.
-         */
-        template<std::size_t M, std::size_t P> // M is the size of the first nion, P is the size of the second nion.
-        static constexpr inline nion<T,N> make_pair(const nion<T,M> &a, const nion<T,P> &b);
+    /**
+     * @brief copy constructor
+     * @param other The nion to copy.
+     * @return A copy of the nion.
+     * @note This is a deep copy.
+     */
+    template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S>)
+    constexpr inline explicit nion<T,N>(const nion<S,M> &other);
 
-        /**
-         * @brief resizes the nion to the given size.
-         * @param size The new size of the nion.
-         */
-        constexpr inline void resize(int size);
+    /**
+     * @brief move constructor
+     * @param other The nion to copy.
+     * @return A copy of the nion.
+     * @note This is a deep copy.
+     */
+    template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S>)
+    constexpr inline explicit nion<T,N>(nion<S,M> &&other) noexcept;
 
-        /**
-         * @brief copy assignment operator
-         * @param other The nion to copy.
-         * @return A copy of the nion.
-         * @note This is a deep copy.
-         */
-        template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S>)
-        constexpr inline nion<T,N> &operator=(const nion<S,M> &other);
+    /**
+     * @brief Construct a new nion object from a scalar with no imaginary components.
+     * @param size The size of the nion.
+     * @param scalar The scalar value of the nion.
+     * @return nion<T,N> The nion object.
+     * @note This is a convenience function for creating a nion from a scalar.
+     */
+    template<not_nion<T,N> S = T> requires (std::is_convertible_v<S,T> && !std::is_pointer_v<S>)
+    constexpr inline nion<T,N>(S realVal, D size);
 
-        /**
-         * @brief assignment operator from initializer list
-         * @param vals The initializer list to copy.
-         * @return A nion with the values of the initializer list.
-         */
-        constexpr inline nion<T,N> &operator=(const std::initializer_list<T> &vals);
+    /**
+     * @brief Destroy the nion object
+     */
+    ~nion() = default;
 
-        /**
-         * @brief override move assignment operator
-         * @param other The nion to move.
-         * @return A copy of the nion.
-         * @note This is a shallow copy.
-         */
-        template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S>)
-        constexpr inline nion<T,N> &operator=(nion<S,M> &&other) noexcept;
+    /**
+     * @brief Construct nion from half size nions. q = (a,b)
+     * @param a The first half size nion in pair.
+     * @param b The second half size nion in pair.
+     * @return The nion constructed from the half size nions.
+     * @note This is a convenience function for constructing a nion from pairing two half size nions.
+     */
+    template<std::size_t M, std::size_t P> // M is the size of the first nion, P is the size of the second nion.
+    static constexpr inline nion<T,N> make_pair(const nion<T,M> &a, const nion<T,P> &b);
 
-        /**
-         * @brief convert scalar to nion
-         * @param scalar The scalar to convert to a nion.
-         * @return The nion constructed from the scalar.
-         * @note This is a convenience function for constructing a nion from a scalar.
-         */
-        template<typename S = T> requires (std::is_convertible_v<S,T>)
-        constexpr inline nion<T,N> &operator=(S scalar);
+    /**
+     * @brief resizes the nion to the given size.
+     * @param size The new size of the nion.
+     */
+    constexpr inline void resize(int size);
 
-        /**
-         * @brief overload the - operator for a nion.
-         * @return The negation of the nion.
-         */
-        constexpr inline nion<T,N> operator-() const;
+    /**
+     * @brief copy assignment operator
+     * @param other The nion to copy.
+     * @return A copy of the nion.
+     * @note This is a deep copy.
+     */
+    template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S>)
+    constexpr inline nion<T,N> &operator=(const nion<S,M> &other);
 
-        /**
-         * @brief overload the [] operator for a nion.
-         * @param index The index of the component to get.
-         * @return The component at the index passed by value.
-         */
-        constexpr inline T operator[](D index) const;
+    /**
+     * @brief assignment operator from initializer list
+     * @param vals The initializer list to copy.
+     * @return A nion with the values of the initializer list.
+     */
+    constexpr inline nion<T,N> &operator=(const std::initializer_list<T> &vals);
 
-        /**
-         * @brief Get the conjugate of the nion.
-         * @return The conjugate of the nion.
-         * @detail (a,b)* = (a*,-b)
-         */
-        constexpr inline nion<T,N> conj() const;
+    /**
+     * @brief override move assignment operator
+     * @param other The nion to move.
+     * @return A copy of the nion.
+     * @note This is a shallow copy.
+     */
+    template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S>)
+    constexpr inline nion<T,N> &operator=(nion<S,M> &&other) noexcept;
 
-        /**
-         * @brief overload the += operator for nions.
-         * @param other The nion to add to this nion.
-         * @return The sum of this nion and the other nion inplace.
-         */
-        template<std::size_t M> // M is the size of the other nion.
-        constexpr inline void operator+=(const nion<T,M> &other);
+    /**
+     * @brief convert scalar to nion
+     * @param scalar The scalar to convert to a nion.
+     * @return The nion constructed from the scalar.
+     * @note This is a convenience function for constructing a nion from a scalar.
+     */
+    template<not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
+    constexpr inline nion<T,N> &operator=(S scalar);
 
-        /**
-         * @breif overload the -= operator for nions.
-         * @param other The nion to substract from this nion.
-         * @return The subtraction of this nion and the other nion inplace.
-         */
-        template<std::size_t M> // M is the size of the other nion.
-        constexpr inline void operator-=(const nion<T,M> &other);
+    /**
+     * @brief overload the - operator for a nion.
+     * @return The negation of the nion.
+     */
+    constexpr inline nion<T,N> operator-() const;
 
-        /**
-         * @breif overload the *= operator for nions.
-         * @param other The nion to multiply this nion by.
-         * @return The product of this nion and the other nion inplace.
-         */
-        template<std::size_t M> // M is the size of the other nion.
-        constexpr inline void operator*=(const nion<T,M> &other);
+    /**
+     * @brief overload the [] operator for a nion.
+     * @param index The index of the component to get.
+     * @return The component at the index passed by value.
+     */
+    constexpr inline T operator[](D index) const;
 
-        /**
-         * @breif overload the /= operator for nions.
-         * @param other The nion to divide this nion by.
-         * @return The division of this nion and the other nion inplace.
-         */
-        template<std::size_t M> // M is the size of the other nion.
-        constexpr inline void operator/=(const nion<T,M> &other);
+    /**
+     * @brief Get the conjugate of the nion.
+     * @return The conjugate of the nion.
+     * @detail (a,b)* = (a*,-b)
+     */
+    constexpr inline nion<T,N> conj() const;
 
-        /**
-         * @brief overload the + operator for nions.
-         * @param other The nion to add to this nion.
-         * @return The sum of this nion and the other nion.
-         */
-        template<std::size_t M> // M is the size of the other nion.
-        constexpr inline nion<T,N> operator+(const nion<T,M> &other) const;
+    /**
+     * @brief overload the += operator for nions.
+     * @param other The nion to add to this nion.
+     * @return The sum of this nion and the other nion inplace.
+     */
+    template<std::size_t M> // M is the size of the other nion.
+    constexpr inline void operator+=(const nion<T,M> &other);
 
-        /**
-         * @brief overload the - operator for nions.
-         * @param other The nion to substract this nion by.
-         * @return The subtraction of this nion and the other nion.
-         */
-        template<std::size_t M> // M is the size of the other nion.
-        constexpr inline nion<T,N> operator-(const nion<T,M> &other) const;
+    /**
+     * @breif overload the -= operator for nions.
+     * @param other The nion to substract from this nion.
+     * @return The subtraction of this nion and the other nion inplace.
+     */
+    template<std::size_t M> // M is the size of the other nion.
+    constexpr inline void operator-=(const nion<T,M> &other);
 
+    /**
+     * @breif overload the *= operator for nions.
+     * @param other The nion to multiply this nion by.
+     * @return The product of this nion and the other nion inplace.
+     */
+    template<std::size_t M> // M is the size of the other nion.
+    constexpr inline void operator*=(const nion<T,M> &other);
 
-        /**
-         * @brief overload the * operator for nions.
-         * @param other The nion to multiply this nion by.
-         * @return The product of this nion and the other nion.
-         * @details The product of two nions is defined as (a,b)(c,d) = (a c - d* b, d a + b c*) = (z,w), where * is the conjugate.
-         * and a, b, c, d are the nions with half the size of the original nions.
-         * @note product has the same size as the larger size of the two nions.
-         * @note This is recursive function and will call itself until the size is 1.
-         */
-        template<std::size_t M> // M is the size of the other nion.
-        constexpr inline nion<T,N> operator*(const nion<T,M> &other) const;
+    /**
+     * @breif overload the /= operator for nions.
+     * @param other The nion to divide this nion by.
+     * @return The division of this nion and the other nion inplace.
+     */
+    template<std::size_t M> // M is the size of the other nion.
+    constexpr inline void operator/=(const nion<T,M> &other);
 
-        /**
-         * @brief compute the inverse of the nion.
-         * @return The inverse of the nion.
-         */
-        constexpr inline nion<T,N> inv() const;
+    /**
+     * @brief overload the + operator for nions.
+     * @param other The nion to add to this nion.
+     * @return The sum of this nion and the other nion.
+     */
+    template<std::size_t M> // M is the size of the other nion.
+    constexpr inline nion<T,N> operator+(const nion<T,M> &other) const;
 
-        /**
-         * @brief overload the / operator for nions.
-         * @param other The nion to divide this nion by.
-         * @return The division of this nion and the other nion.
-         */
-        template<std::size_t M> // M is the size of the other nion.
-        constexpr inline nion<T,N> operator/(const nion<T,M> &other) const;
-
-        /**
-         * @brief absolute value of the nion.
-         * @return The absolute value of the nion.
-         * @details The absolute value of the nion is the sum of the squares of its components.
-         */
-        constexpr inline T abs() const;
-
-        /**
-         * @brief norm of the nion.
-         * @return The norm of the nion.
-         * @details The norm of a nion is the sqrt of the sum of the squares of its components.
-         */
-        constexpr inline T norm() const;
-
-        /**
-         * @brief shortest rotation of the nion to the real axis.
-         * @tparam T type of the nion.
-         * @param nion The nion to rotate
-         * @return The shortest rotation of the nion to the real axis (preserves the norm and sign of the real component).
-         * @details computes the length of the nion and does the shortest rotation to the real line.
-         */
-        constexpr inline T rotate_real() const;
-
-        /**
-         * @brief return real part of the nion.
-         * @return The real part of the nion.
-         */
-        constexpr inline T real() const;
-
-        /**
-         * @brief Calculate the imaginary components of a nion.
-         * @return The imaginary components of the nion.
-         */
-        constexpr inline nion<T,N> imag() const;
-
-        /**
-         * @brief Compute the argument of the nion.
-         * @return The argument of the nion.
-         * @details The argument of a nion is the angle between the real axis and the nion.
-         */
-        constexpr inline T arg() const;
-
-        /**
-         * @brief overload the == operator for nions.
-         * @param other The nion to compare this nion to.
-         * @return True if the nions are equal, false otherwise.
-         * @details Two nions are equal if they have the same size and the same components.
-         */
-        template<std::size_t M> // M is the size of the other nion.
-        constexpr inline bool operator==(const nion<T,M> &other) const;
-
-        /**
-         * @brief overload the != operator for nions.
-         * @param other The nion to compare this nion to.
-         * @return True if the nions are not equal, false otherwise.
-         * @details Two nions are equal if they have the same size and the same components.
-         */
-        template<std::size_t M> // M is the size of the other nion.
-        constexpr inline bool operator!=(const nion<T,M> &other) const;
-
-        /**
-         * @brief overload the > operator for nions.
-         * @param other The nion to compare this nion to.
-         * @return True if this nion is greater than the other nion, false otherwise.
-         * @details sorting is undefined for nions with sizes greater than 1. However, we can still compare
-         *         nions with sizes greater than 1 by comparing the projections of the nions onto the real line.
-         */
-        template<std::size_t M> // M is the size of the other nion.
-        constexpr inline bool operator>(const nion<T,M> &other) const;
-
-        /**
-         * @brief overload the < operator for nions.
-         * @param other The nion to compare this nion to.
-         * @return True if this nion is less than the other nion, false otherwise.
-         * @details sorting is undefined for nions with sizes greater than 1. However, we can still compare
-         *         nions with sizes greater than 1 by comparing the rotations of the nions onto the real line.
-         */
-        template<std::size_t M> // M is the size of the other nion.
-        constexpr inline bool operator<(const nion<T,M> &other) const;
-
-        /**
-         * @brief overload the >= operator for nions.
-         * @param other The nion to compare this nion to.
-         * @return True if this nion is greater than or equal to the other nion, false otherwise.
-         * @details sorting is undefined for nions with sizes greater than 1. However, we can still compare
-         *         nions with sizes greater than 1 by comparing the rotations of the nions onto the real line.
-         */
-        template<std::size_t M> // M is the size of the other nion.
-        constexpr inline bool operator>=(const nion<T,M> &other) const;
-
-        /**
-         * @brief overload the <= operator for nions.
-         * @param other The nion to compare this nion to.
-         * @return True if this nion is less than or equal to the other nion, false otherwise.
-         * @details sorting is undefined for nions with sizes greater than 1. However, we can still compare
-         *         nions with sizes greater than 1 by comparing the rotations of the nions onto the real line.
-         */
-        template<std::size_t M> // M is the size of the other nion.
-        constexpr inline bool operator<=(const nion<T,M> &other) const;
-
-        /**
-         * @brief overload the + operator for nions with scalars.
-         * @tparam S The type of the scalar.
-         * @param scalar The scalar to add this nion by.
-         * @return The sum of this nion and the scalar.
-         */
-        template<typename S = T> requires (std::is_convertible_v<S,T>)
-        constexpr inline nion<T,N> operator+(S scalar) const;
-
-        /**
-         * @brief overload the ++ operator for nions.
-         * @return The nion incremented by 1.
-         */
-        constexpr inline nion<T,N> &operator++();
-
-        /**
-         * @brief overload the - operator for nions with scalars.
-         * @tparam S The type of the scalar.
-         * @param scalar The scalar to subtract this nion by.
-         * @return The subtraction of this nion and the scalar.
-         */
-        template<typename S = T> requires (std::is_convertible_v<S,T>)
-        constexpr inline nion<T,N> operator-(S scalar) const;
-
-        /**
-         * @brief overload the -- operator for nions.
-         * @return The real component of the nion decremented by 1.
-         */
-        constexpr inline nion<T,N> &operator--();
-
-        /**
-         * @brief overload the * operator for nions with scalars.
-         * @tparam S The type of the scalar.
-         * @param scalar The scalar to multiply this nion by.
-         * @return The product of this nion and the scalar.
-         */
-        template<typename S = T> requires (std::is_convertible_v<S,T>)
-        constexpr inline nion<T,N> operator*(S scalar) const;
-
-        /**
-         * @brief overload the / operator for nions with scalars.
-         * @tparam S The type of the scalar.
-         * @param scalar The scalar to divide this nion by.
-         * @return The division of this nion and the scalar.
-         */
-        template<typename S> requires (std::is_convertible_v<S,T>)
-        constexpr inline nion<T,N> operator/(S scalar) const;
-
-        /**
-         * @brief overload the += operator for nions with scalars.
-         * @tparam S type of the scalar.
-         * @param other The scalar to add to this nion.
-         * @return The sum of this nion and the scalar inplace.
-         */
-        template<typename S = T> requires (std::is_convertible_v<S,T>)
-        constexpr inline void operator+=(S scalar);
-
-        /**
-         * @brief overload the -= operator for nions with scalars.
-         * @tparam S type of the scalar.
-         * @param other The scalar to substract from this nion.
-         * @return The subtraction of this nion and the scalar inplace.
-         */
-        template<typename S = T> requires (std::is_convertible_v<S,T>)
-        constexpr inline void operator-=(S scalar);
-
-        /**
-         * @breif overload the *= operator for nions with scalars.
-         * @tparam S type of the scalar.
-         * @param scalar The scalar to multiply this nion by.
-         * @return The product of this nion and the scalar inplace.
-         */
-        template<typename S = T> requires (std::is_convertible_v<S,T>)
-        constexpr inline void operator*=(S scalar);
-
-        /**
-         * @breif overload the /= operator for nions with scalars.
-         * @tparam S type of the scalar.
-         * @param scalar The scalar to divide this nion by.
-         * @return The division of this nion and the scalar inplace.
-         */
-        template<typename S = T> requires (std::is_convertible_v<S,T>)
-        constexpr inline void operator/=(S scalar);
-
-        /**
-         * @brief overload the == operator for nions with scalars.
-         * @tparam S type of the scalar.
-         * @param scalar The scalar to compare this nion to.
-         * @return True if the nion is equal to the scalar, false otherwise.
-         * @details A nion is equal to a scalar if the scalar is equal to the first component of the nion
-         *          and all other components are equal to zero.
-         */
-        template<typename S = T> requires (std::is_convertible_v<S,T>)
-        constexpr inline bool operator==(S scalar) const;
-
-        /**
-         * @brief overload the != operator for nions with scalars.
-         * @tparam S type of the scalar.
-         * @param scalar The scalar to compare this nion to.
-         * @return False if the nion is equal to the scalar, true otherwise.
-         * @details A nion is equal to a scalar if the scalar is equal to the first component of the nion
-         *          and all other components are equal to zero.
-         */
-        template<typename S = T> requires (std::is_convertible_v<S,T>)
-        constexpr inline bool operator!=(S scalar) const;
-
-        /**
-         * @brief overload the > operator for nions with scalars.
-         * @tparam S type of the scalar.
-         * @param scalar The scalar to compare this nion to.
-         * @return True if the nion is greater than the scalar, false otherwise.
-         */
-        template<typename S = T> requires (std::is_convertible_v<S,T>)
-        constexpr inline bool operator>(S scalar) const;
-
-        /**
-         * @brief overload the < operator for nions with scalars.
-         * @tparam S type of the scalar.
-         * @param scalar The scalar to compare this nion to.
-         * @return True if the nion is less than the scalar, false otherwise.
-         */
-        template<typename S = T> requires (std::is_convertible_v<S,T>)
-        constexpr inline bool operator<(S scalar) const;
-
-        /**
-         * @brief overload the >= operator for nions with scalars.
-         * @tparam S type of the scalar.
-         * @param scalar The scalar to compare this nion to.
-         * @return True if the nion is greater than or equal to the scalar, false otherwise.
-         */
-        template<typename S = T> requires (std::is_convertible_v<S,T>)
-        constexpr inline bool operator>=(S scalar) const;
-
-        /**
-         * @brief overload the <= operator for nions with scalars.
-         * @tparam S type of the scalar.
-         * @param scalar The scalar to compare this nion to.
-         * @return True if the nion is less than or equal to the scalar, false otherwise.
-         */
-        template<typename S = T> requires (std::is_convertible_v<S,T>)
-        constexpr inline bool operator<=(S scalar) const;
+    /**
+     * @brief overload the - operator for nions.
+     * @param other The nion to substract this nion by.
+     * @return The subtraction of this nion and the other nion.
+     */
+    template<std::size_t M> // M is the size of the other nion.
+    constexpr inline nion<T,N> operator-(const nion<T,M> &other) const;
 
 
-        /**
-         * @brief comparison if nion is a real number.
-         * @return True if the nion is a real number, false otherwise.
-         * @details A nion is a real number if all components except the first are equal to zero.
-         */
-        constexpr inline bool is_real() const;
+    /**
+     * @brief overload the * operator for nions.
+     * @param other The nion to multiply this nion by.
+     * @return The product of this nion and the other nion.
+     * @details The product of two nions is defined as (a,b)(c,d) = (a c - d* b, d a + b c*) = (z,w), where * is the conjugate.
+     * and a, b, c, d are the nions with half the size of the original nions.
+     * @note product has the same size as the larger size of the two nions.
+     * @note This is recursive function and will call itself until the size is 1.
+     */
+    template<std::size_t M> // M is the size of the other nion.
+    constexpr inline nion<T,N> operator*(const nion<T,M> &other) const;
 
-        /**
-        * @brief Converts a nion to a string.
-        * @return The string representation of the nion.
-        */
-        inline std::string to_string() const;
-    }; // struct nion
+    /**
+     * @brief compute the inverse of the nion.
+     * @return The inverse of the nion.
+     */
+    constexpr inline nion<T,N> inv() const;
+
+    /**
+     * @brief overload the / operator for nions.
+     * @param other The nion to divide this nion by.
+     * @return The division of this nion and the other nion.
+     */
+    template<std::size_t M> // M is the size of the other nion.
+    constexpr inline nion<T,N> operator/(const nion<T,M> &other) const;
+
+    /**
+     * @brief absolute value of the nion.
+     * @return The absolute value of the nion.
+     * @details The absolute value of the nion is the sum of the squares of its components.
+     */
+    constexpr inline T abs() const;
+
+    /**
+     * @brief norm of the nion.
+     * @return The norm of the nion.
+     * @details The norm of a nion is the sqrt of the sum of the squares of its components.
+     */
+    constexpr inline T norm() const;
+
+    /**
+     * @brief shortest rotation of the nion to the real axis.
+     * @tparam T type of the nion.
+     * @param nion The nion to rotate
+     * @return The shortest rotation of the nion to the real axis (preserves the norm and sign of the real component).
+     * @details computes the length of the nion and does the shortest rotation to the real line.
+     */
+    constexpr inline T rotate_real() const;
+
+    /**
+     * @brief return real part of the nion.
+     * @return The real part of the nion.
+     */
+    constexpr inline T real() const;
+
+    /**
+     * @brief Calculate the imaginary components of a nion.
+     * @return The imaginary components of the nion.
+     */
+    constexpr inline nion<T,N> imag() const;
+
+    /**
+     * @brief Compute the argument of the nion.
+     * @return The argument of the nion.
+     * @details The argument of a nion is the angle between the real axis and the nion.
+     */
+    constexpr inline T arg() const;
+
+    /**
+     * @brief overload the == operator for nions.
+     * @param other The nion to compare this nion to.
+     * @return True if the nions are equal, false otherwise.
+     * @details Two nions are equal if they have the same size and the same components.
+     */
+    template<std::size_t M> // M is the size of the other nion.
+    constexpr inline bool operator==(const nion<T,M> &other) const;
+
+    /**
+     * @brief overload the != operator for nions.
+     * @param other The nion to compare this nion to.
+     * @return True if the nions are not equal, false otherwise.
+     * @details Two nions are equal if they have the same size and the same components.
+     */
+    template<std::size_t M> // M is the size of the other nion.
+    constexpr inline bool operator!=(const nion<T,M> &other) const;
+
+    /**
+     * @brief overload the > operator for nions.
+     * @param other The nion to compare this nion to.
+     * @return True if this nion is greater than the other nion, false otherwise.
+     * @details sorting is undefined for nions with sizes greater than 1. However, we can still compare
+     *         nions with sizes greater than 1 by comparing the projections of the nions onto the real line.
+     */
+    template<std::size_t M> // M is the size of the other nion.
+    constexpr inline bool operator>(const nion<T,M> &other) const;
+
+    /**
+     * @brief overload the < operator for nions.
+     * @param other The nion to compare this nion to.
+     * @return True if this nion is less than the other nion, false otherwise.
+     * @details sorting is undefined for nions with sizes greater than 1. However, we can still compare
+     *         nions with sizes greater than 1 by comparing the rotations of the nions onto the real line.
+     */
+    template<std::size_t M> // M is the size of the other nion.
+    constexpr inline bool operator<(const nion<T,M> &other) const;
+
+    /**
+     * @brief overload the >= operator for nions.
+     * @param other The nion to compare this nion to.
+     * @return True if this nion is greater than or equal to the other nion, false otherwise.
+     * @details sorting is undefined for nions with sizes greater than 1. However, we can still compare
+     *         nions with sizes greater than 1 by comparing the rotations of the nions onto the real line.
+     */
+    template<std::size_t M> // M is the size of the other nion.
+    constexpr inline bool operator>=(const nion<T,M> &other) const;
+
+    /**
+     * @brief overload the <= operator for nions.
+     * @param other The nion to compare this nion to.
+     * @return True if this nion is less than or equal to the other nion, false otherwise.
+     * @details sorting is undefined for nions with sizes greater than 1. However, we can still compare
+     *         nions with sizes greater than 1 by comparing the rotations of the nions onto the real line.
+     */
+    template<std::size_t M> // M is the size of the other nion.
+    constexpr inline bool operator<=(const nion<T,M> &other) const;
+
+    /**
+     * @brief overload the + operator for nions with scalars.
+     * @tparam S The type of the scalar.
+     * @param scalar The scalar to add this nion by.
+     * @return The sum of this nion and the scalar.
+     */
+    template<not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
+    constexpr inline nion<T,N> operator+(S scalar) const;
+
+    /**
+     * @brief overload the ++ operator for nions.
+     * @return The nion incremented by 1.
+     */
+    constexpr inline nion<T,N> &operator++();
+
+    /**
+     * @brief overload the - operator for nions with scalars.
+     * @tparam S The type of the scalar.
+     * @param scalar The scalar to subtract this nion by.
+     * @return The subtraction of this nion and the scalar.
+     */
+    template<not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
+    constexpr inline nion<T,N> operator-(S scalar) const;
+
+    /**
+     * @brief overload the -- operator for nions.
+     * @return The real component of the nion decremented by 1.
+     */
+    constexpr inline nion<T,N> &operator--();
+
+    /**
+     * @brief overload the * operator for nions with scalars.
+     * @tparam S The type of the scalar.
+     * @param scalar The scalar to multiply this nion by.
+     * @return The product of this nion and the scalar.
+     */
+    template<not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
+    constexpr inline nion<T,N> operator*(S scalar) const;
+
+    /**
+     * @brief overload the / operator for nions with scalars.
+     * @tparam S The type of the scalar.
+     * @param scalar The scalar to divide this nion by.
+     * @return The division of this nion and the scalar.
+     */
+    template<not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
+    constexpr inline nion<T,N> operator/(S scalar) const;
+
+    /**
+     * @brief overload the += operator for nions with scalars.
+     * @tparam S type of the scalar.
+     * @param other The scalar to add to this nion.
+     * @return The sum of this nion and the scalar inplace.
+     */
+    template<not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
+    constexpr inline void operator+=(S scalar);
+
+    /**
+     * @brief overload the -= operator for nions with scalars.
+     * @tparam S type of the scalar.
+     * @param other The scalar to substract from this nion.
+     * @return The subtraction of this nion and the scalar inplace.
+     */
+    template<not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
+    constexpr inline void operator-=(S scalar);
+
+    /**
+     * @breif overload the *= operator for nions with scalars.
+     * @tparam S type of the scalar.
+     * @param scalar The scalar to multiply this nion by.
+     * @return The product of this nion and the scalar inplace.
+     */
+    template<not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
+    constexpr inline void operator*=(S scalar);
+
+    /**
+     * @breif overload the /= operator for nions with scalars.
+     * @tparam S type of the scalar.
+     * @param scalar The scalar to divide this nion by.
+     * @return The division of this nion and the scalar inplace.
+     */
+    template<not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
+    constexpr inline void operator/=(S scalar);
+
+    /**
+     * @brief overload the == operator for nions with scalars.
+     * @tparam S type of the scalar.
+     * @param scalar The scalar to compare this nion to.
+     * @return True if the nion is equal to the scalar, false otherwise.
+     * @details A nion is equal to a scalar if the scalar is equal to the first component of the nion
+     *          and all other components are equal to zero.
+     */
+    template<not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
+    constexpr inline bool operator==(S scalar) const;
+
+    /**
+     * @brief overload the != operator for nions with scalars.
+     * @tparam S type of the scalar.
+     * @param scalar The scalar to compare this nion to.
+     * @return False if the nion is equal to the scalar, true otherwise.
+     * @details A nion is equal to a scalar if the scalar is equal to the first component of the nion
+     *          and all other components are equal to zero.
+     */
+    template<not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
+    constexpr inline bool operator!=(S scalar) const;
+
+    /**
+     * @brief overload the > operator for nions with scalars.
+     * @tparam S type of the scalar.
+     * @param scalar The scalar to compare this nion to.
+     * @return True if the nion is greater than the scalar, false otherwise.
+     */
+    template<not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
+    constexpr inline bool operator>(S scalar) const;
+
+    /**
+     * @brief overload the < operator for nions with scalars.
+     * @tparam S type of the scalar.
+     * @param scalar The scalar to compare this nion to.
+     * @return True if the nion is less than the scalar, false otherwise.
+     */
+    template<not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
+    constexpr inline bool operator<(S scalar) const;
+
+    /**
+     * @brief overload the >= operator for nions with scalars.
+     * @tparam S type of the scalar.
+     * @param scalar The scalar to compare this nion to.
+     * @return True if the nion is greater than or equal to the scalar, false otherwise.
+     */
+    template<not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
+    constexpr inline bool operator>=(S scalar) const;
+
+    /**
+     * @brief overload the <= operator for nions with scalars.
+     * @tparam S type of the scalar.
+     * @param scalar The scalar to compare this nion to.
+     * @return True if the nion is less than or equal to the scalar, false otherwise.
+     */
+    template<not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
+    constexpr inline bool operator<=(S scalar) const;
+
+
+    /**
+     * @brief comparison if nion is a real number.
+     * @return True if the nion is a real number, false otherwise.
+     * @details A nion is a real number if all components except the first are equal to zero.
+     */
+    constexpr inline bool is_real() const;
+
+    /**
+    * @brief Converts a nion to a string.
+    * @return The string representation of the nion.
+    */
+    inline std::string to_string() const;
+}; // struct nion
 
 /***************************
     *  NION OPERATOR OVERLOADS
@@ -570,7 +574,7 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to multiply the scalar by.
  * @return
  */
-    template<arith_ops T, std::size_t N = 128, typename S = T> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 128, not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
     extern constexpr inline nion<T,N> operator*(S scalar, const nion<T,N> &z);
 
 /**
@@ -581,7 +585,7 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to divide the scalar by.
  * @return
  */
-    template<arith_ops T, std::size_t N = 128, typename S = T> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 128, not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
     extern constexpr inline nion<T,N> operator/(S scalar, const nion<T,N> &z);
 
 /**
@@ -591,7 +595,7 @@ template<arith_ops T, std::size_t N>
  * @param scalar type of the scalar.
  * @param z The nion to add the scalar by.
 */
-    template<arith_ops T, std::size_t N = 128, typename S = T> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 128, not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
     extern constexpr inline nion<T,N> operator+(S scalar, const nion<T,N> &z);
 
 /**
@@ -601,7 +605,7 @@ template<arith_ops T, std::size_t N>
  * @param scalar type of the scalar.
  * @param z The nion to subtract the scalar by.
 */
-    template<arith_ops T, std::size_t N = 128, typename S = T> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 128, not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
     extern constexpr inline nion<T,N> operator-(S scalar, const nion<T,N> &z);
 
 /**
@@ -614,7 +618,7 @@ template<arith_ops T, std::size_t N>
  * @details A nion is equal to a scalar if the scalar is equal to the first component of the nion
  *         and all other components are equal to zero.
  */
-    template<arith_ops T, std::size_t N = 128, typename S = T> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 128, not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
     extern constexpr inline bool operator==(S scalar, const nion<T,N> &z);
 
 /**
@@ -627,7 +631,7 @@ template<arith_ops T, std::size_t N>
  * @details A nion is equal to a scalar if the scalar is equal to the first component of the nion
  *         and all other components are equal to zero.
  */
-    template<arith_ops T, std::size_t N = 128, typename S = T> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 128, not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
     extern constexpr inline bool operator!=(S scalar, const nion<T,N> &z);
 
 /**
@@ -638,7 +642,7 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to compare the scalar to.
  * @return True if the scalar is greater than the nion, false otherwise.
  */
-    template<arith_ops T, std::size_t N = 128, typename S = T> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 128, not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
     extern constexpr inline bool operator>(S scalar, const nion<T,N> &z);
 
 /**
@@ -649,7 +653,7 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to compare the scalar to.
  * @return True if the scalar is less than the nion, false otherwise.
  */
-    template<arith_ops T, std::size_t N = 128, typename S = T> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 128, not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
     extern constexpr inline bool operator<(S scalar, const nion<T,N> &z);
 
 /**
@@ -660,7 +664,7 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to compare the scalar to.
  * @return True if the scalar is greater than or equal to the nion, false otherwise.
  */
-    template<arith_ops T, std::size_t N = 128, typename S = T> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 128, not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
     extern constexpr inline bool operator>=(S scalar, const nion<T,N> &z);
 
 /**
@@ -671,7 +675,7 @@ template<arith_ops T, std::size_t N>
  * @param z The nion to compare the scalar to.
  * @return True if the scalar is less than or equal to the nion, false otherwise.
  */
-    template<arith_ops T, std::size_t N = 128, typename S = T> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 128, not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
     extern constexpr inline bool operator<=(S scalar, const nion<T,N> &z);
 
 /**
@@ -796,7 +800,7 @@ template<arith_ops T, std::size_t N>
  * @return The power of the nion.
  * @details The power of a nion is defined as z^p = e^(p * ln(z)).
  */
-    template<arith_ops T, std::size_t N = 128, typename S> requires (std::is_convertible_v<S,T>)
+    template<arith_ops T, std::size_t N = 128, not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     extern constexpr inline nion<T,N> pow(const nion<T,N> &base, S power);
 
 /**
@@ -819,7 +823,7 @@ template<arith_ops T, std::size_t N>
  * @return The power of the nion.
  * @details The power of with a nion is defined as x^z = e^(z * ln(x)).
  */
-    template<arith_ops T, std::size_t N = 128, typename S = T>
+    template<arith_ops T, std::size_t N = 128, not_nion<T,N> S = T>
     extern constexpr inline nion<T,N> pow(S base, const nion<T,N> &power);
 
 /**
