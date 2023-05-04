@@ -538,17 +538,27 @@
     template<arith_ops T, std::size_t N>
     template<not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline nion<T,N> nion<T,N>::operator*(S scalar) const {
-        nion<T,N> product(*this);
+        nion<T,N> product;
+        product.size_ = size_;
 
         // compute the product of each element of the nion with the scalar
         for (D i = 0; i < size_; i++)
-            product.elem_[i] *= scalar;
+            product.elem_[i] = elem_[i] * scalar;
 
         return product;
     }
 
     template<arith_ops T, std::size_t N, not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline nion<T,N> operator*(S scalar, const nion<T,N> &z) {
+        nion<T,N> product;
+        product.size_ = z.size_;
+
+        // compute the product of each element of the nion with the scalar
+        using D = typename nion<T,N>::D;
+        for (D i = 0; i < z.size_; i++)
+            product.elem_[i] = scalar * z.elem_[i];
+
+        return product;
         return z * scalar;
     }
 
@@ -572,11 +582,12 @@
     constexpr inline nion<T,N> nion<T,N>::inv() const {
 
         T absolute = abs();
-        nion<T,N> inverse(*this);
+        nion<T,N> inverse;
+        inverse.size_ = size_;
 
-        inverse.elem_[0] /= absolute;
+        inverse.elem_[0] = elem_[0] / absolute;
         for (D i = 1; i < size_; i++)
-            inverse.elem_[i] /= -absolute;
+            inverse.elem_[i] = -elem_[i] / absolute;
 
         return inverse;
     }
@@ -590,18 +601,27 @@
     template<arith_ops T, std::size_t N>
     template<not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline nion<T,N> nion<T,N>::operator/(S scalar) const {
-        nion<T,N> quotient(*this);
+        nion<T,N> quotient;
+        quotient.size_ = size_;
 
         // compute the product of each element of the nion with the scalar
         for (D i = 0; i < size_; i++)
-            quotient.elem_[i] /= scalar;
+            quotient.elem_[i] = elem_[i] / scalar;
 
         return quotient;
     }
 
     template<arith_ops T, std::size_t N, not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline nion<T,N> operator/(S scalar, const nion<T,N> &z) {
-        return scalar * z.inv();
+        nion<T,N> quotient;
+        quotient.size_ = z.size_;
+
+        // compute the product of each element of the nion with the scalar
+        using D = typename nion<T,N>::D;
+        for (D i = 0; i < z.size_; i++)
+            quotient.elem_[i] = (1.0l / scalar) * z.elem_[i] ;
+
+        return quotient;
     }
 
 
