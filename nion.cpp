@@ -658,6 +658,26 @@
         return theta;
     }
 
+    template<arith_ops T, std::size_t N>
+    constexpr inline nion<T,N> nion<T,N>::unit() const {
+        // get imaginary part of nion
+        nion<T,N> i = imag();
+
+        // compute norm
+        T i_abs = i.abs();
+        T i_norm = sqrt(i_abs);
+
+        // compute denorm_min
+        T denorm_min = T(0); // default value
+        if constexpr (std::is_arithmetic_v<T>) {
+            denorm_min = std::numeric_limits<T>::denorm_min(); // if T is arithmetic, use its denorm_min
+        }
+
+        // compute unit nion
+        if (i_abs <= denorm_min) return i;
+        return i / i_norm;
+    }
+
     /******************************************
     *            COMPARISON OPERATORS
     *******************************************/
@@ -912,21 +932,6 @@
         return dotProduct;
     }
 
-    /*
-    template<arith_ops T, std::size_t N>
-    constexpr inline nion<T,N>
-    cross(const nion<T,N> &lhs, const nion<T,N> &rhs){} //TODO: implement cross product
-
-    template<arith_ops T, std::size_t N>
-    constexpr inline nion<T,N>
-    wedge(const nion<T,N> &lhs, const nion<T,N> &rhs){} //TODO: implement wedge product
-
-    template<arith_ops T, std::size_t N>
-    constexpr inline nion<T,N>
-    outer(const nion<T,N> &lhs, const nion<T,N> &rhs){} //TODO: implement outer product
-     */
-
-
     /****************************
     *  NION ALGEBRAIC FUNCTIONS *
     *****************************/
@@ -947,7 +952,12 @@
         T sin_theta;
         T exp_r = exp(r);
 
-        constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
+        // compute denorm_min
+        T denorm_min = T(0); // default value
+        if constexpr (std::is_arithmetic_v<T>) {
+            denorm_min = std::numeric_limits<T>::denorm_min(); // if T is arithmetic, use its denorm_min
+        }
+
         if (i_abs < denorm_min)
             return nion<T,N>(exp_r, z.size_);
 
@@ -973,8 +983,13 @@
         T i_norm = sqrt(z_abs - r * r);
         T theta = atan2(i_norm, r);
 
+        // compute denorm_min
+        T denorm_min = T(0); // default value
+        if constexpr (std::is_arithmetic_v<T>) {
+            denorm_min = std::numeric_limits<T>::denorm_min(); // if T is arithmetic, use its denorm_min
+        }
+
         // compute natural logarithm of nion
-        constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
         if (i_abs <= denorm_min)
             return log(z_norm) + i * theta;
         else
@@ -1011,7 +1026,12 @@
         T i_norm = sqrt(i_abs);
 
         T power_t = 2.0l;
-        constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
+
+        // compute denorm_min
+        T denorm_min = T(0); // default value
+        if constexpr (std::is_arithmetic_v<T>) {
+            denorm_min = std::numeric_limits<T>::denorm_min(); // if T is arithmetic, use its denorm_min
+        }
 
         T x2 = r * r;
         T y2 = i_abs;
@@ -1056,8 +1076,13 @@
         T e_z = exp(z.elem_[0]) / 2.0l;
         T e_mz = exp(-z.elem_[0]) / 2.0l;
 
+        // compute denorm_min
+        T denorm_min = T(0); // default value
+        if constexpr (std::is_arithmetic_v<T>) {
+            denorm_min = std::numeric_limits<T>::denorm_min(); // if T is arithmetic, use its denorm_min
+        }
+
         // compute exponential of nion
-        constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
         if (i_abs <= denorm_min) {
             nion<T,N> sin_nion = i * ((e_z + e_mz) * sin(i_norm));
             sin_nion += cos(i_norm) * (e_z - e_mz);
@@ -1083,8 +1108,13 @@
         T e_z = exp(z.elem_[0]) / 2.0l;
         T e_mz = exp(-z.elem_[0]) / 2.0l;
 
+        // compute denorm_min
+        T denorm_min = T(0); // default value
+        if constexpr (std::is_arithmetic_v<T>) {
+            denorm_min = std::numeric_limits<T>::denorm_min(); // if T is arithmetic, use its denorm_min
+        }
+
         // compute exponential of nion
-        constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
         if (i_abs <= denorm_min) {
             nion<T,N> cos_nion = i * ((e_z - e_mz) * sin(i_norm));
             cos_nion += cos(i_norm) * (e_z + e_mz);
@@ -1131,8 +1161,13 @@
         T i_abs = i.abs();
         T i_norm = sqrt(i_abs);
 
+        // compute denorm_min
+        T denorm_min = T(0); // default value
+        if constexpr (std::is_arithmetic_v<T>) {
+            denorm_min = std::numeric_limits<T>::denorm_min(); // if T is arithmetic, use its denorm_min
+        }
+
         // compute the sine of the nion
-        constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
         if (i_abs <= denorm_min)
             return i * (sinh(i_norm) * cos(r)) + sin(r) * cosh(i_norm);
         else
@@ -1149,8 +1184,13 @@
         T i_abs = i.abs();
         T i_norm = sqrt(i_abs);
 
+        // compute denorm_min
+        T denorm_min = T(0); // default value
+        if constexpr (std::is_arithmetic_v<T>) {
+            denorm_min = std::numeric_limits<T>::denorm_min(); // if T is arithmetic, use its denorm_min
+        }
+
         // compute the cosine of the nion
-        constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
         if (i_abs <= denorm_min)
             return -i * (sinh(i_norm) * sin(r)) + cos(r) * cosh(i_norm);
         else
@@ -1167,8 +1207,13 @@
         T i_abs = i.abs();
         T i_norm = sqrt(i_abs);
 
+        // compute denorm_min
+        T denorm_min = T(0); // default value
+        if constexpr (std::is_arithmetic_v<T>) {
+            denorm_min = std::numeric_limits<T>::denorm_min(); // if T is arithmetic, use its denorm_min
+        }
+
         // compute the tangent of the nion
-        constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
         if (i_norm <= denorm_min)
             return (tan(r) + i * tanh(i_norm)) / (1 - i * (tan(r) * tanh(i_norm)));
         else
@@ -1240,7 +1285,13 @@
         // make unit vector
         T i_abs = i.abs();
         T i_norm = sqrt(i_abs);
-        constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
+
+        // compute denorm_min
+        T denorm_min = T(0); // default value
+        if constexpr (std::is_arithmetic_v<T>) {
+            denorm_min = std::numeric_limits<T>::denorm_min(); // if T is arithmetic, use its denorm_min
+        }
+
         if (i_abs > denorm_min)
             i /= i_norm;
 
@@ -1262,7 +1313,13 @@
         // make unit vector
         T i_abs = i.abs();
         T i_norm = sqrt(i_abs);
-        constexpr T denorm_min = std::numeric_limits<T>::denorm_min();
+
+        // compute denorm_min
+        T denorm_min = T(0); // default value
+        if constexpr (std::is_arithmetic_v<T>) {
+            denorm_min = std::numeric_limits<T>::denorm_min(); // if T is arithmetic, use its denorm_min
+        }
+
         if (i_abs > denorm_min)
             i /= i_norm;
 

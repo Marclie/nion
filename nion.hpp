@@ -348,6 +348,12 @@ struct nion {
     constexpr inline T arg() const;
 
     /**
+     * @brief Compute the unit nion.
+     * @return The unit nion.
+     */
+    constexpr inline nion<T,N> unit() const;
+
+    /**
      * @brief overload the == operator for nions.
      * @param other The nion to compare this nion to.
      * @return True if the nions are equal, false otherwise.
