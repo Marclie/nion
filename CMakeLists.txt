@@ -5,7 +5,6 @@ project(nion VERSION 1.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 
 # test if concepts are supported
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-narrowing -fconcepts")
 include(CheckCXXSourceCompiles)
 check_cxx_source_compiles(
         "
