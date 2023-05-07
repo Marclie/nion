@@ -979,7 +979,7 @@
         T z_abs = z.abs();
         T z_norm = sqrt(z_abs);
         T i_abs = z_abs - r * r;
-        T i_norm = sqrt(z_abs - r * r);
+        T i_norm = sqrt(i_abs);
         T theta = atan2(i_norm, r);
 
         // compute denorm_min
@@ -997,7 +997,61 @@
 
     template<arith_ops T, std::size_t N, not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
     constexpr inline nion<T,N> pow(const nion<T,N> &base, S power) {
-        return exp(log(base) * power);
+        // get polar form of nion
+        T r = base.real();
+        nion<T,N> i = base.imag();
+
+        // compute norms
+        T z_abs = base.abs();
+        T z_norm = sqrt(z_abs);
+        T i_abs = z_abs - r * r;
+        T i_norm = sqrt(i_abs);
+
+        T power_t;
+        T theta;
+
+        T cos_ptheta;
+        T sin_ptheta;
+
+        // compute denorm_min
+        T denorm_min = T(0); // default value
+        if constexpr (std::is_arithmetic_v<T>) {
+            denorm_min = std::numeric_limits<T>::denorm_min(); // if T is arithmetic, use its denorm_min
+        }
+
+        if (i_abs >= denorm_min) i /= i_norm;
+        else i = nion<T,N>(0, base.size_);
+
+        if constexpr (std::is_integral_v<S>) { // if power is integer, use faster algorithm
+            nion<T,N> z = base;
+            if (std::signbit(power)) {
+                z = inv(z);
+                power = -power;
+            }
+
+            switch (power) {
+                case 0:
+                    return nion<T,N>(1, z.size_);
+                case 1:
+                    return z;
+                case 2:
+                    return sqr(z);
+                default:
+                    power_t = static_cast<T>(power);
+                    theta = power_t * atan2(i_norm, r);
+                    cos_ptheta = cos(theta);
+                    sin_ptheta = sin(theta);
+                    break;
+            }
+        } else {
+            power_t = static_cast<T>(power);
+            theta = power_t * atan2(i_norm, r);
+            cos_ptheta = cos(theta); //cos(atan(y/x)) = 1/sqrt(1+y^2/x^2) --> cos(p*atan(y/x)) = ???
+            sin_ptheta = sin(theta); //sin(atan(y/x)) = y/(x*sqrt(1 + y^2/x^2)) --> sin(p*atan(y/x)) = ???
+        }
+
+        // compute power of nion
+        return pow(z_norm, power_t) * (cos_ptheta + i * (sin_ptheta));
     }
 
     template<arith_ops T, std::size_t N>
