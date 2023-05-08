@@ -231,6 +231,13 @@ struct nion {
     constexpr inline nion<T,N> conj() const;
 
     /**
+     * @brief make this nion the conjugate of itself.
+     * @return reference to this nion.
+     * @detail (a,b)* = (a*,-b) //TODO: I haven't considered the case where the nion is not a scalar.
+     */
+    constexpr inline nion<T,N> &conj_inplace();
+
+    /**
      * @brief overload the += operator for nions.
      * @param other The nion to add to this nion.
      * @return The sum of this nion and the other nion inplace.
