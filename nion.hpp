@@ -233,7 +233,7 @@ struct nion {
     /**
      * @brief make this nion the conjugate of itself.
      * @return reference to this nion.
-     * @detail (a,b)* = (a*,-b) //TODO: I haven't considered the case where the nion is not a scalar.
+     * @detail (a,b)* = (a*,-b)
      */
     constexpr inline nion<T,N> &conj_inplace();
 

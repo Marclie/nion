@@ -27,6 +27,7 @@
 
 #include <chrono>
 #include <complex>
+#include <iomanip>
 #include "../nion.hpp"
 
 
@@ -405,14 +406,13 @@ void split_nions() {
 }
 
 void benchmark(int trials){
-    std::cout.precision(10);
-//
 
     std::cout << "%%%%%%%%%%%%%%%%%%%%%%%%%% nion complex number library benchmarks %%%%%%%%%%%%%%%%%%%%%%%%%%\n\n" << std::endl;
     order2Test();
     mixedOrderTest();
     split_nions();
 
+    std::cout << std::defaultfloat;
     long double start;
     long double end;
 
@@ -549,6 +549,9 @@ void ReadMeExamples(){
 }
 
 int main() {
+
+    // set formatting for cout
+    std::cout << std::fixed << std::setprecision(4) << std::noshowpoint;
 
     ReadMeExamples();
 //    order2Test();

@@ -395,10 +395,22 @@
     *        MULTIPLICATION OPERATORS
     *******************************************/
 
+    // create concept to check if T has a `.conj()` method
+    template<typename T>
+    concept has_conj = requires(T a) {
+        a.conj();
+    };
+
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> nion<T,N>::conj() const {
         nion<T,N> conjugate = *this; // copy this nion
 
+        // conjugate first element if T has a `.conj()` method
+        if constexpr (has_conj<T>)
+            conjugate.elem_[0] = conjugate.elem_[0].conj();
+        // else do nothing
+
+        // negate all components except the first
         for (D i = 1; i < size_; i++)
             conjugate.elem_[i] = -conjugate[i]; // negate the component
 
@@ -407,6 +419,12 @@
 
     template<arith_ops T, std::size_t N>
     constexpr inline nion<T,N> &nion<T,N>::conj_inplace() {
+        // conjugate first element if T has a `.conj()` method
+        if constexpr (has_conj<T>)
+            elem_[0] = elem_[0].conj();
+        // else do nothing
+
+
         // negate all components except the first
         for (D i = 1; i < size_; i++)
             elem_[i] = -elem_[i]; // negate the component
