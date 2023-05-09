@@ -412,7 +412,7 @@
 
         // negate all components except the first
         for (D i = 1; i < size_; i++)
-            conjugate.elem_[i] = -conjugate[i]; // negate the component
+            conjugate.elem_[i] = -conjugate.elem_[i]; // negate the component
 
         return conjugate;
     }
