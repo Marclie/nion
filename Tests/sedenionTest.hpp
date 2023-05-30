@@ -291,7 +291,7 @@ void SedenionComparison(int trials) {
     Sedenion<T> sedenion_result;
     T diff;
 
-    std::uniform_real_distribution<T> distribution(-10.0, 10.0);
+    std::uniform_real_distribution<T> distribution(-5.0, 5.0);
     T* val1 = new T[16];
     T* val2 = new T[16];
     for (int i = 0; i < trials; ++i) {

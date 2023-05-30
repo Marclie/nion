@@ -460,6 +460,7 @@ void ReadMeExamples(){
     std::cout << "\n####### README EXAMPLES #######" << std::endl;
     nion<float> a = {1, 2, 3, 4};
     nion<float> b = {5, 6, 7, 8};
+    nion<float> test = a;
     nion<float> c = a + b;
     std::cout << "a = " << a << std::endl;
     std::cout << "b = " << b << std::endl;
@@ -559,8 +560,9 @@ int main() {
 //    split_nions();
 
     int num_trials = 100000;
-    benchmark(num_trials);
+//    benchmark(num_trials);
 
+    writeSinData(num_trials);
 
     return 0;
 }

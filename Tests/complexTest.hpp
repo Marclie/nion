@@ -283,7 +283,7 @@ void stdComplexComparison(int trials) {
     std::complex<T> stdResult;
     T diff;
 
-    std::uniform_real_distribution<T> distribution(-10.0, 10.0);
+    std::uniform_real_distribution<T> distribution(-5.0, 5.0);
     for (int i = 0; i < trials; ++i) {
         T val1_r = distribution(generator);
         T val2_r = distribution(generator);

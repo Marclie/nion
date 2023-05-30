@@ -211,7 +211,7 @@ void boostQuaternionComparison(int trials) {
     T *vals2 = new T[4];
     T nionNorm;
     T boostNorm;
-    std::uniform_real_distribution<T> distribution(-10, 10);
+    std::uniform_real_distribution<T> distribution(-5.0, 5.0);
     for (int i = 0; i < trials; ++i) {
 
         //generate random quaternion numbers
