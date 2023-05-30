@@ -560,9 +560,9 @@ int main() {
 //    split_nions();
 
     int num_trials = 100000;
-//    benchmark(num_trials);
+    benchmark(num_trials);
 
-    writeSinData(num_trials);
+//    writeSinData(num_trials);
 
     return 0;
 }
