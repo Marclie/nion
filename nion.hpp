@@ -50,7 +50,7 @@ concept integral_type = std::is_integral_v<Z>;
  */
 template<arith_ops T, // type of the coefficients (required to have arithmetic operations)
         std::size_t N = NION_USE_HEAP> // type of the size
-                                       // (default is max size, where heap is used for memory instead of stack)
+                                       // (default is zero, where heap is used for memory instead of stack)
 struct nion; // forward declaration
 
 // create a concept that checks if a type is the same as this nion type
@@ -139,9 +139,6 @@ struct nion {
         memset(elem_, 0, sizeof(T) * size_); // set all coefficients to zero
     };
 
-
-
-
     /**
      * @brief copy constructor for different nion types
      * @param other The nion to copy.
@@ -173,11 +170,6 @@ struct nion {
      * @note This is a shallow move. The source nion is left in a valid but unspecified state.
      */
     constexpr inline nion<T,N> &operator=(nion<T,N> &&other) noexcept;
-
-
-
-
-
 
     /**
      * @brief copy constructor for different nion types
@@ -214,12 +206,6 @@ struct nion {
      */
     template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S> && (M != N || !std::is_same_v<T, S>))
     constexpr inline nion<T,N> &operator=(nion<S,M> &&other) noexcept;
-
-
-
-
-
-
 
     /**
      * @brief Construct a new nion object from a scalar with no imaginary components.
@@ -341,15 +327,15 @@ struct nion {
 
     /**
      * @brief overload the * operator for nions.
-     * @param lhalf The nion to multiply this nion by.
-     * @return The product of this nion and the lhalf nion.
+     * @param other The nion to multiply this nion by.
+     * @return The product of this nion and the other nion.
      * @details The product of two nions is defined as (a,b)(c,d) = (a c - d* b, d a + b c*) = (z,w), where * is the conjugate.
      * and a, b, c, d are the nions with half the size of the original nions.
      * @note product has the same size as the larger size of the two nions.
      * @note This is recursive function and will call itself until the size is 1.
      */
-    template<std::size_t M> // M is the size of the lhalf nion.
-    constexpr inline nion<T,N> operator*(const nion<T,M> &lhalf) const;
+    template<std::size_t M> // M is the size of the other nion.
+    constexpr inline nion<T,N> operator*(const nion<T,M> &other) const;
 
     /**
      * @brief compute the inverse of the nion.
