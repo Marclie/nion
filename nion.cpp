@@ -564,17 +564,15 @@ constexpr inline nion<T,N> nion<T,N>::conj() const {
 }
 
 template<arith_ops T, std::size_t N>
-constexpr inline nion<T,N> &nion<T,N>::conj_inplace() {
+constexpr inline void nion<T,N>::conj_inplace() {
     // conjugate first element if T has a `.conj()` method
     if constexpr (has_conj<T>)
         elem_[0] = elem_[0].conj();
     // else do nothing
 
-
     // negate all components except the first
     for (D i = 1; i < size_; i++)
         elem_[i] = -elem_[i]; // negate the component
-    return *this;
 }
 
 template<arith_ops T, std::size_t N>
@@ -725,10 +723,14 @@ constexpr inline nion<T,N> nion<T,N>::operator*(const nion<T,M> &other) const {
         make_pair_heap(a, b, elem_, size_); // left half on heap
         auto [c, d] = make_other_pair_stack(other.elem_, other.size_); // right half on stack
 
+        auto ac = a*c; auto da = d*a; // compute the products
+        d.conj_inplace(); c.conj_inplace(); // conjugate the right half in place
+        auto db = d*b; auto bc = b*c; // compute the products
+
         // compute the product
         nion<T,N> result = make_pair(
-                a*c - d.conj_inplace() * b,
-                d*a + b*c.conj_inplace()
+                ac - db,
+                da + bc
         );
 
         // set null pointers
@@ -754,10 +756,14 @@ constexpr inline nion<T,N> nion<T,N>::operator*(const nion<T,M> &other) const {
         auto [a, b] = make_this_pair_stack(elem_, size_); // left half
         auto [c, d] = make_other_pair_stack(other.elem_, other.size_); // right half
 
+        auto ac = a*c; auto da = d*a; // compute the products
+        d.conj_inplace(); c.conj_inplace(); // conjugate the right half in place
+        auto db = d*b; auto bc = b*c; // compute the products
+
         // compute the product
         nion<T,N> result = make_pair(
-                a*c - d.conj_inplace() * b,
-                d*a + b*c.conj_inplace()
+                ac - db,
+                da + bc
         );
 
         return result; // return the product

@@ -288,7 +288,7 @@ struct nion {
      * @return reference to this nion.
      * @detail (a,b)* = (a*,-b)
      */
-    constexpr inline nion<T,N> &conj_inplace();
+    constexpr inline void conj_inplace();
 
     /**
      * @brief overload the += operator for nions.
