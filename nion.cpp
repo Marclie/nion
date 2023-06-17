@@ -42,51 +42,56 @@
 
 template<arith_ops T, std::size_t N>
 template <arith_ops S> requires (std::is_convertible_v<S, T>)
-constexpr inline nion<T,N>::nion(const S* vals, size_t size) : size_(size) {
+constexpr inline nion<T,N>::nion(const S* vals, std::size_t size) : size_(size) {
 
     /// check if the degree is greater than zero and less than the maximum size
     ASSERT(size_ > 0, "The size of the nion must be greater than zero.");
-    ASSERT(size_ <= N || N == 0, "The size of the nion is too large. "
-                                      "consider increasing template parameter, N.");
+    ASSERT(size_ <= N || N == 0,
+           "The size of the nion is too large. "
+           "consider increasing the template parameter, N, or using the default value for heap allocation."
+           );
 
     if constexpr (on_heap) // if the user wants to use the heap
-        elem_ = (T*)malloc(size_ * sizeof(T)); // allocate memory on the heap
+        elem_ = new T[size_]; // allocate memory on the heap
     // else, the user wants to use the stack
 
-    /// copy the values into the nion
-    if constexpr (std::same_as<T, S>) {
-        memcpy(elem_, vals, size_ * sizeof(T));
-    } else {
-        for (size_t i = 0; i < size_; ++i) {
-            elem_[i] = static_cast<T>(vals[i]);
-        }
+    // copy the values into the nion
+    for (std::size_t i = 0; i < size_; ++i) {
+        elem_[i] = static_cast<T>(vals[i]);
     }
+
 }
 
 template<arith_ops T, std::size_t N>
 constexpr inline nion<T,N>::nion(const std::initializer_list<T> &vals) : size_(vals.size()) {
     /// check if the degree is greater than zero
     ASSERT(size_ > 0, "The size of the nion must be greater than zero.");
-    ASSERT(size_ <= N || N == 0, "The size of the nion is too large. "
-                                      "consider increasing template parameter, N.");
+    ASSERT(size_ <= N || N == 0,
+           "The size of the nion is too large. "
+           "consider increasing the template parameter, N, or using the default value for heap allocation."
+    );
 
     if constexpr (on_heap) // if the user wants to use the heap
-        elem_ = (T*)malloc(size_ * sizeof(T)); // allocate memory on the heap
+        elem_ = new T[size_]; // allocate memory on the heap
     // else, the user wants to use the stack
 
-    /// copy the values into the nion
-    memcpy(elem_, vals.begin(), size_ * sizeof(T));
+    // copy the values into the nion
+    for (std::size_t i = 0; i < size_; ++i) {
+        elem_[i] = *(vals.begin() + i);
+    }
 }
 
 template<arith_ops T, std::size_t N>
 constexpr inline nion<T,N>::nion(D size) : size_(size) {
     /// check if the degree is greater than zero
     ASSERT(size_ > 0, "The size of the nion must be greater than zero.");
-    ASSERT(size_ <= N || N == 0, "The size of the nion is too large. "
-                                      "consider increasing template parameter, N.");
+    ASSERT(size_ <= N || N == 0,
+           "The size of the nion is too large. "
+           "consider increasing the template parameter, N, or using the default value for heap allocation."
+    );
 
     if constexpr (on_heap) // if the nion is on the heap
-        elem_ = (T*)malloc(size_*sizeof(T)); // allocate memory for the nion
+        elem_ = new T[size_]; // allocate memory for the nion
 
     /// initialize the values to zero
     zero();
@@ -94,49 +99,51 @@ constexpr inline nion<T,N>::nion(D size) : size_(size) {
 
 template<arith_ops T, std::size_t N>
 constexpr inline nion<T,N>::nion(const nion<T,N> &other) : size_(other.size_) {
-    ASSERT(other.size_ <= N || N == 0, "The size of the nion to copy is too large. "
-                                       "consider increasing template parameter, N.");
+    ASSERT(size_ <= N || N == 0,
+           "The size of the nion is too large. "
+           "consider increasing the template parameter, N, or using the default value for heap allocation."
+    );
 
     if constexpr (on_heap) // if the user wants to use the heap
-        elem_ = (T*)malloc(size_ * sizeof(T)); // allocate memory on the heap
+        elem_ = new T[size_]; // allocate memory on the heap
     // else, the user wants to use the stack
 
     // copy the values into the nion
-    memcpy(elem_, other.elem_, size_ * sizeof(T));
+    for (std::size_t i = 0; i < size_; ++i) {
+        elem_[i] = other.elem_[i];
+    }
 }
 
 template<arith_ops T, std::size_t N>
 constexpr inline nion<T,N> &nion<T,N>::operator=(const nion<T,N> &other) {
     // check if the nions are the same
     if (&other == this) return *this; // return the nion if they are the same
-
-    if (size_ != other.size_) { // if the sizes are not the same
-        if constexpr (on_heap) // if the user wants to use the heap
-            elem_ = (T*)realloc(elem_, other.size_ * sizeof(T)); // reallocate memory on the heap
-        else //, the user wants to use the stack
-            ASSERT(other.size_ <= N || N == 0, "The size of the nion to assign is too large. "
-                                               "consider increasing template parameter, N.");
-    }
-
+    
     // set the size
-    size_ = other.size_;
+    resize(other.size_); // resize the nion
 
     // copy the values into the nion
-    memcpy(elem_, other.elem_, size_ * sizeof(T));
+    for (std::size_t i = 0; i < size_; ++i) {
+        elem_[i] = other.elem_[i];
+    }
     return *this; // return the nion
 }
 
 template<arith_ops T, std::size_t N>
-constexpr inline nion<T,N>::nion(nion<T,N> &&other) noexcept: size_(other.size_) {
-    ASSERT(other.size_ <= N || N == 0, "The size of the nion to copy is too large. "
-                                       "consider increasing template parameter, N.");
+constexpr inline nion<T,N>::nion(nion<T,N> &&other) noexcept : size_(other.size_) {
+    ASSERT(size_ <= N || N == 0,
+           "The size of the nion is too large. "
+           "consider increasing the template parameter, N, or using the default value for heap allocation."
+    );
 
     if constexpr (on_heap) { // if the user wants to use the heap
         elem_ = other.elem_; // allocate memory on the heap
         other.elem_ = nullptr;
         return;
-    } else { // the user wants to use the stack, which requires a copy
-        memcpy(elem_, other.elem_, size_ * sizeof(T));
+    } else { // the user wants to use the stack, which requires a deep copy
+        for (std::size_t i = 0; i < size_; ++i) {
+            elem_[i] = other.elem_[i];
+        }
     }
 }
 
@@ -150,64 +157,50 @@ constexpr inline nion<T,N> &nion<T,N>::operator=(nion<T,N> &&other)  noexcept {
 
     if constexpr (on_heap) {// if the user wants to use the heap
         // just copy the pointer and delete the other nion
-        if (elem_) free(elem_); // free the memory if it is not null
+        delete[] elem_; // free the memory if it is not null
         elem_ = other.elem_;
         other.elem_ = nullptr;
-        return *this;
-    } else { // the user wants to use the stack, and we need to copy the values
+    } else { // the user wants to use the stack, and we need to deep copy the values
 
-        ASSERT(other.size_ <= N || N == 0, "The size of the nion to assign is too large. "
-                                           "consider increasing template parameter, N.");
+        ASSERT(size_ <= N || N == 0,
+               "The size of the nion is too large. "
+               "consider increasing the template parameter, N, or using the default value for heap allocation."
+        );
 
         // copy the values into the nion
-        memcpy(elem_, other.elem_, size_ * sizeof(T));
-        return *this; // return the nion
+        for (std::size_t i = 0; i < size_; ++i) {
+            elem_[i] = other.elem_[i];
+        }
     }
+    return *this; // return the nion
 }
 
 template<arith_ops T, std::size_t N>
 template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S> && (M != N || !std::is_same_v<T, S>))
 constexpr inline nion<T,N>::nion(const nion<S,M> &other) : size_(other.size_) {
     ASSERT(other.size_ <= N || N == 0, "The size of the nion to copy is too large. "
-                             "consider increasing template parameter, N.");
+                             "consider increasing the template parameter, N, or using the default value for heap allocation.");
 
     if constexpr (on_heap) // if the user wants to use the heap
-        elem_ = (T*)malloc(size_ * sizeof(T)); // allocate memory on the heap
+        elem_ = new T[size_]; // allocate memory on the heap
     // else, the user wants to use the stack
 
     // copy the values into the nion
-    if constexpr (std::is_same_v<T,S>) {
-        memcpy(elem_, other.elem_, size_ * sizeof(T));
-    } else {
-        for (int i = 0; i < size_; ++i)
-            elem_[i] = other.elem_[i];
-    }
+    for (D i = 0; i < size_; ++i)
+        elem_[i] = static_cast<T>(other.elem_[i]);
+
 }
 
 template<arith_ops T, std::size_t N>
 template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S> && (M != N || !std::is_same_v<T, S>))
 constexpr inline nion<T,N> &nion<T,N>::operator=(const nion<S,M> &other) {
 
-    ASSERT(other.size_ <= N || N == 0, "The size of the nion to assign is too large. "
-                                       "consider increasing template parameter, N.");
+    // resize the nion (if needed)
+    resize(other.size_);
 
-    if (size_ != other.size_) { // if the sizes are not the same
-        if constexpr (on_heap) // if the user wants to use the heap
-            elem_ = (T*)realloc(elem_, other.size_ * sizeof(T)); // reallocate memory on the heap
-        // else the user wants to use the stack
-            
-    }
-
-    /// set the size
-    size_ = other.size_;
-
-    /// copy the values into the nion
-    if constexpr (std::is_same_v<T,S>) {
-        memcpy(elem_, other.elem_, size_ * sizeof(T));
-    } else {
-        for (int i = 0; i < size_; ++i)
-            elem_[i] = static_cast<T>(other.elem_[i]);
-    }
+    // copy the values into the nion
+    for (D i = 0; i < size_; ++i)
+        elem_[i] = static_cast<T>(other.elem_[i]);
 
     return *this; // return the nion
 }
@@ -216,10 +209,10 @@ template<arith_ops T, std::size_t N>
 template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S> && (M != N || !std::is_same_v<T, S>))
 constexpr inline nion<T,N>::nion(nion<S,M> &&other) noexcept: size_(other.size_) {
     ASSERT(other.size_ <= N || N == 0, "The size of the nion to copy is too large. "
-                                       "consider increasing template parameter, N.");
+                                       "consider increasing the template parameter, N, or using the default value for heap allocation.");
 
     if constexpr (on_heap && nion<S,M>::on_heap) { // if the user wants to use the heap
-        if (elem_) free(elem_); // free the memory if it is not null
+        delete[] elem_; // free the memory if it is not null
         elem_ = other.elem_; // allocate memory on the heap
         other.elem_ = nullptr;
     } else { //else the user wants to use the stack, which requires a copy
@@ -232,13 +225,13 @@ template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S> && (M
 constexpr inline nion<T,N> &nion<T,N>::operator=(nion<S,M> &&other)  noexcept {
 
     ASSERT(other.size_ <= N || N == 0, "The size of the nion to assign is too large. "
-                                       "consider increasing template parameter, N.");
+                                       "consider increasing the template parameter, N, or using the default value for heap allocation.");
 
     /// set the size
     size_ = other.size_;
 
     if constexpr (on_heap && nion<S,M>::on_heap) {// if the user wants to use the heap
-        if (elem_) free(elem_); // free the memory if it is not null
+        delete[] elem_; // free the memory if it is not null
         elem_ = other.elem_; // allocate memory on the heap
         other.elem_ = nullptr;
         return *this;
@@ -260,10 +253,10 @@ constexpr inline nion<T,N>::nion(S realVal, D size) : size_(size) {
     // check if the degree is greater than zero
     ASSERT(size_ > 0, "The degree of the nion must be greater than zero.");
     ASSERT(size_ <= N || N == 0, "The size of the nion is too large. "
-                                      "consider increasing template parameter, N.");
+                                      "consider increasing the template parameter, N, or using the default value for heap allocation.");
 
     if constexpr (on_heap) // if the nion is on the heap
-        elem_ = (T*)malloc(size_*sizeof(T)); // allocate memory for the nion
+        elem_ = new T[size_]; // allocate memory for the nion
 
     // initialize the values to zero
     zero();
@@ -283,7 +276,7 @@ constexpr nion<T,N>::operator nion<S,M>() {
     else { // cast elem_ to S type and return new nion
         elem_type new_elem_;
         if constexpr (nion<S,M>::on_heap)  // if M is NION_USE_HEAP, then use heap for memory, else use stack
-            new_elem_ = (S*) malloc(sizeof(S) * size_);
+            new_elem_ = new S[size_];
 
         for (D i = 0; i < size_; i++)
             new_elem_[i] = static_cast<S>(elem_[i]);
@@ -291,7 +284,7 @@ constexpr nion<T,N>::operator nion<S,M>() {
         // if using heap, free new_elem_ to avoid memory leak
         if constexpr (nion<S,M>::on_heap){
             nion<S,M> cast = nion<S,M>(new_elem_, size_);
-            free(new_elem_); // free new_elem_ to avoid memory leak
+            delete[] new_elem_; // free new_elem_ to avoid memory leak
             return cast;
         }
 
@@ -313,18 +306,19 @@ constexpr inline nion<T,N> nion<T,N>::make_pair(const nion<T,M> &a, const nion<T
 
     ASSERT(a.size_ > 0 && b.size_ > 0, "The sizes of the nion pair (a, b) must both be greater than zero.");
     ASSERT(pair.size_ <= N || N == 0, "The size of the nion is too large. "
-                                      "consider increasing template parameter, N.\n"
+                                      "consider increasing the template parameter, N, or using the default value for heap allocation.\n"
                                       "The value of N is" + std::to_string(N) + ".\n"
                                       "The value of a.size() is " + std::to_string(a.size_) + ".\n"
                                       "The value of b.size() is " + std::to_string(b.size_) + ".");
 
     if constexpr (on_heap) // if the user wants to use the heap
-        pair.elem_ = (T*)malloc(pair.size_ * sizeof(T)); // allocate memory on the heap
+        pair.elem_ = new T[pair.size_]; // allocate memory on the heap
     // else, the user wants to use the stack
 
     /// copy the values into the nion
-    memcpy(pair.elem_, a.elem_, a.size_ * sizeof(T));
-    memcpy(pair.elem_ + a.size_, b.elem_, b.size_ * sizeof(T));
+    for (D i = 0; i < a.size_; i++) pair.elem_[i] = a.elem_[i];
+    for (D i = 0; i < b.size_; i++) pair.elem_[i + a.size_] = b.elem_[i];
+
 
     return pair;
 }
@@ -332,35 +326,42 @@ constexpr inline nion<T,N> nion<T,N>::make_pair(const nion<T,M> &a, const nion<T
 template<arith_ops T, std::size_t N>
 constexpr inline void nion<T,N>::resize(int size) {
     ASSERT(size > 0, "new nion size must be greater than zero");
-    size_ = size;
+    // TODO: make this more efficient by allocating more memory than needed and only resizing when needed.
+    if (size_ < size) {
+        if constexpr (on_heap) { // if the user wants to use the heap
 
-    if constexpr (on_heap) { // if the user wants to use the heap
-        // reallocate memory on the heap
-        elem_ = (T*)realloc(elem_, size_ * sizeof(T));
+            elem_type new_elem_ = new T[size]; // allocate memory on the heap (`new` calls the constructor)
+
+            // copy the values into the nion
+            for (D i = 0; i < size_; ++i)
+                new_elem_[i] = elem_[i];
+
+            delete[] elem_; // free the old memory
+            elem_ = new_elem_; // set the new memory
+        } else {
+            ASSERT(size <= N || N == 0, // else, the user wants to use the stack
+                   "The size of the nion is too large. "
+                   "consider increasing the template parameter, N, or using the default value for heap allocation."
+            );
+
+            // set the new values to zero (default value)
+            for (D i = size_; i < size; ++i)
+                elem_[i] = T();
+        }
     }
-
-    // set the new elements to zero
-    memset(elem_ + size_, 0, (size - size_) * sizeof(T));
+    
+    size_ = size;
 }
 
 template<arith_ops T, std::size_t N>
 constexpr nion<T,N> &nion<T,N>::operator=(const std::initializer_list<T> &vals) {
+    // set the size of the nion
+    resize(vals.size());
 
-    // check if the size of the nion is the same as the initializer list
-    auto val_size = vals.size();
-    if (size_ != val_size) { // if the sizes are not the same
-        if constexpr (on_heap) // if the user wants to use the heap
-            elem_ = (T*)realloc(elem_, val_size * sizeof(T)); // reallocate memory on the heap
-        else //, the user wants to use the stack
-            ASSERT(val_size <= N || N == 0, "The size of the nion to assign is too large. "
-                                     "consider increasing template parameter, N.");
-    }
+    // copy the values into the nion
+    for (std::size_t i = 0; i < size_; ++i)
+        elem_[i] = *(vals.begin() + i);
 
-    /// set the size of the nion
-    size_ = val_size;
-
-    /// copy the values into the nion
-    memcpy(elem_, vals.begin(), size_ * sizeof(T));
     return *this; // return the nion
 }
 
@@ -368,14 +369,15 @@ constexpr nion<T,N> &nion<T,N>::operator=(const std::initializer_list<T> &vals) 
 template<arith_ops T, std::size_t N>
 template<not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
 constexpr inline nion<T,N> &nion<T,N>::operator=(S scalar) {
-    /// check if the nion is initialized
+    // check if the nion is initialized
     if (size_ <= 0) {
         size_ = 1; // set the degree
-        if constexpr (on_heap) // if the user wants to use the heap
-            elem_ = (T*)malloc(sizeof(T)); // allocate memory on the heap
+        if constexpr (on_heap) { // if the user wants to use the heap
+            if (!elem_) elem_ = new T[size_]; // allocate memory on the heap
+        }
     }
 
-    zero(); // set the nion to zero
+    zero(); // reset the nion
     elem_[0] = static_cast<T>(scalar); // set the real component
     return *this; // return the nion
 }
@@ -390,24 +392,28 @@ template<arith_ops T, std::size_t N>
 template<std::size_t M>
 constexpr inline void nion<T,N>::operator+=(const nion<T,M> &other) {
 
-    // find common type
+    // find the common integer type
     using E = typename nion<T,M>::D;
     using uint_com = std::common_type_t<D, E>;
 
-    // add the components of the other nion to this nion.
-    if (size_ >= other.size_) {
-        for (uint_com i = 0; i < other.size_; i++)
-            elem_[i] += other.elem_[i];
-    } else {
-        for (uint_com i = 0; i < size_; i++)
-            elem_[i] += other.elem_[i];
+    // find the smaller size
+    uint_com smaller_size;
 
-        // copy the remaining values
-        memcpy(elem_ + size_, other.elem_ + size_, (other.size_ - size_) * sizeof(T));
+    if (size_ < other.size_){
+        smaller_size = size_;
 
-        // set the new size of the nion
-        size_ = other.size_;
-    }
+        // resize this nion to fit the other nion
+        resize(other.size_);
+
+    } else smaller_size = other.size_;
+
+    // for the first smaller_size elements, add the other nion's elements to this nion's elements.
+    for (uint_com i = 0; i < smaller_size; i++)
+        elem_[i] += other.elem_[i];
+
+    // copy the remaining values (if any) from the other nion to this nion.
+    for (uint_com i = smaller_size; i < other.size_; i++)
+        elem_[i] = other.elem_[i];
 
 }
 
@@ -436,29 +442,9 @@ constexpr inline void nion<T,N>::operator-=(S scalar) {
 template<arith_ops T, std::size_t N>
 template<std::size_t M>
 constexpr inline nion<T,N> nion<T,N>::operator+(const nion<T,M> &other) const {
-
-    // find common int type
-    using E = typename nion<T,M>::D;
-    using uint_com = std::common_type_t<D, E>;
-
-    if (size_ >= other.size_) {
-        // create a nion to store the difference
-        nion<T,N> sum(*this);
-
-        // add the components of the other nion and this nion.
-        for (uint_com i = 0; i < other.size_; i++)
-            sum.elem_[i] += other.elem_[i];
-        return sum;
-    } else {
-        // create a nion to store the difference
-        nion<T,N> sum(other);
-
-        // add the components of the other nion and this nion.
-        for (uint_com i = 0; i < size_; i++)
-            sum.elem_[i] += elem_[i];
-
-        return sum;
-    }
+    nion<T,N> sum(*this);
+    sum += other;
+    return sum;
 }
 
 template<arith_ops T, std::size_t N>
@@ -498,7 +484,7 @@ constexpr inline nion<T,N> nion<T,N>::operator-(S scalar) const {
 
 template<arith_ops T, std::size_t N, not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
 constexpr inline nion<T,N> operator-(S scalar, const nion<T,N> &z) {
-    return -z + scalar;
+    return -scalar + z;
 }
 
 template<arith_ops T, std::size_t N>
@@ -549,9 +535,9 @@ concept has_conj = requires(T a) {
 
 template<arith_ops T, std::size_t N>
 constexpr inline nion<T,N> nion<T,N>::conj() const {
-    nion<T,N> conjugate = *this; // copy this nion
+    nion<T,N> conjugate(*this); // copy this nion
 
-    // conjugate first element if T has a `.conj()` method
+    // conjugate the first element if T has a `.conj()` method
     if constexpr (has_conj<T>)
         conjugate.elem_[0] = conjugate.elem_[0].conj();
     // else do nothing
@@ -565,7 +551,7 @@ constexpr inline nion<T,N> nion<T,N>::conj() const {
 
 template<arith_ops T, std::size_t N>
 constexpr inline void nion<T,N>::conj_inplace() {
-    // conjugate first element if T has a `.conj()` method
+    // conjugate the first element if T has a `.conj()` method
     if constexpr (has_conj<T>)
         elem_[0] = elem_[0].conj();
     // else do nothing
@@ -594,7 +580,7 @@ constexpr inline nion<T,N> nion<T,N>::operator*(const nion<T,M> &other) const {
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds" // Disable the array out of bounds warning
+#pragma GCC diagnostic ignored "-Warray-bounds" // Disable the array out-of-bounds warning
 #elif defined(__INTEL_COMPILER)
         #pragma warning(push)
             #pragma warning(disable: 2259) // Disable the array out of bounds warning
@@ -652,7 +638,6 @@ constexpr inline nion<T,N> nion<T,N>::operator*(const nion<T,M> &other) const {
                     {elem_[ 0] * other.elem_[14] - elem_[ 1] * other.elem_[15] - elem_[ 2] * other.elem_[12] + elem_[ 3] * other.elem_[13] + elem_[ 4] * other.elem_[10] - elem_[ 5] * other.elem_[11] + elem_[ 6] * other.elem_[ 8] + elem_[ 7] * other.elem_[ 9] - elem_[ 8] * other.elem_[ 6] - elem_[ 9] * other.elem_[ 7] - elem_[10] * other.elem_[ 4] + elem_[11] * other.elem_[ 5] + elem_[12] * other.elem_[ 2] - elem_[13] * other.elem_[ 3] + elem_[14] * other.elem_[ 0] + elem_[15] * other.elem_[ 1]},
                     {elem_[ 0] * other.elem_[15] + elem_[ 1] * other.elem_[14] - elem_[ 2] * other.elem_[13] - elem_[ 3] * other.elem_[12] + elem_[ 4] * other.elem_[11] + elem_[ 5] * other.elem_[10] - elem_[ 6] * other.elem_[ 9] + elem_[ 7] * other.elem_[ 8] - elem_[ 8] * other.elem_[ 7] + elem_[ 9] * other.elem_[ 6] - elem_[10] * other.elem_[ 5] - elem_[11] * other.elem_[ 4] + elem_[12] * other.elem_[ 3] + elem_[13] * other.elem_[ 2] - elem_[14] * other.elem_[ 1] + elem_[15] * other.elem_[ 0]}
                 };
-            //case 32: TODO: No way. You can't make me. 32x32 products are just too big. I could do it, but it wouldn't be pretty. I'll leave it to you.
 #endif
         } // if size_ is not 1, 2, 8, or 16, we need to do the recursive product.
 
@@ -686,13 +671,13 @@ constexpr inline nion<T,N> nion<T,N>::operator*(const nion<T,M> &other) const {
         lhalf.elem_ = elem; rhalf.elem_ = elem + half_size;
     };
 
-    constexpr auto make_this_pair_stack = [](const T* elem, size_t size) {
+    constexpr auto make_this_pair_stack = [](const T* elem, std::size_t size) {
         uint_com half_size = size - (size >> 1);
         return std::pair<nion<T, N-(N>>1)>, nion<T, N-(N>>1)>>
             {{elem, half_size}, {elem + half_size, size - half_size}};
     };
 
-    constexpr auto make_other_pair_stack = [](const T* elem, size_t size) {
+    constexpr auto make_other_pair_stack = [](const T* elem, std::size_t size) {
         uint_com half_size = size - (size >> 1);
         return std::pair<nion<T, M-(M>>1)>, nion<T, M-(M>>1)>>
                 {{elem, half_size}, {elem + half_size, size - half_size}};
@@ -774,7 +759,7 @@ template<arith_ops T, std::size_t N>
 template<not_nion<T,N> S> requires (std::is_convertible_v<S,T>)
 constexpr inline nion<T,N> nion<T,N>::operator*(S scalar) const {
     nion<T,N> product(*this);
-    
+
     // compute the product of each element of the nion with the scalar
     for (D i = 0; i < size_; i++)
         product.elem_[i] *= scalar;
@@ -807,15 +792,15 @@ constexpr inline T nion<T,N>::abs() const {
 
 template<arith_ops T, std::size_t N>
 constexpr inline T nion<T,N>::norm() const {
-    return sqrt(abs());
+    return sqrt(this->abs());
 }
 
 template<arith_ops T, std::size_t N>
 constexpr inline nion<T,N> nion<T,N>::inv() const {
-    
+
     nion<T,N> inverse(*this);
-    
-    T absolute = abs();
+
+    T absolute = this->abs();
     inverse.elem_[0] /= absolute;
     for (D i = 1; i < size_; i++)
         inverse.elem_[i] /= -absolute;

@@ -24,6 +24,8 @@
 #include <stdexcept>
 #include <cstring>
 #include <concepts>
+#include <vector>
+#include <array>
 
 // Make a concept that checks if a type has arithmetic operations
 template<typename T>
@@ -60,7 +62,7 @@ concept not_nion = !std::is_same_v<T, nion<T, N>>;
 template<arith_ops T, std::size_t N>
 struct nion {
 
-    // determine minimum number of bits required to represent N at compile time
+    // determine the minimum number of bits required to represent N at compile time
     static constexpr std::size_t N_BITS = std::numeric_limits<std::size_t>::digits - __builtin_clzl(N);
     static constexpr bool on_heap = N == NION_USE_HEAP; // determine if heap should be used for memory
 
@@ -87,8 +89,8 @@ struct nion {
      * @details Constructs a nion object of size 1 with all coefficients set to 0.
      */
     constexpr inline nion<T,N>() : size_(1) {
-        if constexpr (on_heap) elem_ = (T*)malloc(sizeof(T)); // allocate memory on heap
-        else elem_[0] = T(); // set first coefficient to default value (0)
+        if constexpr (on_heap) elem_ = new T[size_]; // allocate memory on heap
+        else elem_[0] = T(); // set first coefficient to default value
     }
 
     /**
@@ -96,7 +98,7 @@ struct nion {
      */
     ~nion() {
         if constexpr (on_heap) { // if the nion is on the heap
-            if (elem_) free(elem_); // free the memory
+            delete[] elem_; // free the memory
             elem_ = nullptr; // set the pointer to null
         }
         // else the nion is on the stack and will be freed automatically
@@ -117,7 +119,7 @@ struct nion {
      * @note The size of the nion must be greater than zero.
      */
     template <arith_ops S> requires (std::is_convertible_v<S, T>)
-    constexpr inline nion<T,N>(const S *vals, size_t size);
+    constexpr inline nion<T,N>(const S *vals, std::size_t size);
 
     /**
      * @brief Construct a new nion object from vector
@@ -136,7 +138,7 @@ struct nion {
      * @brief zero nion
      */
     constexpr inline void zero(){
-        memset(elem_, 0, sizeof(T) * size_); // set all coefficients to zero
+        for (D i = 0; i < size_; i++) elem_[i] = T(); // set all coefficients to zero (or default constructor)
     };
 
     /**
