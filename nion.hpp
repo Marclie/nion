@@ -98,7 +98,7 @@ struct nion {
      */
     ~nion() {
         if constexpr (on_heap) { // if the nion is on the heap
-            delete[] elem_; // free the memory
+            if (elem_) delete[] elem_; // free the memory
             elem_ = nullptr; // set the pointer to null
         }
         // else the nion is on the stack and will be freed automatically

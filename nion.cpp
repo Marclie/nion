@@ -156,8 +156,8 @@ constexpr inline nion<T,N> &nion<T,N>::operator=(nion<T,N> &&other)  noexcept {
     size_ = other.size_;
 
     if constexpr (on_heap) {// if the user wants to use the heap
-        // just copy the pointer and delete the other nion
-        delete[] elem_; // free the memory if it is not null
+        // just copy the pointer and delete this one
+        if (elem_) delete[] elem_; // free the memory if it is not null
         elem_ = other.elem_;
         other.elem_ = nullptr;
     } else { // the user wants to use the stack, and we need to deep copy the values
@@ -212,7 +212,7 @@ constexpr inline nion<T,N>::nion(nion<S,M> &&other) noexcept: size_(other.size_)
                                        "consider increasing the template parameter, N, or using the default value for heap allocation.");
 
     if constexpr (on_heap && nion<S,M>::on_heap) { // if the user wants to use the heap
-        delete[] elem_; // free the memory if it is not null
+        if (elem_) delete[] elem_; // free the memory if it is not null
         elem_ = other.elem_; // allocate memory on the heap
         other.elem_ = nullptr;
     } else { //else the user wants to use the stack, which requires a copy
@@ -231,7 +231,7 @@ constexpr inline nion<T,N> &nion<T,N>::operator=(nion<S,M> &&other)  noexcept {
     size_ = other.size_;
 
     if constexpr (on_heap && nion<S,M>::on_heap) {// if the user wants to use the heap
-        delete[] elem_; // free the memory if it is not null
+        if (elem_) delete[] elem_; // free the memory if it is not null
         elem_ = other.elem_; // allocate memory on the heap
         other.elem_ = nullptr;
         return *this;
@@ -284,7 +284,7 @@ constexpr nion<T,N>::operator nion<S,M>() {
         // if using heap, free new_elem_ to avoid memory leak
         if constexpr (nion<S,M>::on_heap){
             nion<S,M> cast = nion<S,M>(new_elem_, size_);
-            delete[] new_elem_; // free new_elem_ to avoid memory leak
+            if (elem_) delete[] new_elem_; // free new_elem_ to avoid memory leak
             return cast;
         }
 
@@ -336,7 +336,7 @@ constexpr inline void nion<T,N>::resize(int size) {
             for (D i = 0; i < size_; ++i)
                 new_elem_[i] = elem_[i];
 
-            delete[] elem_; // free the old memory
+            if (elem_) delete[] elem_; // free the old memory
             elem_ = new_elem_; // set the new memory
         } else {
             ASSERT(size <= N || N == 0, // else, the user wants to use the stack
