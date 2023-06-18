@@ -923,4 +923,7 @@ struct nion {
 
 #include "nion.cpp"
 
+using nionF = nion<float, NION_USE_HEAP>; // single precision
+using nionD = nion<double, NION_USE_HEAP>; // double precision
+
 #endif //NION_HPP
