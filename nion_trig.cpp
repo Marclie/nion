@@ -176,9 +176,9 @@ constexpr inline nion<T,N> tan(const nion<T,N> &z) {
 
     // compute the tangent of the nion
     if (i_norm <= denorm_min)
-        return (tan(r) + i * tanh(i_norm)) / (1 - i * (tan(r) * tanh(i_norm)));
+        return -(tan(r) + i * tanh(i_norm)) / (1 - i * (tan(r) * tanh(i_norm)));
     else
-        return (tan(r) + i * (tanh(i_norm) / i_norm)) / (1 - i * (tan(r) / i_norm * tanh(i_norm)));
+        return -(tan(r) + i * (tanh(i_norm) / i_norm)) / (1 - i * (tan(r) / i_norm * tanh(i_norm)));
 }
 
 template<arith_ops T, std::size_t N>
