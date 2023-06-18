@@ -270,9 +270,9 @@ template<arith_ops S, std::size_t M>
 requires(std::is_convertible_v<T, S>)
 constexpr nion<T,N>::operator nion<S,M>() {
     if constexpr (std::is_same_v<T, S>) // if types are the same, just copy the array
-        return nion<T,M>(elem_, size_);
+        return nion<S,M>(elem_, size_);
     else if constexpr (N == M) // if max sizes are the same, just copy the array
-        return nion<S,N>(elem_, size_);
+        return nion<S,M>(elem_, size_);
     else { // cast elem_ to S type and return new nion
         elem_type new_elem_;
         if constexpr (nion<S,M>::on_heap)  // if M is NION_USE_HEAP, then use heap for memory, else use stack
