@@ -145,10 +145,18 @@ struct nion {
     constexpr inline explicit nion<T,N>(D size);
 
     /**
+     * @brief fill nion with a value
+     * @param val The value to fill the nion with.
+     */
+    constexpr inline void fill(T val){
+        for (D i = 0; i < size_; i++) elem_[i] = val; // set all coefficients to val
+    };
+
+    /**
      * @brief zero nion
      */
     constexpr inline void zero(){
-        for (D i = 0; i < size_; i++) elem_[i] = T(); // set all coefficients to zero (or default constructor)
+        fill(T()); // set all coefficients to zero (default value)
     };
 
     /**
