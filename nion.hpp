@@ -59,11 +59,21 @@ struct nion; // forward declaration
 template<typename S, typename T, std::size_t N>
 concept not_nion = !std::is_same_v<T, nion<T, N>>;
 
+// create a constexpr function that counts the number of bits in an integer
+template <typename T>
+constexpr std::size_t count_size_bits(T n) {
+    std::size_t bits = 0; // initialize bits to zero
+    while (n > 0) { // while `n` still has bits
+        n >>= 1; // remove the least significant bit
+        ++bits; // increment the number of bits
+    } return bits; // return the number of bits
+}
+
 template<arith_ops T, std::size_t N>
 struct nion {
 
     // determine the minimum number of bits required to represent N at compile time
-    static constexpr std::size_t N_BITS = std::numeric_limits<std::size_t>::digits - __builtin_clzl(N);
+    static constexpr std::size_t N_BITS = count_size_bits(N);
     static constexpr bool on_heap = N == NION_USE_HEAP; // determine if heap should be used for memory
 
     // set the internal integer type to the smallest width that can hold N
