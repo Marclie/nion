@@ -685,7 +685,7 @@ constexpr inline nion<T,N> nion<T,N>::operator*(const nion<T,M> &other) const {
 
     /// compute product depending on where the nions are stored (stack or heap)
 
-    if constexpr (on_heap && other.on_heap) {
+    if constexpr (on_heap && nion<T,M>::on_heap) {
         // if both nions are on the heap, only copy the pointers
 
         nion<T,N> a, b, c, d;
@@ -721,7 +721,7 @@ constexpr inline nion<T,N> nion<T,N>::operator*(const nion<T,M> &other) const {
         // set null pointers
         a.elem_ = nullptr; b.elem_ = nullptr;
         return result; // return the product
-    } else if constexpr (other.on_heap){
+    } else if constexpr (nion<T,M>::on_heap){
         // if only the second nion is on the heap, copy the pointers to the second half of the nion
 
         auto [a, b] = make_this_pair_stack(elem_, size_); // left half on stack
