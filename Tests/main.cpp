@@ -1,5 +1,5 @@
 /*
- Copyright 2022 Marcus Dante Liebenthal
+ Copyright 2023 Marcus Dante Liebenthal
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -237,8 +237,13 @@ void mixedOrderTest() {
     std::cout << "n8:\t" << n8 << std::endl;
     std::cout << "n9:\t" << n9 << std::endl << std::endl;
 
+    std::cout << "n9 + n9:\t" << n9 + n9 << std::endl;
+    std::cout << "n8 + n8:\t" << n8 + n8 << std::endl;
     std::cout << "n9 + n8:\t" << n9 + n8 << std::endl;
+    std::cout << "n9 - n9:\t" << n9 - n9 << std::endl;
+    std::cout << "n8 - n8:\t" << n8 - n8 << std::endl;
     std::cout << "n9 - n8:\t" << n9 - n8 << std::endl;
+
 
     std::cout << "n8 * n8:\t" << n8 * n8 << std::endl;
     std::cout << "n8 / n8:\t" << n8 / n8 << std::endl;
@@ -422,6 +427,7 @@ void benchmark(int trials){
     end = clock();
     totalTime += (end - start) / CLOCKS_PER_SEC;
     std::cout << "\n --> complex comparison took " << (end - start) / CLOCKS_PER_SEC << " seconds" << std::endl;
+//    exit(0);
 
     start = clock();
     boostQuaternionComparison<long double>(trials);

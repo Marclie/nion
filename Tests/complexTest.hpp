@@ -41,7 +41,7 @@ void printSpeedupComplex(const T& niontime, const T& othertime) {
 
 template<typename T>
 T getMAEcomplex(nion<T,2> nion, std::complex<T> compare){
-    int degree = nion.size_;
+    int degree = nion.size();
     T mae = 0;
     mae += std::pow(nion[0] - compare.real(), 2);
     mae += std::pow(nion[1] - compare.imag(), 2);
@@ -453,13 +453,13 @@ void stdComplexComparison(int trials) {
         {
             // evaluate nion power, and time
             startNion = std::chrono::high_resolution_clock::now();
-            nionResult = pow(nion_complex1, 5);
+            nionResult = pow(nion_complex1, 2);
             endNion = std::chrono::high_resolution_clock::now();
             powNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
 
             // evaluate std::complex power, and time
             startStd = std::chrono::high_resolution_clock::now();
-            stdResult = std::pow(complex1, 5);
+            stdResult = std::pow(complex1, 2);
             endStd = std::chrono::high_resolution_clock::now();
             powStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
@@ -549,7 +549,7 @@ void stdComplexComparison(int trials) {
 
             // evaluate std::complex sine, and time
             startStd = std::chrono::high_resolution_clock::now();
-            stdResult = sin(complex1);
+            stdResult = std::sin(complex1);
             endStd = std::chrono::high_resolution_clock::now();
             sinStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
@@ -579,7 +579,7 @@ void stdComplexComparison(int trials) {
 
             // evaluate std::complex asine, and time
             startStd = std::chrono::high_resolution_clock::now();
-            stdResult = asin(complex1);
+            stdResult = std::asin(complex1);
             endStd = std::chrono::high_resolution_clock::now();
             asinStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
@@ -609,7 +609,7 @@ void stdComplexComparison(int trials) {
 
             // evaluate std::complex cosine, and time
             startStd = std::chrono::high_resolution_clock::now();
-            stdResult = cos(complex1);
+            stdResult = std::cos(complex1);
             endStd = std::chrono::high_resolution_clock::now();
             cosStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
@@ -639,7 +639,7 @@ void stdComplexComparison(int trials) {
 
             // evaluate std::complex acosine, and time
             startStd = std::chrono::high_resolution_clock::now();
-            stdResult = acos(complex1);
+            stdResult = std::acos(complex1);
             endStd = std::chrono::high_resolution_clock::now();
             acosStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
@@ -669,7 +669,7 @@ void stdComplexComparison(int trials) {
 
             // evaluate std::complex tangent, and time
             startStd = std::chrono::high_resolution_clock::now();
-            stdResult = tan(complex1);
+            stdResult = std::tan(complex1);
             endStd = std::chrono::high_resolution_clock::now();
             tanStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
@@ -699,7 +699,7 @@ void stdComplexComparison(int trials) {
 
             // evaluate std::complex atan, and time
             startStd = std::chrono::high_resolution_clock::now();
-            stdResult = atan(complex1);
+            stdResult = std::atan(complex1);
             endStd = std::chrono::high_resolution_clock::now();
             atanStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
@@ -729,7 +729,7 @@ void stdComplexComparison(int trials) {
 
             // evaluate std::complex hyperbolic sine, and time
             startStd = std::chrono::high_resolution_clock::now();
-            stdResult = sinh(complex1);
+            stdResult = std::sinh(complex1);
             endStd = std::chrono::high_resolution_clock::now();
             sinhStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
@@ -759,7 +759,7 @@ void stdComplexComparison(int trials) {
 
             // evaluate std::complex hyperbolic cosine, and time
             startStd = std::chrono::high_resolution_clock::now();
-            stdResult = cosh(complex1);
+            stdResult = std::cosh(complex1);
             endStd = std::chrono::high_resolution_clock::now();
             coshStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
@@ -789,7 +789,7 @@ void stdComplexComparison(int trials) {
 
             // evaluate std::complex hyperbolic tangent, and time
             startStd = std::chrono::high_resolution_clock::now();
-            stdResult = tanh(complex1);
+            stdResult = std::tanh(complex1);
             endStd = std::chrono::high_resolution_clock::now();
             tanhStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
@@ -819,7 +819,7 @@ void stdComplexComparison(int trials) {
 
             // evaluate std::complex hyperbolic arc sine, and time
             startStd = std::chrono::high_resolution_clock::now();
-            stdResult = asinh(complex1);
+            stdResult = std::asinh(complex1);
             endStd = std::chrono::high_resolution_clock::now();
             asinhStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
@@ -849,7 +849,7 @@ void stdComplexComparison(int trials) {
 
             // evaluate std::complex hyperbolic arc cosine, and time
             startStd = std::chrono::high_resolution_clock::now();
-            stdResult = acosh(complex1);
+            stdResult = std::acosh(complex1);
             endStd = std::chrono::high_resolution_clock::now();
             acoshStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 
@@ -879,7 +879,7 @@ void stdComplexComparison(int trials) {
 
             // evaluate std::complex hyperbolic arc tangent, and time
             startStd = std::chrono::high_resolution_clock::now();
-            stdResult = atanh(complex1);
+            stdResult = std::atanh(complex1);
             endStd = std::chrono::high_resolution_clock::now();
             atanhStdTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endStd - startStd).count();
 

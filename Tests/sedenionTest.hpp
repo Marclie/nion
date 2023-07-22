@@ -48,7 +48,7 @@ void printSpeedupSedenion(const T& niontime, const T& othertime) {
 
 template<typename T>
 T getMAEsedenion(nion<T,16> nion, Sedenion<T> compare){
-    int degree = nion.size_;
+    int degree = nion.size();
     T mae = 0;
     for (int i = 0; i < degree; i++) {
         mae += std::pow(nion[i] - compare[i], 2);

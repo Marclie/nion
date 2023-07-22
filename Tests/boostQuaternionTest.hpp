@@ -41,7 +41,7 @@ void printSpeedupQuaternion(const T& niontime, const T& othertime) {
 
 template<typename T>
 T getMAEquaternion(nion<T,4> nion, boost::math::quaternion<T> compare){
-    int degree = nion.size_;
+    int degree = nion.size();
     T mae = 0;
     mae += std::pow(nion[0] - compare.R_component_1(), 2);
     mae += std::pow(nion[1] - compare.R_component_2(), 2);
@@ -229,17 +229,14 @@ void boostQuaternionComparison(int trials) {
         // norm
         {
             startNion = std::chrono::high_resolution_clock::now();
-            nionResult = abs(nion1);
+            nionNorm = abs(nion1);
             endNion = std::chrono::high_resolution_clock::now();
             normNionTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endNion - startNion).count();
 
             startBoost = std::chrono::high_resolution_clock::now();
-            boostResult = boost::math::norm(boost1);
+            boostNorm = boost::math::norm(boost1);
             endBoost = std::chrono::high_resolution_clock::now();
             normBoostTimer += std::chrono::duration_cast<std::chrono::nanoseconds>(endBoost - startBoost).count();
-
-            nionNorm = abs(nionResult);
-            boostNorm = boost::math::norm(boostResult);
 
             diff = fabs(nionNorm - boostNorm);
             MRE_Norm += diff;
