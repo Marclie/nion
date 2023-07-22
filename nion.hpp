@@ -1,5 +1,5 @@
 /*
- Copyright 2022 Marcus Dante Liebenthal
+ Copyright 2023 Marcus Dante Liebenthal
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,19 +26,7 @@
 #include <concepts>
 #include <vector>
 #include <array>
-
-// Make a concept that checks if a type has arithmetic operations
-template<typename T>
-concept arith_ops = requires(T a, T b) {
-    { a + b } -> std::same_as<T>;
-    { a - b } -> std::same_as<T>;
-    { a * b } -> std::same_as<T>;
-    { a / b } -> std::same_as<T>;
-};
-
-// make a concept that checks if a type is integral
-template<typename Z>
-concept integral_type = std::is_integral_v<Z>;
+#include "niolloc.hpp"
 
 // macro to determine if heap should be used for memory (zero enables heap)
 #define NION_USE_HEAP 0
@@ -59,36 +47,19 @@ struct nion; // forward declaration
 template<typename S, typename T, std::size_t N>
 concept not_nion = !std::is_same_v<T, nion<T, N>>;
 
-// create a constexpr function that counts the number of bits in an integer
-template <typename T>
-constexpr std::size_t count_size_bits(T n) {
-    std::size_t bits = 0; // initialize bits to zero
-    while (n > 0) { // while `n` still has bits
-        n >>= 1; // remove the least significant bit
-        ++bits; // increment the number of bits
-    } return bits; // return the number of bits
-}
-
 template<arith_ops T, std::size_t N>
 struct nion {
 
     // determine the minimum number of bits required to represent N at compile time
-    static constexpr std::size_t N_BITS = count_size_bits(N);
     static constexpr bool on_heap = N == NION_USE_HEAP; // determine if heap should be used for memory
+    niolloc<T,N> elem_{}; // declare the memory allocation object
 
-    // set the internal integer type to the smallest width that can hold N
-    using D = std::conditional_t<on_heap, std::size_t, // default to std::size_t if N is 0 for heap allocation
-              std::conditional_t<N_BITS <= 8, uint8_t,     // max size of 256
-              std::conditional_t<N_BITS <= 16, uint16_t,   // max size of 65536
-              std::conditional_t<N_BITS <= 32, uint32_t,   // max size of 4294967296
-              std::size_t>>>>; // max size of 18446744073709551616
-            
-    /// coefficients
-    // if N is NION_USE_HEAP, then use heap for memory, else use stack
-    using elem_type = std::conditional_t<N == NION_USE_HEAP, T*, T[N]>; // container for coefficients
+    using D = niolloc<T,N>::D; // declare the type of the memory allocation object
+    D size_ = elem_.size_; // declare the size of the memory allocation object (Should be synced with the allocator)
 
-    elem_type elem_; // declare array of coefficients on stack (where max size is N)
-    D size_; // number of coefficients
+    constexpr inline niolloc<T,N> &elem() { return elem_; } // return a reference to the memory allocation object
+    constexpr inline const niolloc<T,N> &elem() const { return elem_; }  // return a const reference to the memory allocation object
+    constexpr inline niolloc<T,N>::D size() const { return elem_.size_; } // return the size of the memory allocation object
 
     /***************************
     *  NION CONSTRUCTORS
@@ -98,27 +69,26 @@ struct nion {
      * @brief Default constructor.
      * @details Constructs a nion object of size 1 with all coefficients set to 0.
      */
-    constexpr inline nion<T,N>() : size_(1) {
-        if constexpr (on_heap) elem_ = new T[size_]; // allocate memory on heap
-        else elem_[0] = T(); // set first coefficient to default value
+    constexpr inline nion<T,N>() {
+        elem_ = niolloc<T,N>(); // default allocate memory
+        size_ = size(); // sync size with allocator
     }
 
     /**
      * @brief Destroy the nion object
      */
-    ~nion() {
-        if constexpr (on_heap) { // if the nion is on the heap
-            if (elem_) delete[] elem_; // free the memory
-            elem_ = nullptr; // set the pointer to null
-        }
-        // else the nion is on the stack and will be freed automatically
-    }
+    constexpr inline ~nion() = default; // niolloc destructor is called automatically
 
     /**
      * @brief cast nion if both arith_ops types are different and max size is different
      */
-    template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S>)
-    constexpr inline explicit operator nion<S,M>();
+    template<arith_ops S, std::size_t M>
+    constexpr inline explicit operator nion<S,M>(){
+        nion<S,M> out;
+        out.elem_ = elem_; // copy memory (automatic type conversion from niolloc)
+        out.size_ = out.size(); // sync size with allocator
+        return out;
+    }
 
     /**
      * @brief Construct a new nion object from vector
@@ -129,28 +99,40 @@ struct nion {
      * @note The size of the nion must be greater than zero.
      */
     template <arith_ops S> requires (std::is_convertible_v<S, T>)
-    constexpr inline nion<T,N>(const S *vals, std::size_t size);
+    constexpr inline nion<T,N>(const S *vals, std::size_t size){ elem_ = niolloc<T,N>(vals, size); size_ = this->size(); }
 
     /**
-     * @brief Construct a new nion object from vector
+     * @brief Construct a new nion object from an initializer list.
      * @param components The components of the nion as an initializer list.
-     * @note The size of the nion is determined by the size of the initializer list.
      */
-    constexpr inline nion<T,N>(const std::initializer_list<T> &vals);
+    constexpr inline nion<T,N>(const std::initializer_list<T> &vals) { elem_ = niolloc<T,N>(vals); size_ = size(); }
+
+    /**
+     * @brief Construct a new nion object from a vector
+     * @param components The components of the nion as a vector.
+     */
+    constexpr inline explicit nion<T,N>(const std::vector<T> &vals) { elem_ = niolloc<T,N>(vals); size_ = size(); }
+
+    /**
+     * @brief Construct a new nion object from a scalar
+     * @param scalar The value to fill the nion with.
+     */
+    template<not_nion<T,N> S> requires (std::is_convertible_v<S,T> && !std::is_integral_v<S>)
+    constexpr inline explicit nion<T,N>(const S &scalar) { elem_ = scalar; size_ = size(); } // return the nion
 
     /**
      * @brief Construct an empty nion object
      * @param size The size of the nion.
      */
-    constexpr inline explicit nion<T,N>(D size);
+    template<integral_type Z>
+    constexpr inline explicit nion<T,N>(Z size) { elem_ = niolloc<T,N>(size); size_ = this->size(); }
 
     /**
      * @brief fill nion with a value
      * @param val The value to fill the nion with.
      */
-    constexpr inline void fill(T val){
-        for (D i = 0; i < size_; i++) elem_[i] = val; // set all coefficients to val
-    };
+    template<arith_ops S> requires (std::is_convertible_v<S, T>)
+    constexpr inline void fill(const S &val){ elem_.fill(val); }
 
     /**
      * @brief zero nion
@@ -159,73 +141,24 @@ struct nion {
         fill(T()); // set all coefficients to zero (default value)
     };
 
-    /**
-     * @brief copy constructor for different nion types
-     * @param other The nion to copy.
-     * @return A copy of the nion.
-     * @note This is a deep copy.
-     */
-    constexpr inline nion<T,N>(const nion<T,N> &other);
+    constexpr inline nion<T,N>(const nion<T,N> &other) = default; // copy constructor
+    constexpr inline nion<T,N> &operator=(const nion<T,N> &other) = default; // copy assignment operator
+    constexpr inline nion<T,N>(nion<T,N> &&other) noexcept = default; // move constructor
+    constexpr inline nion<T,N> &operator=(nion<T,N> &&other) noexcept = default; // move assignment operator
 
-    /**
-     * @brief copy assignment operator for different nion types
-     * @param other The nion to copy.
-     * @return A copy of the nion.
-     * @note This is a deep copy.
-     */
-    constexpr inline nion<T,N> &operator=(const nion<T,N> &other);
+    /// constructors and assignments for different nion types
 
-    /**
-     * @brief move constructor for different nion types
-     * @param other The nion to move.
-     * @return A moved nion.
-     * @note This is a shallow move. The source nion is left in a valid but unspecified state.
-     */
-    constexpr inline nion<T,N>(nion<T,N> &&other) noexcept;
+    template<arith_ops S, std::size_t M> requires ( std::is_convertible_v<S,T> && (!std::is_same_v<T,S> || N != M) )
+    constexpr inline explicit nion<T,N>(const nion<S,M> &other) { elem_ = other.elem_; size_ = size(); } //copy constructor
 
-    /**
-     * @brief move assignment operator for different nion types
-     * @param other The nion to move.
-     * @return The current nion after moving.
-     * @note This is a shallow move. The source nion is left in a valid but unspecified state.
-     */
-    constexpr inline nion<T,N> &operator=(nion<T,N> &&other) noexcept;
+    template<arith_ops S, std::size_t M> requires ( std::is_convertible_v<S,T> && (!std::is_same_v<T,S> || N != M) )
+    constexpr inline nion<T,N> &operator=(const nion<S,M> &other) { elem_ = other.elem_; size_ = size(); } //copy assignment operator
 
-    /**
-     * @brief copy constructor for different nion types
-     * @param other The nion to copy.
-     * @return A copy of the nion.
-     * @note This is a deep copy.
-     */
-    template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S> && (M != N || !std::is_same_v<T, S>))
-    constexpr inline explicit nion<T,N>(const nion<S,M> &other);
+    template<arith_ops S, std::size_t M> requires ( std::is_convertible_v<S,T> && (!std::is_same_v<T,S> || N != M) )
+    constexpr inline explicit nion<T,N>(nion<S,M> &&other) noexcept { elem_ = std::move(other.elem_); size_ = size(); } //move constructor
 
-    /**
-     * @brief copy assignment operator for different nion types
-     * @param other The nion to copy.
-     * @return A copy of the nion.
-     * @note This is a deep copy.
-     */
-    template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S> && (M != N || !std::is_same_v<T, S>))
-    constexpr inline nion<T,N> &operator=(const nion<S,M> &other);
-
-    /**
-     * @brief move constructor for different nion types
-     * @param other The nion to move.
-     * @return A moved nion.
-     * @note This is a shallow move. The source nion is left in a valid but unspecified state.
-     */
-    template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S> && (M != N || !std::is_same_v<T, S>))
-    constexpr inline explicit nion<T,N>(nion<S,M> &&other) noexcept;
-
-    /**
-     * @brief move assignment operator for different nion types
-     * @param other The nion to move.
-     * @return The current nion after moving.
-     * @note This is a shallow move. The source nion is left in a valid but unspecified state.
-     */
-    template<arith_ops S, std::size_t M> requires (std::is_convertible_v<T, S> && (M != N || !std::is_same_v<T, S>))
-    constexpr inline nion<T,N> &operator=(nion<S,M> &&other) noexcept;
+    template<arith_ops S, std::size_t M> requires ( std::is_convertible_v<S,T> && (!std::is_same_v<T,S> || N != M) )
+    constexpr inline nion<T,N> &operator=(nion<S,M> &&other) noexcept { elem_ = std::move(other.elem_); size_ = size(); } //move assignment operator
 
     /**
      * @brief Construct a new nion object from a scalar with no imaginary components.
@@ -234,8 +167,13 @@ struct nion {
      * @return nion<T,N> The nion object.
      * @note This is a convenience function for creating a nion from a scalar.
      */
-    template<not_nion<T,N> S = T> requires (std::is_convertible_v<S,T> && !std::is_pointer_v<S>)
-    constexpr inline nion<T,N>(S realVal, D size);
+    template<not_nion<T,N> S = T, integral_type Z> requires (std::is_convertible_v<S,T> && !std::is_pointer_v<S>)
+    constexpr inline nion<T,N>(const S &realVal, Z size) {
+        elem_ = niolloc<T,N>(size); // allocate memory
+        zero(); // set all coefficients to zero (default value)
+        elem_[0] = realVal; // set "real" component
+        size_ = this->size(); // sync size with allocator
+    }
 
     /**
      * @brief Construct nion from half size nions. q = (a,b)
@@ -244,21 +182,19 @@ struct nion {
      * @return The nion constructed from the half size nions.
      * @note This is a convenience function for constructing a nion from pairing two half size nions.
      */
-    template<std::size_t M, std::size_t P> // M is the size of the first nion, P is the size of the second nion.
-    static constexpr inline nion<T,N> make_pair(const nion<T,M> &a, const nion<T,P> &b);
+    template< arith_ops S, arith_ops U, std::size_t M, std::size_t P> requires (std::is_convertible_v<S,T> && std::is_convertible_v<U,T>)
+    static constexpr inline nion<T,N> make_pair(const nion<S,M> &a, const nion<U,P> &b);
+
+    /***************************
+    *  NION OPERATORS          *
+    ***************************/
 
     /**
      * @brief resizes the nion to the given size.
      * @param size The new size of the nion.
      */
-    constexpr inline void resize(int size);
-
-    /**
-     * @brief assignment operator from initializer list
-     * @param vals The initializer list to copy.
-     * @return A nion with the values of the initializer list.
-     */
-    constexpr inline nion<T,N> &operator=(const std::initializer_list<T> &vals);
+    template<integral_type Z>
+    constexpr inline void resize(Z size);
 
     /**
      * @brief convert scalar to nion
@@ -266,8 +202,8 @@ struct nion {
      * @return The nion constructed from the scalar.
      * @note This is a convenience function for constructing a nion from a scalar.
      */
-    template<not_nion<T,N> S = T> requires (std::is_convertible_v<S,T>)
-    constexpr inline nion<T,N> &operator=(S scalar);
+    template<not_nion<T,N> S> requires (std::is_convertible_v<S,T> && !std::is_integral_v<S>)
+    constexpr inline nion<T,N> &operator=(const S &scalar) { elem_ = scalar; size_ = size(); return *this; }
 
     /**
      * @brief overload the - operator for a nion.
@@ -280,7 +216,8 @@ struct nion {
      * @param index The index of the component to get.
      * @return The component at the index passed by value.
      */
-    constexpr inline T operator[](D index) const;
+    constexpr inline T &operator[](D index);
+    constexpr inline const T &operator[](D index) const;
 
     /**
      * @brief Get the conjugate of the nion.
@@ -354,8 +291,8 @@ struct nion {
      * @note product has the same size as the larger size of the two nions.
      * @note This is recursive function and will call itself until the size is 1.
      */
-    template<std::size_t M> // M is the size of the other nion.
-    constexpr inline nion<T,N> operator*(const nion<T,M> &other) const;
+    template<arith_ops S, std::size_t M> requires (std::is_convertible_v<S,T>)
+    constexpr inline nion<T,N> operator*(const nion<S,M> &other) const;
 
     /**
      * @brief compute the inverse of the nion.
@@ -415,9 +352,9 @@ struct nion {
 
     /**
      * @brief Compute the unit nion.
-     * @return The unit nion.
+     * @return The square magnitude of the nion, the square magnitude of the angle, and the unit nion as a tuple.
      */
-    constexpr inline nion<T,N> unit() const;
+    constexpr std::tuple<T, T, nion<T,N>> polar() const;
 
     /**
      * @brief overload the == operator for nions.

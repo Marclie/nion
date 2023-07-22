@@ -26,4 +26,4 @@ install(TARGETS nion
         LIBRARY DESTINATION lib
         RUNTIME DESTINATION bin)
 
-install(FILES nion.hpp nion.cpp DESTINATION include)
+install(FILES niolloc.hpp nion.hpp nion.cpp DESTINATION include)

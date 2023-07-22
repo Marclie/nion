@@ -45,7 +45,7 @@ if ( TEST_LARGE_DEGREE )
     endif()
 endif()
 
-add_executable(nion ../nion.hpp main.cpp)
+add_executable(nion ../niolloc.hpp ../nion.hpp main.cpp)
 
 if ( TEST_LARGE_DEGREE )
     target_include_directories(nion PRIVATE ${CMAKE_BINARY_DIR}/_deps/numbersystems)
