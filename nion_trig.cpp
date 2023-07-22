@@ -1,5 +1,5 @@
 /*
- Copyright 2022 Marcus Dante Liebenthal
+ Copyright 2023 Marcus Dante Liebenthal
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -176,9 +176,9 @@ constexpr inline nion<T,N> tan(const nion<T,N> &z) {
 
     // compute the tangent of the nion
     if (i_norm <= denorm_min)
-        return -(tan(r) + i * tanh(i_norm)) / (1 - i * (tan(r) * tanh(i_norm)));
+        return (tan(r) + i * tanh(i_norm)) / (1 - i * (tan(r) * tanh(i_norm)));
     else
-        return -(tan(r) + i * (tanh(i_norm) / i_norm)) / (1 - i * (tan(r) / i_norm * tanh(i_norm)));
+        return (tan(r) + i * (tanh(i_norm) / i_norm)) / (1 - i * (tan(r) / i_norm * tanh(i_norm)));
 }
 
 template<arith_ops T, std::size_t N>
@@ -237,27 +237,26 @@ constexpr inline nion<T,N> acsch(const nion<T,N> &z) {
 *****************************************/
 
 template<arith_ops T, std::size_t N>
+constexpr inline nion<T,N> atri(const nion<T,N> &z, const nion<T,N> &a, const nion<T,N> &b, const nion<T,N> &c){
+    // get the polar form of the nion
+    auto [z_abs, i_abs, i] = z.polar();
+
+    return -i * log((a + b * i)/c);
+}
+
+template<arith_ops T, std::size_t N>
 constexpr inline nion<T,N> asin(const nion<T,N> &z) {
+
 
     // get the polar form of the nion
     T r = real(z);
-    nion<T,N> i = z.imag();
+    auto [mag2, phase2, i] = z.polar(); // decompose the nion into its polar form
+    T phase = sqrt(phase2); // compute the norm of the imaginary part
 
-    // make unit vector
-    T i_abs = i.abs();
-    T i_norm = sqrt(i_abs);
-
-    // compute denorm_min
-    T denorm_min = T(0); // default value
-    if constexpr (std::is_arithmetic_v<T>) {
-        denorm_min = std::numeric_limits<T>::denorm_min(); // if T is arithmetic, use its denorm_min
-    }
-
-    if (i_abs > denorm_min)
-        i /= i_norm;
+//    return i * asinh(-i*r + phase);
 
     // compute the inv sine of the nion
-    return -i * log(sqrt(1.0l - sqr(z)) + (i * r) - i_norm);
+    return -i * log(sqrt(1.0l - sqr(z)) + (i * r) - phase);
 }
 
 template<arith_ops T, std::size_t N>

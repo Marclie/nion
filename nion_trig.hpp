@@ -239,6 +239,17 @@ constexpr inline nion<T,N> acsch(const nion<T,N> &z);
     ***************************/
 
 /**
+ * @brief compute a general inverse trigonometric function of the nion.
+ * @tparam T type of the nion.
+ * @param z The nion to compute the inverse trigonometric function of.
+ * @param a one side of the complex triangle.
+ * @param b another side of the complex triangle.
+ * @param c the hypotenuse of the complex triangle.
+ */
+template<arith_ops T, std::size_t N = NION_USE_HEAP>
+constexpr inline nion<T,N> atri(const nion<T,N> &z, const nion<T,N> &a, const nion<T,N> &b, const nion<T,N> &c);
+
+/**
  * @brief compute the inverse sine of the nion.
  * @tparam T type of the nion.
  * @param z The nion to compute the inverse sine of.
