@@ -37,6 +37,8 @@
 #include <concepts>
 #include <vector>
 #include <array>
+#include <algorithm>
+#include <cstdint>
 
 // macro to determine if heap should be used for memory (zero enables heap)
 #define NION_USE_HEAP 0
@@ -258,12 +260,11 @@ struct niolloc {
     template <arith_ops S> requires (std::is_convertible_v<S, T>)
     constexpr inline void fill(const S& value, D start = 0, D end = 0) {
         if (end == 0) end = size_; // if 'end' is zero, set it to the size of the nion
-        if constexpr (is_trivial && std::is_same_v<S,T>) {
-            std::memset(vals_ + start, value, (end - start) * sizeof(T)); // fill the nion with the value
+        if constexpr (is_trivial && std::is_same_v<S,T> && std::is_integral_v<T>) {
+            // use memset only for integral types where byte replication is valid
+            std::memset(vals_ + start, static_cast<int>(value), (end - start) * sizeof(T));
         } else {
-            for (D i = start; i < end; ++i) {
-                vals_[i] = static_cast<T>(value); // fill the nion with the value
-            }
+            std::fill(vals_ + start, vals_ + end, static_cast<T>(value));
         }
     }
 
