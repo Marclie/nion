@@ -1,346 +1,437 @@
-/*
- Copyright 2022 Marcus Dante Liebenthal
+// Copyright 2022-2026 Marcus Dante Liebenthal & Contributors
+// Licensed under the Apache License, Version 2.0 (the "License");
+//
+// nion_trig.hpp - Hypercomplex Polar Decomposition, Exponential, Power, and Trigonometry
+// Header-only, Host & GPU Device (`__host__ __device__`) compatible.
+// Every hypercomplex number q = a_0 + v (where v = imag(q)) spans a 2D complex-like
+// subplane {1, u} with unit pure-imaginary versor u = v / ||v|| and u^2 = -1.
+// Analytic functions f(z) extend naturally to any 2^k-nion via:
+//   f(a_0 + ||v|| u) = Re(f(a_0 + i ||v||)) + Im(f(a_0 + i ||v||)) * u
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+#ifndef NION_TRIG_HPP
+#define NION_TRIG_HPP
 
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
-
-#ifndef NION_TRIG_H
-#define NION_TRIG_H
-
+#include "nion.hpp"
 #include <cmath>
 #include <limits>
-#include <type_traits>
-#include <iostream>
-#include <stdexcept>
-#include "nion.hpp"
 
-/***************************
-    *  NION HYPERBOLIC TRIGONOMETRIC FUNCTIONS *
-    ***************************/
+namespace nion_math {
 
-/**
- * @brief compute the hyperbolic sine of a nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the hyperbolic sine of.
- * @return The hyperbolic sine of the nion.
- * @details The hyperbolic sine of a nion is defined as sinh(z) = (e^z - e^-z) / 2.
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> sinh(const nion<T,N> &z);
+/// Holds the polar / complex-plane projection of a hypercomplex number:
+///   q = r * (cos(theta) + u * sin(theta)) = a_0 + v_norm * u
+template <concepts::Scalar T, std::size_t N, typename Space>
+struct PolarDecomposition {
+    T real_part;                 // a_0 = Re(q)
+    T imag_norm;                 // ||v|| = sqrt(sum_{i=1}^{n-1} a_i^2)
+    T magnitude;                 // |q| = hypot(a_0, ||v||)
+    T angle;                     // theta = atan2(||v||, a_0) in [0, pi]
+    nion<T, N, Space> versor;    // Unit pure-imaginary axis u = v / ||v|| (or e_1 if ||v|| == 0)
+};
 
-/**
- * @brief compute the hyperbolic cosine of a nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the hyperbolic cosine of.
- * @return The hyperbolic cosine of the nion.
- * @details The hyperbolic cosine of a nion is defined as cosh(z) = (e^z + e^-z) / 2.
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> cosh(const nion<T,N> &z);
+/// Computes the general angle and unit imaginary axis in the hypercomplex plane (`atrig`)
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE PolarDecomposition<T, N, Space> atrig(const nion<T, N, Space>& q) {
+    using std::atan2;
+    using std::hypot;
+    using std::sqrt;
 
-/**
- * @brief compute the hyperbolic tangent of a nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the hyperbolic tangent of.
- * @return The hyperbolic tangent of the nion.
- * @details The hyperbolic tangent of a nion is defined as tanh(z) = sinh(z) / cosh(z).
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> tanh(const nion<T,N> &z);
+    PolarDecomposition<T, N, Space> pd{};
+    pd.real_part = q.real();
 
-/**
- * @brief compute the hyperbolic cotangent of a nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the hyperbolic cotangent of.
- * @return The hyperbolic cotangent of the nion.
- * @details The hyperbolic cotangent of a nion is defined as coth(z) = 1 / tanh(z).
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> coth(const nion<T,N> &z);
+    const std::size_t len = q.size();
+    T v_norm_sq{};
+    if (len > 1) {
+        v_norm_sq = simd::vec_norm_sq(q.data() + 1, len - 1);
+    }
+    pd.imag_norm = static_cast<T>(sqrt(v_norm_sq));
+    pd.magnitude = static_cast<T>(hypot(pd.real_part, pd.imag_norm));
+    pd.angle     = static_cast<T>(atan2(pd.imag_norm, pd.real_part));
 
-/**
- * @brief compute the hyperbolic secant of a nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the hyperbolic secant of.
- * @return The hyperbolic secant of the nion.
- * @details The hyperbolic secant of a nion is defined as sech(z) = 1 / cosh(z).
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> sech(const nion<T,N> &z);
+    pd.versor = nion<T, N, Space>(len, T{});
+    const T eps = std::numeric_limits<T>::epsilon() * T{16};
+    if (pd.imag_norm > eps) {
+        const T inv_v = T{1} / pd.imag_norm;
+        for (std::size_t i = 1; i < len; ++i) {
+            pd.versor[i] = q[i] * inv_v;
+        }
+    } else if (len > 1) {
+        // Default canonical imaginary axis e_1 when q is purely real
+        pd.versor[1] = T{1};
+    }
+    return pd;
+}
 
-/**
- * @brief compute the hyperbolic cosecant of a nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the hyperbolic cosecant of.
- * @return The hyperbolic cosecant of the nion.
- * @details The hyperbolic cosecant of a nion is defined as csch(z) = 1 / sinh(z).
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> csch(const nion<T,N> &z);
+/// Helper: constructs `re + im * u` where `v = q.imag()` and `u = v / ||v||`.
+/// When `||v|| -> 0`, uses `sinc_scale = im / ||v||` directly to avoid 0/0 NaN singularities!
+namespace detail {
 
-/***************************
-    *  NION TRIGONOMETRIC FUNCTIONS *
-    ***************************/
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> from_complex_projection(
+    const nion<T, N, Space>& q, T re_out, T im_over_vnorm)
+{
+    const std::size_t len = q.size();
+    nion<T, N, Space> res(len, T{});
+    res[0] = re_out;
+    for (std::size_t i = 1; i < len; ++i) {
+        res[i] = q[i] * im_over_vnorm;
+    }
+    return res;
+}
 
-/**
- * @brief compute the sine of the nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the sine of.
- * @return The sine of the nion.
- * @details The sine of the nion is defined as sin(z) = sin(r + v) = sin(r) * cosh(|v|) + cos(r) * sinh(|v|) * v/|v|.
- * @note where r is the real part of z and v is the complex components of z in polar form.
- * @see https://en.wikipedia.org/wiki/Sine_and_cosine#Relationship_to_complex_numbers
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> sin(const nion<T,N> &z);
+template <concepts::Scalar T>
+NION_HOST_DEVICE T imag_norm(const T* data, std::size_t len) noexcept {
+    using std::sqrt;
+    if (len <= 1) return T{};
+    return static_cast<T>(sqrt(simd::vec_norm_sq(data + 1, len - 1)));
+}
 
-/**
- * @brief compute the cosine of the nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the cosine of.
- * @return The cosine of the nion.
- * @details The cosine of the nion is defined as cos(z) = cos(r + v) = cos(r) * cosh(|v|) - sin(r) * sinh(|v|) * v/|v|.
- * @note where r is the real part of z and v is the complex components of z in polar form.
- * @see https://en.wikipedia.org/wiki/Sine_and_cosine#Relationship_to_complex_numbers
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> cos(const nion<T,N> &z);
+} // namespace detail
 
-/**
- * @brief compute the tangent of the nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the tangent of.
- * @return The tangent of the nion.
- * @details The tangent of the nion is defined as
- * tan(z) = tan(a + bi) = (tan(a) + tanh(b)i) / (1 - tan(a) * tanh(b) i).
- * @see https://en.wikipedia.org/wiki/Proofs_of_trigonometric_identities#Angle_sum_identities
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> tan(const nion<T,N> &z);
+// ============================================================================
+// 1. Exponential, Logarithm, Power, and Roots (exp, log, pow, sqr, sqrt, cbrt)
+// ============================================================================
 
-/**
- * @brief compute the cotangent of the nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the cotangent of.
- * @return The cotangent of the nion.
- * @details The cotangent of the nion is defined as cot(z) = 1 / tan(z).
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> cot(const nion<T,N> &z);
+/// Hypercomplex Exponential: exp(a_0 + v) = exp(a_0) * (cos(||v||) + v * (sin(||v||) / ||v||))
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> exp(const nion<T, N, Space>& q) {
+    using std::cos;
+    using std::exp;
+    using std::sin;
 
-/**
- * @brief compute the secant of the nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the secant of.
- * @return The secant of the nion.
- * @details The secant of the nion is defined as sec(z) = 1 / cos(z).
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> sec(const nion<T,N> &z);
+    const T a0 = q.real();
+    const T v_norm = detail::imag_norm(q.data(), q.size());
+    const T exp_a0 = static_cast<T>(exp(a0));
 
-/**
- * @brief compute the cosecant of the nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the cosecant of.
- * @return The cosecant of the nion.
- * @details The cosecant of the nion is defined as csc(z) = 1 / sin(z).
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> csc(const nion<T,N> &z);
+    const T eps = std::numeric_limits<T>::epsilon() * T{16};
+    // Numerically stable sinc(v_norm) = sin(v_norm) / v_norm
+    const T sinc = (v_norm > eps)
+        ? (static_cast<T>(sin(v_norm)) / v_norm)
+        : (T{1} - (v_norm * v_norm) / T{6});
 
-/***************************
-    *  NION INVERSE HYPERBOLIC TRIGONOMETRIC FUNCTIONS *
-    ***************************/
+    return detail::from_complex_projection(
+        q, exp_a0 * static_cast<T>(cos(v_norm)), exp_a0 * sinc);
+}
 
-/**
- * @brief compute the inverse hyperbolic sine of the nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the inverse hyperbolic sine of.
- * @return The inverse hyperbolic sine of the nion.
- * @details The inverse hyperbolic sine of the nion is defined as asinh(z) = ln(z + sqrt(z^2 + 1)).
- * @note where r is the real part of z and v is the complex components of z in polar form.
- * @see https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions#Principal_values_in_the_complex_plane
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> asinh(const nion<T,N> &z);
+/// Hypercomplex Natural Logarithm: log(q) = log(|q|) + u * atan2(||v||, a_0)
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> log(const nion<T, N, Space>& q) {
+    using std::log;
+    const auto pd = atrig(q);
+    nion<T, N, Space> res = pd.versor * pd.angle;
+    res[0] = static_cast<T>(log(pd.magnitude));
+    return res;
+}
 
-/**
- * @brief compute the inverse hyperbolic cosine of the nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the inverse hyperbolic cosine of.
- * @return The inverse hyperbolic cosine of the nion.
- * @details The inverse hyperbolic cosine of the nion is defined as acosh(z) = sqrt(z-1) / sqrt(1-z) * acos(z).
- * @note where r is the real part of z and v is the complex components of z in polar form.
- * @see https://mathworld.wolfram.com/InverseHyperbolicCosine.html
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> acosh(const nion<T,N> &z);
+/// Hypercomplex Power (nion^scalar): pow(q, p) = exp(p * log(q))
+template <concepts::Scalar T, std::size_t N, typename Space, std::convertible_to<T> S>
+NION_HOST_DEVICE nion<T, N, Space> pow(const nion<T, N, Space>& q, const S& exponent) {
+    const T p = static_cast<T>(exponent);
+    if (p == T{0}) {
+        nion<T, N, Space> one(q.size(), T{});
+        one[0] = T{1};
+        return one;
+    }
+    return exp(log(q) * p);
+}
 
-/**
- * @brief compute the inverse hyperbolic tangent of the nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the inverse hyperbolic tangent of.
- * @return The inverse hyperbolic tangent of the nion.
- * @details The inverse hyperbolic tangent of the nion is defined as atanh(z) = atanh(r + v) = 1/2 * (ln(1 + z) - ln(1 - z))).
- * @note where r is the real part of z and v is the complex components of z in polar form.
- * @see https://mathworld.wolfram.com/InverseHyperbolicTangent.html
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> atanh(const nion<T,N> &z);
+/// Hypercomplex Power (nion^nion): pow(base, exp_nion) = exp(log(base) * exp_nion)
+template <concepts::Scalar T, std::size_t N1, std::size_t N2, typename Space>
+NION_HOST_DEVICE auto pow(const nion<T, N1, Space>& base, const nion<T, N2, Space>& exp_nion) {
+    return exp(log(base) * exp_nion);
+}
 
-/**
- * @brief compute the inverse hyperbolic cotangent of the nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the inverse hyperbolic cotangent of.
- * @return The inverse hyperbolic cotangent of the nion.
- * @details The inverse hyperbolic cotangent of the nion is defined as acoth(z) = acoth(r + v) = 1/2 * (ln(1 + 1/z) - ln(1 - 1/z)).
- * @note where r is the real part of z and v is the complex components of z in polar form.
- * @see https://mathworld.wolfram.com/InverseHyperbolicCotangent.html
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> acoth(const nion<T,N> &z);
+/// Hypercomplex Square: sqr(q) = q * q
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE constexpr nion<T, N, Space> sqr(const nion<T, N, Space>& q) {
+    return q * q;
+}
 
-/**
- * @brief compute the inverse hyperbolic secant of the nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the inverse hyperbolic secant of.
- * @return The inverse hyperbolic secant of the nion.
- * @details The inverse hyperbolic secant of the nion is defined as asech(z) = asech(r + v) = ln(sqrt(1/z - 1)*sqrt(1/z + 1) + 1/z).
- * @note where r is the real part of z and v is the complex components of z in polar form.
- * @see https://mathworld.wolfram.com/InverseHyperbolicSecant.html
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> asech(const nion<T,N> &z);
+/// Hypercomplex Principal Square Root: sqrt(q)
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> sqrt(const nion<T, N, Space>& q) {
+    using std::cos;
+    using std::sin;
+    using std::sqrt;
 
-/**
- * @brief compute the inverse hyperbolic cosecant of the nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the inverse hyperbolic cosecant of.
- * @return The inverse hyperbolic cosecant of the nion.
- * @details The inverse hyperbolic cosecant of the nion is defined as acsch(z) = acsch(r + v) = ln(sqrt(1+1/z^2) + 1/z).
- * @note where r is the real part of z and v is the complex components of z in polar form.
- * @see https://mathworld.wolfram.com/InverseHyperbolicCosecant.html
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> acsch(const nion<T,N> &z);
+    const auto pd = atrig(q);
+    const T root_r = static_cast<T>(sqrt(pd.magnitude));
+    const T half_theta = pd.angle * T{0.5};
 
-/***************************
-    *  NION INVERSE TRIGONOMETRIC FUNCTIONS *
-    ***************************/
+    nion<T, N, Space> res = pd.versor * (root_r * static_cast<T>(sin(half_theta)));
+    res[0] = root_r * static_cast<T>(cos(half_theta));
+    return res;
+}
 
-/**
- * @brief compute a general inverse trigonometric function of the nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the inverse trigonometric function of.
- * @param a one side of the complex triangle.
- * @param b another side of the complex triangle.
- * @param c the hypotenuse of the complex triangle.
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> atri(const nion<T,N> &z, const nion<T,N> &a, const nion<T,N> &b, const nion<T,N> &c);
+/// Hypercomplex Principal Cube Root: cbrt(q)
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> cbrt(const nion<T, N, Space>& q) {
+    using std::cbrt;
+    using std::cos;
+    using std::sin;
 
-/**
- * @brief compute the inverse sine of the nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the inverse sine of.
- * @return The inverse sine of the nion.
- * @details The inverse sine of the nion is defined as asin(z) = asin(r + v) = v/|v| * ln(sqrt(1 - z^2) - v/|v| * z).
- * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Logarithmic_forms
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> asin(const nion<T,N> &z);
+    const auto pd = atrig(q);
+    const T root_r = static_cast<T>(cbrt(pd.magnitude));
+    const T third_theta = pd.angle / T{3};
 
-/**
- * @brief compute the inverse cosine of the nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the inverse cosine of.
- * @return The inverse cosine of the nion.
- * @details The inverse cosine of the nion is defined as acos(z) = pi/2 - asin(z).
- * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_complex_plane
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> acos(const nion<T,N> &z);
+    nion<T, N, Space> res = pd.versor * (root_r * static_cast<T>(sin(third_theta)));
+    res[0] = root_r * static_cast<T>(cos(third_theta));
+    return res;
+}
 
-/**
- * @brief compute the inverse tangent of the nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the inverse tangent of.
- * @return The inverse tangent of the nion.
- * @details The inverse tangent of the nion is defined as atan(z) = v * atanh(-v*z) = -v/2 * log((v-z)/(v+z))
- * @note where r is the real part of z and v is the complex components of z in polar form.
- * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Logarithmic_forms
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> atan(const nion<T,N> &z);
+// ============================================================================
+// 2. Hyperbolic Functions (sinh, cosh, tanh, coth, sech, csch & inverses)
+// ============================================================================
 
-/**
- * @brief compute the inverse cotangent of the nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the inverse cotangent of.
- * @return The inverse cotangent of the nion.
- * @details The inverse cotangent of the nion is defined as acot(z) = pi/2 - atan(z).
- * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_complex_plane
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> acot(const nion<T,N> &z);
+/// Hypercomplex Hyperbolic Sine:
+///   sinh(a_0 + v) = sinh(a_0) cos(||v||) + cosh(a_0) (sin(||v||) / ||v||) v
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> sinh(const nion<T, N, Space>& q) {
+    using std::cos;
+    using std::cosh;
+    using std::sin;
+    using std::sinh;
 
-/**
- * @brief compute the inverse secant of the nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the inverse secant of.
- * @return The inverse secant of the nion.
- * @details The inverse secant of the nion is defined as asec(z) = acos(1/z).
- * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_complex_plane
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> asec(const nion<T,N> &z);
+    const T a0 = q.real();
+    const T v_norm = detail::imag_norm(q.data(), q.size());
+    const T eps = std::numeric_limits<T>::epsilon() * T{16};
+    const T sinc = (v_norm > eps)
+        ? (static_cast<T>(sin(v_norm)) / v_norm)
+        : (T{1} - (v_norm * v_norm) / T{6});
 
-/**
- * @brief compute the inverse cosecant of the nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the inverse cosecant of.
- * @return The inverse cosecant of the nion.
- * @details The inverse cosecant of the nion is defined as acsc(z) = asin(1/z).
- * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_complex_plane
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> acsc(const nion<T,N> &z);
+    return detail::from_complex_projection(
+        q,
+        static_cast<T>(sinh(a0)) * static_cast<T>(cos(v_norm)),
+        static_cast<T>(cosh(a0)) * sinc);
+}
 
-/**
- * @brief return atan2 between real and imaginary axis.
- * @tparam T type of the nion.
- * @param z The nion to compute the atan2 of.
- * @return The atan2 of the nion.
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP, std::size_t M = N>
-constexpr inline nion<T,N> atan2(const nion<T,N> &y, const nion<T,M> &x);
+/// Hypercomplex Hyperbolic Cosine:
+///   cosh(a_0 + v) = cosh(a_0) cos(||v||) + sinh(a_0) (sin(||v||) / ||v||) v
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> cosh(const nion<T, N, Space>& q) {
+    using std::cos;
+    using std::cosh;
+    using std::sin;
+    using std::sinh;
 
-/***************************
-    *  NION GAMMA FUNCTION *
-    ***************************/
+    const T a0 = q.real();
+    const T v_norm = detail::imag_norm(q.data(), q.size());
+    const T eps = std::numeric_limits<T>::epsilon() * T{16};
+    const T sinc = (v_norm > eps)
+        ? (static_cast<T>(sin(v_norm)) / v_norm)
+        : (T{1} - (v_norm * v_norm) / T{6});
 
-/**
- * @brief compute the gamma function of the nion.
- * @tparam T type of the nion.
- * @param z The nion to compute the gamma function of.
- * @return The gamma function of the nion.
- * @details This uses an approximate formula for the gamma function of the nion:
- *     gamma(z) ≈ sqrt(2 π) e^(-z) sqrt(1/(z)) (1/(12 (z) - 1/(10 (z))) + z)^(z)
- * @see https://www.wolframalpha.com/input?i=gamma%28a+%2B+b+i%29
- */
-template<arith_ops T, std::size_t N = NION_USE_HEAP>
-constexpr inline nion<T,N> gamma(const nion<T,N> &z);
+    return detail::from_complex_projection(
+        q,
+        static_cast<T>(cosh(a0)) * static_cast<T>(cos(v_norm)),
+        static_cast<T>(sinh(a0)) * sinc);
+}
 
-#include "nion_trig.cpp"
-#endif //NION_TRIG_H
+/// Hypercomplex Hyperbolic Tangent: tanh(q) = sinh(q) / cosh(q)
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> tanh(const nion<T, N, Space>& q) {
+    return sinh(q) / cosh(q);
+}
 
+/// Hypercomplex Hyperbolic Cotangent: coth(q) = cosh(q) / sinh(q)
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> coth(const nion<T, N, Space>& q) {
+    return cosh(q) / sinh(q);
+}
+
+/// Hypercomplex Hyperbolic Secant: sech(q) = 1 / cosh(q)
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> sech(const nion<T, N, Space>& q) {
+    return cosh(q).inv();
+}
+
+/// Hypercomplex Hyperbolic Cosecant: csch(q) = 1 / sinh(q)
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> csch(const nion<T, N, Space>& q) {
+    return sinh(q).inv();
+}
+
+/// Inverse Hyperbolic Sine: asinh(q) = log(q + sqrt(q * q + 1))
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> asinh(const nion<T, N, Space>& q) {
+    return log(q + sqrt(q * q + T{1}));
+}
+
+/// Inverse Hyperbolic Cosine: acosh(q) = log(q + sqrt(q * q - 1))
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> acosh(const nion<T, N, Space>& q) {
+    return log(q + sqrt(q * q - T{1}));
+}
+
+/// Inverse Hyperbolic Tangent: atanh(q) = 0.5 * (log(1 + q) - log(1 - q))
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> atanh(const nion<T, N, Space>& q) {
+    return (log(T{1} + q) - log(T{1} - q)) * T{0.5};
+}
+
+/// Inverse Hyperbolic Cotangent: acoth(q) = atanh(q.inv())
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> acoth(const nion<T, N, Space>& q) {
+    return atanh(q.inv());
+}
+
+/// Inverse Hyperbolic Secant: asech(q) = acosh(q.inv())
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> asech(const nion<T, N, Space>& q) {
+    return acosh(q.inv());
+}
+
+/// Inverse Hyperbolic Cosecant: acsch(q) = asinh(q.inv())
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> acsch(const nion<T, N, Space>& q) {
+    return asinh(q.inv());
+}
+
+// ============================================================================
+// 3. Circular Trigonometric Functions (sin, cos, tan, cot, sec, csc & inverses)
+// ============================================================================
+
+/// Hypercomplex Sine:
+///   sin(a_0 + v) = sin(a_0) cosh(||v||) + cos(a_0) (sinh(||v||) / ||v||) v
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> sin(const nion<T, N, Space>& q) {
+    using std::cos;
+    using std::cosh;
+    using std::sin;
+    using std::sinh;
+
+    const T a0 = q.real();
+    const T v_norm = detail::imag_norm(q.data(), q.size());
+    const T eps = std::numeric_limits<T>::epsilon() * T{16};
+    const T sinhc = (v_norm > eps)
+        ? (static_cast<T>(sinh(v_norm)) / v_norm)
+        : (T{1} + (v_norm * v_norm) / T{6});
+
+    return detail::from_complex_projection(
+        q,
+        static_cast<T>(sin(a0)) * static_cast<T>(cosh(v_norm)),
+        static_cast<T>(cos(a0)) * sinhc);
+}
+
+/// Hypercomplex Cosine:
+///   cos(a_0 + v) = cos(a_0) cosh(||v||) - sin(a_0) (sinh(||v||) / ||v||) v
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> cos(const nion<T, N, Space>& q) {
+    using std::cos;
+    using std::cosh;
+    using std::sin;
+    using std::sinh;
+
+    const T a0 = q.real();
+    const T v_norm = detail::imag_norm(q.data(), q.size());
+    const T eps = std::numeric_limits<T>::epsilon() * T{16};
+    const T sinhc = (v_norm > eps)
+        ? (static_cast<T>(sinh(v_norm)) / v_norm)
+        : (T{1} + (v_norm * v_norm) / T{6});
+
+    return detail::from_complex_projection(
+        q,
+        static_cast<T>(cos(a0)) * static_cast<T>(cosh(v_norm)),
+        -static_cast<T>(sin(a0)) * sinhc);
+}
+
+/// Hypercomplex Tangent: tan(q) = sin(q) / cos(q)
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> tan(const nion<T, N, Space>& q) {
+    return sin(q) / cos(q);
+}
+
+/// Hypercomplex Cotangent: cot(q) = cos(q) / sin(q)
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> cot(const nion<T, N, Space>& q) {
+    return cos(q) / sin(q);
+}
+
+/// Hypercomplex Secant: sec(q) = 1 / cos(q)
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> sec(const nion<T, N, Space>& q) {
+    return cos(q).inv();
+}
+
+/// Hypercomplex Cosecant: csc(q) = 1 / sin(q)
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> csc(const nion<T, N, Space>& q) {
+    return sin(q).inv();
+}
+
+/// Inverse Sine: asin(q) = -u * asinh(u * q) where u is the unit imaginary versor of q
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> asin(const nion<T, N, Space>& q) {
+    const auto pd = atrig(q);
+    return (-pd.versor) * asinh(pd.versor * q);
+}
+
+/// Inverse Cosine: acos(q) = -u * acosh(q)
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> acos(const nion<T, N, Space>& q) {
+    const auto pd = atrig(q);
+    return (-pd.versor) * acosh(q);
+}
+
+/// Inverse Tangent: atan(q) = -u * atanh(u * q)
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> atan(const nion<T, N, Space>& q) {
+    const auto pd = atrig(q);
+    return (-pd.versor) * atanh(pd.versor * q);
+}
+
+/// Inverse Cotangent: acot(q) = atan(q.inv())
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> acot(const nion<T, N, Space>& q) {
+    return atan(q.inv());
+}
+
+/// Inverse Secant: asec(q) = acos(q.inv())
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> asec(const nion<T, N, Space>& q) {
+    return acos(q.inv());
+}
+
+/// Inverse Cosecant: acsc(q) = asin(q.inv())
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE nion<T, N, Space> acsc(const nion<T, N, Space>& q) {
+    return asin(q.inv());
+}
+
+} // namespace nion_math
+
+// Expose analytic & trigonometric functions at global scope so unqualified
+// calls (`sin(q)`, `exp(q)`, `pow(q, 2)`) work seamlessly out of the box.
+using nion_math::PolarDecomposition;
+using nion_math::atrig;
+using nion_math::exp;
+using nion_math::log;
+using nion_math::pow;
+using nion_math::sqr;
+using nion_math::sqrt;
+using nion_math::cbrt;
+using nion_math::sinh;
+using nion_math::cosh;
+using nion_math::tanh;
+using nion_math::coth;
+using nion_math::sech;
+using nion_math::csch;
+using nion_math::asinh;
+using nion_math::acosh;
+using nion_math::atanh;
+using nion_math::acoth;
+using nion_math::asech;
+using nion_math::acsch;
+using nion_math::sin;
+using nion_math::cos;
+using nion_math::tan;
+using nion_math::cot;
+using nion_math::sec;
+using nion_math::csc;
+using nion_math::asin;
+using nion_math::acos;
+using nion_math::atan;
+using nion_math::acot;
+using nion_math::asec;
+using nion_math::acsc;
+
+#endif // NION_TRIG_HPP
