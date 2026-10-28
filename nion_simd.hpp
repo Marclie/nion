@@ -312,6 +312,12 @@ template <typename T>
 NION_HOST_DEVICE NION_FORCE_INLINE constexpr T vec_norm_sq(
     const T* NION_RESTRICT a, std::size_t n) noexcept
 {
+    if (n == 0) return T{};
+    if (n == 1) return a[0] * a[0];
+    if (n == 2) return a[0] * a[0] + a[1] * a[1];
+    if (n == 3) return (a[0] * a[0] + a[1] * a[1]) + a[2] * a[2];
+    if (n == 4) return (a[0] * a[0] + a[1] * a[1]) + (a[2] * a[2] + a[3] * a[3]);
+
 #if !NION_ON_DEVICE
     if (!std::is_constant_evaluated()) {
     #if NION_SIMD_AVX2
@@ -358,8 +364,8 @@ NION_HOST_DEVICE NION_FORCE_INLINE constexpr T vec_norm_sq(
     #endif
     }
 #endif
-    T sum{};
-    for (std::size_t i = 0; i < n; ++i) {
+    T sum = a[0] * a[0];
+    for (std::size_t i = 1; i < n; ++i) {
         sum = sum + a[i] * a[i];
     }
     return sum;
@@ -416,9 +422,15 @@ NION_HOST_DEVICE NION_FORCE_INLINE constexpr void mul_fixed_4(
             const __m128 s3 = _mm_setr_ps(-1.0f, -1.0f,  1.0f,  1.0f);
 
             __m128 res = _mm_mul_ps(a0, vb);
+        #if defined(__FMA__)
+            res = _mm_fmadd_ps(_mm_mul_ps(a1, s1), b_shuf1, res);
+            res = _mm_fmadd_ps(_mm_mul_ps(a2, s2), b_shuf2, res);
+            res = _mm_fmadd_ps(_mm_mul_ps(a3, s3), b_shuf3, res);
+        #else
             res = _mm_add_ps(res, _mm_mul_ps(_mm_mul_ps(a1, s1), b_shuf1));
             res = _mm_add_ps(res, _mm_mul_ps(_mm_mul_ps(a2, s2), b_shuf2));
             res = _mm_add_ps(res, _mm_mul_ps(_mm_mul_ps(a3, s3), b_shuf3));
+        #endif
 
             _mm_storeu_ps(out, res);
             return;
@@ -444,9 +456,15 @@ NION_HOST_DEVICE NION_FORCE_INLINE constexpr void mul_fixed_4(
             const __m256d s3 = _mm256_setr_pd(-1.0, -1.0,  1.0,  1.0);
 
             __m256d res = _mm256_mul_pd(a0, vb);
+        #if defined(__FMA__)
+            res = _mm256_fmadd_pd(_mm256_mul_pd(a1, s1), b_shuf1, res);
+            res = _mm256_fmadd_pd(_mm256_mul_pd(a2, s2), b_shuf2, res);
+            res = _mm256_fmadd_pd(_mm256_mul_pd(a3, s3), b_shuf3, res);
+        #else
             res = _mm256_add_pd(res, _mm256_mul_pd(_mm256_mul_pd(a1, s1), b_shuf1));
             res = _mm256_add_pd(res, _mm256_mul_pd(_mm256_mul_pd(a2, s2), b_shuf2));
             res = _mm256_add_pd(res, _mm256_mul_pd(_mm256_mul_pd(a3, s3), b_shuf3));
+        #endif
 
             _mm256_storeu_pd(out, res);
             return;
@@ -463,6 +481,51 @@ NION_HOST_DEVICE NION_FORCE_INLINE constexpr void mul_fixed_4(
     out[3] = a0 * b3 + a1 * b2 - a2 * b1 + a3 * b0;
 }
 
+/// Helper: update all output lanes K = 0..N-1 for a fixed input lane p = P + 1 (SIMD-friendly).
+template <std::size_t N, std::size_t P, typename T, std::size_t... K>
+NION_HOST_DEVICE NION_FORCE_INLINE constexpr void mul_fixed_step_p(
+    T* NION_RESTRICT acc, const T* NION_RESTRICT a, const T* NION_RESTRICT b,
+    std::index_sequence<K...>) noexcept
+{
+    constexpr std::size_t p = P + 1;
+    const T ap = a[p];
+    ((cd_table<N>.signs[K][p] > 0
+        ? (acc[K] = acc[K] + ap * b[p ^ K])
+        : (acc[K] = acc[K] - ap * b[p ^ K])), ...);
+}
+
+/// Helper: compute single output lane K across P = 0..N-2 in one scalar accumulator (x87-friendly).
+template <std::size_t N, std::size_t K, typename T, std::size_t... P>
+NION_HOST_DEVICE NION_FORCE_INLINE constexpr T mul_fixed_lane_k(
+    const T* NION_RESTRICT a, const T* NION_RESTRICT b,
+    std::index_sequence<P...>) noexcept
+{
+    T acc = a[0] * b[K];
+    ((cd_table<N>.signs[K][P + 1] > 0
+        ? (acc = acc + a[P + 1] * b[(P + 1) ^ K])
+        : (acc = acc - a[P + 1] * b[(P + 1) ^ K])), ...);
+    return acc;
+}
+
+/// Compile-time unrolled multiplication for N = 8, 16, 32.
+/// - For SIMD floating-point types (`float`, `double`), iterates `p` in the outer pack and updates
+///   all `K = 0..N-1` independent output lanes in parallel in YMM/XMM registers (AVX2 FMA).
+/// - For x87 `long double` or composite types, iterates `K` in the outer pack and accumulates a single
+///   register `acc` (`st(0)`) across `p = 0..N-1` to avoid x87 register-stack spills!
+template <std::size_t N, typename T, std::size_t... K, std::size_t... P>
+NION_HOST_DEVICE NION_FORCE_INLINE constexpr void mul_fixed_unrolled_impl(
+    T* NION_RESTRICT out, const T* NION_RESTRICT a, const T* NION_RESTRICT b,
+    std::index_sequence<K...> ks, std::index_sequence<P...> ps) noexcept
+{
+    if constexpr (concepts::SimdFloat<T>) {
+        T acc[N]{ (a[0] * b[K])... };
+        (mul_fixed_step_p<N, P>(acc, a, b, ks), ...);
+        ((out[K] = acc[K]), ...);
+    } else {
+        ((out[K] = mul_fixed_lane_k<N, K>(a, b, ps)), ...);
+    }
+}
+
 /// Compile-Time Table-Driven Multiplication for Fixed Dimensions N <= 64 (e.g., Octonions N=8, Sedenions N=16)
 /// Uses the constexpr `cd_table<N>` so the compiler completely unrolls the dot products without branches!
 template <std::size_t N, typename T>
@@ -475,20 +538,23 @@ NION_HOST_DEVICE NION_FORCE_INLINE constexpr void mul_fixed_table(
         mul_fixed_2(out, a, b);
     } else if constexpr (N == 4) {
         mul_fixed_4(out, a, b);
+    } else if constexpr (N <= 32) {
+        mul_fixed_unrolled_impl<N>(out, a, b, std::make_index_sequence<N>{}, std::make_index_sequence<N - 1>{});
     } else if constexpr (N <= 64) {
-        T tmp[N]{};
+        T tmp[N];
         for (std::size_t k = 0; k < N; ++k) {
-            T acc{};
-            for (std::size_t p = 0; p < N; ++p) {
+            tmp[k] = a[0] * b[k];
+        }
+        for (std::size_t p = 1; p < N; ++p) {
+            const T ap = a[p];
+            for (std::size_t k = 0; k < N; ++k) {
                 const std::size_t q = p ^ k;
-                const int8_t s = cd_table<N>.signs[k][p];
-                if (s > 0) {
-                    acc = acc + a[p] * b[q];
+                if (cd_table<N>.signs[k][p] > 0) {
+                    tmp[k] = tmp[k] + ap * b[q];
                 } else {
-                    acc = acc - a[p] * b[q];
+                    tmp[k] = tmp[k] - ap * b[q];
                 }
             }
-            tmp[k] = acc;
         }
         for (std::size_t k = 0; k < N; ++k) {
             out[k] = tmp[k];
@@ -524,6 +590,8 @@ NION_HOST_DEVICE inline void mul_dynamic(
         case 4: mul_fixed_4(out, a, b); return;
         case 8: mul_fixed_table<8>(out, a, b); return;
         case 16: mul_fixed_table<16>(out, a, b); return;
+        case 32: mul_fixed_table<32>(out, a, b); return;
+        case 64: mul_fixed_table<64>(out, a, b); return;
         default: break;
     }
 

@@ -95,7 +95,7 @@ if(MSVC)
     )
 else()
     target_compile_options(nion_compiler_flags INTERFACE
-        $<$<COMPILE_LANGUAGE:CXX>:-Wall -Wextra -Wpedantic -Wno-unknown-pragmas>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wall -Wextra -Wpedantic -Wno-unknown-pragmas -Wno-psabi>
     )
 endif()
 
@@ -213,6 +213,10 @@ if(NION_BUILD_TESTS AND NION_BUILD_EXAMPLES)
         NAME NionVerificationAndSimdSuite
         COMMAND nion_example
     )
+endif()
+
+if(NION_BUILD_TESTS AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Tests/CMakeLists.txt")
+    add_subdirectory(Tests)
 endif()
 
 # ============================================================================

@@ -32,16 +32,58 @@ namespace nion_math {
 
 template <typename Derived, typename T>
 struct NionExpr {
+    using is_nion_expr_tag = void;
+
     NION_HOST_DEVICE NION_FORCE_INLINE constexpr const Derived& derived() const noexcept {
         return static_cast<const Derived&>(*this);
     }
     NION_HOST_DEVICE NION_FORCE_INLINE constexpr std::size_t size() const noexcept {
         return derived().size();
     }
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr bool has_uniform_size(std::size_t n) const noexcept {
+        return derived().has_uniform_size(n);
+    }
     NION_HOST_DEVICE NION_FORCE_INLINE constexpr T eval(std::size_t i) const noexcept {
         return derived().eval(i);
     }
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr T eval_unchecked(std::size_t i) const noexcept {
+        return derived().eval_unchecked(i);
+    }
+    NION_HOST_DEVICE constexpr T abs() const noexcept {
+        const Derived& d = derived();
+        const std::size_t n = d.size();
+        if (n == 0) return T{};
+        if (d.has_uniform_size(n)) {
+            T sum = d.eval_unchecked(0);
+            sum = sum * sum;
+            for (std::size_t i = 1; i < n; ++i) {
+                const T v = d.eval_unchecked(i);
+                sum = sum + v * v;
+            }
+            return sum;
+        } else {
+            T sum = d.eval(0);
+            sum = sum * sum;
+            for (std::size_t i = 1; i < n; ++i) {
+                const T v = d.eval(i);
+                sum = sum + v * v;
+            }
+            return sum;
+        }
+    }
+    NION_HOST_DEVICE T norm() const noexcept {
+        using std::sqrt;
+        return static_cast<T>(sqrt(abs()));
+    }
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr T real() const noexcept {
+        return derived().eval(0);
+    }
 };
+
+template <typename S, typename T>
+concept ConvertibleScalar =
+    std::convertible_to<S, T> &&
+    (!requires { typename std::remove_cvref_t<S>::is_nion_expr_tag; });
 
 template <typename Lhs, typename Rhs, typename T>
 class NionAddExpr : public NionExpr<NionAddExpr<Lhs, Rhs, T>, T> {
@@ -49,15 +91,34 @@ class NionAddExpr : public NionExpr<NionAddExpr<Lhs, Rhs, T>, T> {
     const Rhs& m_rhs;
     std::size_t m_size;
 public:
+    static constexpr std::size_t static_size =
+        (Lhs::static_size != NION_DYNAMIC && Lhs::static_size == Rhs::static_size)
+            ? Lhs::static_size : NION_DYNAMIC;
+
     NION_HOST_DEVICE constexpr NionAddExpr(const Lhs& l, const Rhs& r) noexcept
         : m_lhs(l), m_rhs(r), m_size(l.size() > r.size() ? l.size() : r.size()) {}
 
-    NION_HOST_DEVICE NION_FORCE_INLINE constexpr std::size_t size() const noexcept { return m_size; }
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr std::size_t size() const noexcept {
+        if constexpr (static_size != NION_DYNAMIC) return static_size;
+        else return m_size;
+    }
+
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr bool has_uniform_size(std::size_t n) const noexcept {
+        return m_lhs.has_uniform_size(n) && m_rhs.has_uniform_size(n);
+    }
 
     NION_HOST_DEVICE NION_FORCE_INLINE constexpr T eval(std::size_t i) const noexcept {
-        const T lv = (i < m_lhs.size()) ? m_lhs.eval(i) : T{};
-        const T rv = (i < m_rhs.size()) ? m_rhs.eval(i) : T{};
-        return lv + rv;
+        if constexpr (static_size != NION_DYNAMIC) {
+            return m_lhs.eval_unchecked(i) + m_rhs.eval_unchecked(i);
+        } else {
+            const T lv = (i < m_lhs.size()) ? m_lhs.eval(i) : T{};
+            const T rv = (i < m_rhs.size()) ? m_rhs.eval(i) : T{};
+            return lv + rv;
+        }
+    }
+
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr T eval_unchecked(std::size_t i) const noexcept {
+        return m_lhs.eval_unchecked(i) + m_rhs.eval_unchecked(i);
     }
 };
 
@@ -67,15 +128,34 @@ class NionSubExpr : public NionExpr<NionSubExpr<Lhs, Rhs, T>, T> {
     const Rhs& m_rhs;
     std::size_t m_size;
 public:
+    static constexpr std::size_t static_size =
+        (Lhs::static_size != NION_DYNAMIC && Lhs::static_size == Rhs::static_size)
+            ? Lhs::static_size : NION_DYNAMIC;
+
     NION_HOST_DEVICE constexpr NionSubExpr(const Lhs& l, const Rhs& r) noexcept
         : m_lhs(l), m_rhs(r), m_size(l.size() > r.size() ? l.size() : r.size()) {}
 
-    NION_HOST_DEVICE NION_FORCE_INLINE constexpr std::size_t size() const noexcept { return m_size; }
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr std::size_t size() const noexcept {
+        if constexpr (static_size != NION_DYNAMIC) return static_size;
+        else return m_size;
+    }
+
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr bool has_uniform_size(std::size_t n) const noexcept {
+        return m_lhs.has_uniform_size(n) && m_rhs.has_uniform_size(n);
+    }
 
     NION_HOST_DEVICE NION_FORCE_INLINE constexpr T eval(std::size_t i) const noexcept {
-        const T lv = (i < m_lhs.size()) ? m_lhs.eval(i) : T{};
-        const T rv = (i < m_rhs.size()) ? m_rhs.eval(i) : T{};
-        return lv - rv;
+        if constexpr (static_size != NION_DYNAMIC) {
+            return m_lhs.eval_unchecked(i) - m_rhs.eval_unchecked(i);
+        } else {
+            const T lv = (i < m_lhs.size()) ? m_lhs.eval(i) : T{};
+            const T rv = (i < m_rhs.size()) ? m_rhs.eval(i) : T{};
+            return lv - rv;
+        }
+    }
+
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr T eval_unchecked(std::size_t i) const noexcept {
+        return m_lhs.eval_unchecked(i) - m_rhs.eval_unchecked(i);
     }
 };
 
@@ -84,13 +164,23 @@ class NionScaleExpr : public NionExpr<NionScaleExpr<Expr, T>, T> {
     const Expr& m_expr;
     T m_scalar;
 public:
+    static constexpr std::size_t static_size = Expr::static_size;
+
     NION_HOST_DEVICE constexpr NionScaleExpr(const Expr& e, const T& s) noexcept
         : m_expr(e), m_scalar(s) {}
 
     NION_HOST_DEVICE NION_FORCE_INLINE constexpr std::size_t size() const noexcept { return m_expr.size(); }
 
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr bool has_uniform_size(std::size_t n) const noexcept {
+        return m_expr.has_uniform_size(n);
+    }
+
     NION_HOST_DEVICE NION_FORCE_INLINE constexpr T eval(std::size_t i) const noexcept {
         return m_expr.eval(i) * m_scalar;
+    }
+
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr T eval_unchecked(std::size_t i) const noexcept {
+        return m_expr.eval_unchecked(i) * m_scalar;
     }
 };
 
@@ -98,12 +188,22 @@ template <typename Expr, typename T>
 class NionConjExpr : public NionExpr<NionConjExpr<Expr, T>, T> {
     const Expr& m_expr;
 public:
+    static constexpr std::size_t static_size = Expr::static_size;
+
     NION_HOST_DEVICE constexpr explicit NionConjExpr(const Expr& e) noexcept : m_expr(e) {}
 
     NION_HOST_DEVICE NION_FORCE_INLINE constexpr std::size_t size() const noexcept { return m_expr.size(); }
 
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr bool has_uniform_size(std::size_t n) const noexcept {
+        return m_expr.has_uniform_size(n);
+    }
+
     NION_HOST_DEVICE NION_FORCE_INLINE constexpr T eval(std::size_t i) const noexcept {
         return (i == 0) ? m_expr.eval(0) : -m_expr.eval(i);
+    }
+
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr T eval_unchecked(std::size_t i) const noexcept {
+        return (i == 0) ? m_expr.eval_unchecked(0) : -m_expr.eval_unchecked(i);
     }
 };
 
@@ -121,25 +221,29 @@ NION_HOST_DEVICE NION_FORCE_INLINE constexpr auto operator-(
     return NionSubExpr<Lhs, Rhs, T>(l.derived(), r.derived());
 }
 
-template <typename Expr, typename T, std::convertible_to<T> S>
+template <typename Expr, typename T, ConvertibleScalar<T> S>
 NION_HOST_DEVICE NION_FORCE_INLINE constexpr auto operator*(
     const NionExpr<Expr, T>& e, const S& s) noexcept
 {
     return NionScaleExpr<Expr, T>(e.derived(), static_cast<T>(s));
 }
 
-template <typename Expr, typename T, std::convertible_to<T> S>
+template <typename Expr, typename T, ConvertibleScalar<T> S>
 NION_HOST_DEVICE NION_FORCE_INLINE constexpr auto operator*(
     const S& s, const NionExpr<Expr, T>& e) noexcept
 {
     return NionScaleExpr<Expr, T>(e.derived(), static_cast<T>(s));
 }
 
-template <typename Expr, typename T, std::convertible_to<T> S>
+template <typename Expr, typename T, ConvertibleScalar<T> S>
 NION_HOST_DEVICE NION_FORCE_INLINE constexpr auto operator/(
     const NionExpr<Expr, T>& e, const S& s) noexcept
 {
-    return NionScaleExpr<Expr, T>(e.derived(), T{1} / static_cast<T>(s));
+    if constexpr (std::is_floating_point_v<T>) {
+        return NionScaleExpr<Expr, T>(e.derived(), T{1} / static_cast<T>(s));
+    } else {
+        return NionScaleExpr<Expr, T>(e.derived(), static_cast<T>(T{1} / static_cast<T>(s)));
+    }
 }
 
 } // namespace nion_math
@@ -172,76 +276,134 @@ public:
     // ------------------------------------------------------------------------
 
     /// Default constructor: creates a 1-D real scalar (if dynamic) or N-D zero nion (if fixed)
-    NION_HOST_DEVICE constexpr nion() : m_store(is_dynamic ? 1 : N, T{}) {}
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr nion() : m_store(is_dynamic ? 1 : N, T{}) {}
+
+    /// Internal uninitialized constructor (for operations that immediately overwrite all elements)
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr nion(nion_math::detail::uninit_tag tag, std::size_t dim)
+        : m_store(tag, is_dynamic ? dim : N)
+    {}
+
+    /// Construct with explicit integral dimension `dim` (zero-initialized), matching master API: `nion<double> n(2);`
+    template <std::integral Z>
+        requires (!std::is_integral_v<T>)
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr explicit nion(Z dim)
+        : m_store(is_dynamic ? static_cast<std::size_t>(dim) : N, T{})
+    {}
 
     /// Construct from scalar value `re` (e_0 = re, all imaginary components = 0)
-    NION_HOST_DEVICE constexpr explicit nion(const T& re)
+    template <typename S = T>
+        requires (nion_math::ConvertibleScalar<S, T> && (!std::is_integral_v<S> || std::is_integral_v<T>))
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr explicit nion(const S& re)
         : m_store(is_dynamic ? 1 : N, T{})
     {
         if constexpr (Space::host_accessible || !is_dynamic) {
-            m_store[0] = re;
+            m_store[0] = static_cast<T>(re);
         }
     }
 
     /// Construct dynamic or fixed nion with explicit dimension `dim` and initial fill `val`
-    NION_HOST_DEVICE constexpr nion(std::size_t dim, const T& val)
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr nion(std::size_t dim, const T& val)
         : m_store(dim, val)
     {}
 
     /// Initializer-list constructor: `nion<float> a = {1, 2, 3, 4};`
     /// Automatically pads to the next power of two if needed.
-    NION_HOST_DEVICE constexpr nion(std::initializer_list<T> init)
-        : m_store(is_dynamic ? nion_math::detail::next_power_of_two(init.size()) : N, T{})
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr nion(std::initializer_list<T> init)
+        : m_store(nion_math::detail::uninit_tag{},
+                  is_dynamic ? nion_math::detail::next_power_of_two(init.size()) : N)
     {
-        const std::size_t limit = (init.size() < size()) ? init.size() : size();
+        const std::size_t sz = size();
+        const std::size_t limit = (init.size() < sz) ? init.size() : sz;
         std::size_t idx = 0;
         for (const auto& val : init) {
             if (idx >= limit) break;
             m_store[idx++] = val;
         }
+        for (; idx < sz; ++idx) {
+            m_store[idx] = T{};
+        }
     }
 
     /// Construct from std::vector<T>
     explicit nion(const std::vector<T>& vec)
-        : m_store(is_dynamic ? nion_math::detail::next_power_of_two(vec.size()) : N, T{})
+        : m_store(nion_math::detail::uninit_tag{},
+                  is_dynamic ? nion_math::detail::next_power_of_two(vec.size()) : N)
     {
-        const std::size_t limit = (vec.size() < size()) ? vec.size() : size();
+        const std::size_t sz = size();
+        const std::size_t limit = (vec.size() < sz) ? vec.size() : sz;
         for (std::size_t i = 0; i < limit; ++i) {
             m_store[i] = vec[i];
+        }
+        for (std::size_t i = limit; i < sz; ++i) {
+            m_store[i] = T{};
         }
     }
 
     /// Construct from raw pointer and count
-    NION_HOST_DEVICE constexpr nion(const T* ptr, std::size_t count)
-        : m_store(is_dynamic ? nion_math::detail::next_power_of_two(count) : N, T{})
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr nion(const T* ptr, std::size_t count)
+        : m_store(nion_math::detail::uninit_tag{},
+                  is_dynamic ? nion_math::detail::next_power_of_two(count) : N)
     {
-        const std::size_t limit = (count < size()) ? count : size();
+        const std::size_t sz = size();
+        const std::size_t limit = (count < sz) ? count : sz;
         nion_math::detail::copy_n(ptr, limit, m_store.data());
+        for (std::size_t i = limit; i < sz; ++i) {
+            m_store[i] = T{};
+        }
     }
 
     /// Construct & evaluate from any Expression Template node (Single Fused Loop!)
     template <typename Expr>
-    NION_HOST_DEVICE constexpr nion(const nion_math::NionExpr<Expr, T>& expr)
-        : m_store(is_dynamic ? expr.size() : N)
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr nion(const nion_math::NionExpr<Expr, T>& expr)
+        : m_store(nion_math::detail::uninit_tag{}, is_dynamic ? expr.size() : N)
     {
         const Expr& d = expr.derived();
-        const std::size_t len = size();
-        for (std::size_t i = 0; i < len; ++i) {
-            m_store[i] = (i < d.size()) ? d.eval(i) : T{};
+        T* NION_RESTRICT dst = m_store.data();
+        if constexpr (!is_dynamic && Expr::static_size == N) {
+            for (std::size_t i = 0; i < N; ++i) {
+                dst[i] = d.eval_unchecked(i);
+            }
+        } else {
+            const std::size_t len = size();
+            if (d.has_uniform_size(len)) {
+                for (std::size_t i = 0; i < len; ++i) {
+                    dst[i] = d.eval_unchecked(i);
+                }
+            } else {
+                const std::size_t d_sz = d.size();
+                for (std::size_t i = 0; i < len; ++i) {
+                    dst[i] = (i < d_sz) ? d.eval(i) : T{};
+                }
+            }
         }
     }
 
     template <typename Expr>
-    NION_HOST_DEVICE constexpr nion& operator=(const nion_math::NionExpr<Expr, T>& expr) {
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr nion& operator=(const nion_math::NionExpr<Expr, T>& expr) {
         const auto& d = expr.derived();
-        if constexpr (is_dynamic) {
-            if (size() != d.size()) {
-                m_store.resize(d.size());
+        if constexpr (!is_dynamic && Expr::static_size == N) {
+            T* NION_RESTRICT dst = m_store.data();
+            for (std::size_t i = 0; i < N; ++i) {
+                dst[i] = d.eval_unchecked(i);
             }
-        }
-        const std::size_t len = size();
-        for (std::size_t i = 0; i < len; ++i) {
-            m_store[i] = (i < d.size()) ? d.eval(i) : T{};
+        } else {
+            if constexpr (is_dynamic) {
+                if (size() != d.size()) {
+                    m_store.resize(d.size());
+                }
+            }
+            const std::size_t len = size();
+            T* NION_RESTRICT dst = m_store.data();
+            if (d.has_uniform_size(len)) {
+                for (std::size_t i = 0; i < len; ++i) {
+                    dst[i] = d.eval_unchecked(i);
+                }
+            } else {
+                const std::size_t d_sz = d.size();
+                for (std::size_t i = 0; i < len; ++i) {
+                    dst[i] = (i < d_sz) ? d.eval(i) : T{};
+                }
+            }
         }
         return *this;
     }
@@ -292,8 +454,14 @@ public:
         return m_store[i];
     }
 
-    /// Expression Template evaluation hook
+    /// Expression Template evaluation hooks
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr bool has_uniform_size(std::size_t n) const noexcept {
+        return size() == n;
+    }
     NION_HOST_DEVICE NION_FORCE_INLINE constexpr T eval(std::size_t i) const noexcept {
+        return m_store[i];
+    }
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr T eval_unchecked(std::size_t i) const noexcept {
         return m_store[i];
     }
 
@@ -332,41 +500,51 @@ public:
     // ------------------------------------------------------------------------
 
     /// Returns a materialized conjugate nion
-    NION_HOST_DEVICE constexpr nion conj() const {
-        nion res(size(), T{});
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr nion conj() const {
+        nion res(nion_math::detail::uninit_tag{}, size());
         nion_math::simd::vec_conj(res.data(), data(), size());
         return res;
     }
 
     /// Lazy conjugate expression (zero temporaries when chained in expressions)
-    NION_HOST_DEVICE constexpr auto conj_expr() const noexcept {
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr auto conj_expr() const noexcept {
         return nion_math::NionConjExpr<nion, T>(*this);
     }
 
     /// Squared norm: ||q||^2 = sum_{i=0}^{n-1} q_i^2 (SIMD-accelerated)
-    NION_HOST_DEVICE constexpr T norm_sq() const noexcept {
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr T norm_sq() const noexcept {
         return nion_math::simd::vec_norm_sq(data(), size());
     }
 
     /// Squared magnitude / Cayley-Dickson norm: sum_{i=0}^{n-1} q_i^2
-    NION_HOST_DEVICE constexpr T norm() const noexcept {
+    /// Matches README.md, original Nion API, std::norm(std::complex), and Boost/Harder norm()
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr T abs() const noexcept {
         return norm_sq();
     }
 
-    /// Euclidean magnitude: |q| = sqrt(norm_sq())
-    NION_HOST_DEVICE T abs() const noexcept {
+    /// Euclidean magnitude: ||q|| = sqrt(sum_{i=0}^{n-1} q_i^2)
+    /// Matches README.md and original Nion API
+    NION_HOST_DEVICE NION_FORCE_INLINE T norm() const noexcept {
         using std::sqrt;
         return static_cast<T>(sqrt(norm_sq()));
     }
 
-    /// Multiplicative inverse: q^{-1} = conj(q) / norm_sq(q)
-    NION_HOST_DEVICE constexpr nion inv() const {
-        const T n_sq = norm_sq();
-        const T inv_norm = T{1} / n_sq;
-        nion res(size(), T{});
-        res[0] = m_store[0] * inv_norm;
-        for (std::size_t i = 1; i < size(); ++i) {
-            res[i] = -m_store[i] * inv_norm;
+    /// Multiplicative inverse: q^{-1} = conj(q) / abs(q)
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr nion inv() const {
+        const T n_sq = abs();
+        const std::size_t sz = size();
+        nion res(nion_math::detail::uninit_tag{}, sz);
+        if constexpr (std::is_floating_point_v<T>) {
+            const T inv_norm = T{1} / n_sq;
+            res[0] = m_store[0] * inv_norm;
+            for (std::size_t i = 1; i < sz; ++i) {
+                res[i] = -m_store[i] * inv_norm;
+            }
+        } else {
+            res[0] = m_store[0] / n_sq;
+            for (std::size_t i = 1; i < sz; ++i) {
+                res[i] = (-m_store[i]) / n_sq;
+            }
         }
         return res;
     }
@@ -375,11 +553,12 @@ public:
     // Unary & Increment/Decrement Operators (Matches Original Nion Semantics)
     // ------------------------------------------------------------------------
 
-    NION_HOST_DEVICE constexpr nion operator+() const { return *this; }
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr nion operator+() const { return *this; }
 
-    NION_HOST_DEVICE constexpr nion operator-() const {
-        nion res(size(), T{});
-        for (std::size_t i = 0; i < size(); ++i) {
+    NION_HOST_DEVICE NION_FORCE_INLINE constexpr nion operator-() const {
+        const std::size_t sz = size();
+        nion res(nion_math::detail::uninit_tag{}, sz);
+        for (std::size_t i = 0; i < sz; ++i) {
             res[i] = -m_store[i];
         }
         return res;
@@ -506,7 +685,7 @@ public:
 // ============================================================================
 
 /// nion + scalar
-template <nion_math::concepts::Scalar T, std::size_t N, typename Space, std::convertible_to<T> S>
+template <nion_math::concepts::Scalar T, std::size_t N, typename Space, nion_math::ConvertibleScalar<T> S>
 NION_HOST_DEVICE constexpr nion<T, N, Space> operator+(
     const nion<T, N, Space>& q, const S& s)
 {
@@ -516,7 +695,7 @@ NION_HOST_DEVICE constexpr nion<T, N, Space> operator+(
 }
 
 /// scalar + nion
-template <nion_math::concepts::Scalar T, std::size_t N, typename Space, std::convertible_to<T> S>
+template <nion_math::concepts::Scalar T, std::size_t N, typename Space, nion_math::ConvertibleScalar<T> S>
 NION_HOST_DEVICE constexpr nion<T, N, Space> operator+(
     const S& s, const nion<T, N, Space>& q)
 {
@@ -526,7 +705,7 @@ NION_HOST_DEVICE constexpr nion<T, N, Space> operator+(
 }
 
 /// nion - scalar
-template <nion_math::concepts::Scalar T, std::size_t N, typename Space, std::convertible_to<T> S>
+template <nion_math::concepts::Scalar T, std::size_t N, typename Space, nion_math::ConvertibleScalar<T> S>
 NION_HOST_DEVICE constexpr nion<T, N, Space> operator-(
     const nion<T, N, Space>& q, const S& s)
 {
@@ -536,7 +715,7 @@ NION_HOST_DEVICE constexpr nion<T, N, Space> operator-(
 }
 
 /// scalar - nion
-template <nion_math::concepts::Scalar T, std::size_t N, typename Space, std::convertible_to<T> S>
+template <nion_math::concepts::Scalar T, std::size_t N, typename Space, nion_math::ConvertibleScalar<T> S>
 NION_HOST_DEVICE constexpr nion<T, N, Space> operator-(
     const S& s, const nion<T, N, Space>& q)
 {
@@ -549,12 +728,12 @@ NION_HOST_DEVICE constexpr nion<T, N, Space> operator-(
 /// Dispatches at compile time to SIMD / unrolled table kernels when `N > 0`,
 /// and to dynamic SIMD/table kernels when `N == NION_USE_HEAP`.
 template <nion_math::concepts::Scalar T, std::size_t N1, std::size_t N2, typename Space>
-NION_HOST_DEVICE constexpr auto operator*(
+NION_HOST_DEVICE NION_FORCE_INLINE constexpr auto operator*(
     const nion<T, N1, Space>& lhs, const nion<T, N2, Space>& rhs)
 {
     if constexpr (N1 != nion_math::NION_DYNAMIC && N2 != nion_math::NION_DYNAMIC) {
         constexpr std::size_t OutN = (N1 > N2) ? N1 : N2;
-        nion<T, OutN, Space> res;
+        nion<T, OutN, Space> res(nion_math::detail::uninit_tag{}, OutN);
         if constexpr (N1 == N2) {
             nion_math::simd::mul_fixed_table<OutN>(res.data(), lhs.data(), rhs.data());
         } else {
@@ -565,14 +744,14 @@ NION_HOST_DEVICE constexpr auto operator*(
         return res;
     } else {
         const std::size_t out_sz = (lhs.size() > rhs.size()) ? lhs.size() : rhs.size();
-        nion<T, nion_math::NION_DYNAMIC, Space> res(out_sz, T{});
+        nion<T, nion_math::NION_DYNAMIC, Space> res(nion_math::detail::uninit_tag{}, out_sz);
         if (lhs.size() == rhs.size()) {
             nion_math::simd::mul_dynamic(res.data(), lhs.data(), rhs.data(), out_sz);
         } else {
-            nion<T, nion_math::NION_DYNAMIC, Space> l_pad(lhs.data(), out_sz);
-            for (std::size_t i = lhs.size(); i < out_sz; ++i) l_pad[i] = T{};
-            nion<T, nion_math::NION_DYNAMIC, Space> r_pad(rhs.data(), out_sz);
-            for (std::size_t i = rhs.size(); i < out_sz; ++i) r_pad[i] = T{};
+            nion<T, nion_math::NION_DYNAMIC, Space> l_pad(out_sz, T{});
+            nion_math::detail::copy_n(lhs.data(), lhs.size(), l_pad.data());
+            nion<T, nion_math::NION_DYNAMIC, Space> r_pad(out_sz, T{});
+            nion_math::detail::copy_n(rhs.data(), rhs.size(), r_pad.data());
             nion_math::simd::mul_dynamic(res.data(), l_pad.data(), r_pad.data(), out_sz);
         }
         return res;
@@ -581,14 +760,14 @@ NION_HOST_DEVICE constexpr auto operator*(
 
 /// Hypercomplex Right Division: `lhs / rhs = lhs * rhs.inv()`
 template <nion_math::concepts::Scalar T, std::size_t N1, std::size_t N2, typename Space>
-NION_HOST_DEVICE constexpr auto operator/(
+NION_HOST_DEVICE NION_FORCE_INLINE constexpr auto operator/(
     const nion<T, N1, Space>& lhs, const nion<T, N2, Space>& rhs)
 {
     return lhs * rhs.inv();
 }
 
 /// scalar / nion: `s * q.inv()`
-template <nion_math::concepts::Scalar T, std::size_t N, typename Space, std::convertible_to<T> S>
+template <nion_math::concepts::Scalar T, std::size_t N, typename Space, nion_math::ConvertibleScalar<T> S>
 NION_HOST_DEVICE constexpr nion<T, N, Space> operator/(
     const S& s, const nion<T, N, Space>& q)
 {
@@ -598,6 +777,51 @@ NION_HOST_DEVICE constexpr nion<T, N, Space> operator/(
 }
 
 namespace nion_math {
+
+// ============================================================================
+// 3b. Free Function Equivalents (Matching Original Nion API)
+// ============================================================================
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE NION_FORCE_INLINE constexpr T real(const ::nion<T, N, Space>& q) noexcept {
+    return q.real();
+}
+
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE NION_FORCE_INLINE constexpr ::nion<T, N, Space> imag(const ::nion<T, N, Space>& q) {
+    return q.imag();
+}
+
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE NION_FORCE_INLINE constexpr ::nion<T, N, Space> conj(const ::nion<T, N, Space>& q) {
+    return q.conj();
+}
+
+template <typename Derived, concepts::Scalar T>
+NION_HOST_DEVICE NION_FORCE_INLINE constexpr T abs(const NionExpr<Derived, T>& q) noexcept {
+    return q.derived().abs();
+}
+
+template <typename Derived, concepts::Scalar T>
+NION_HOST_DEVICE NION_FORCE_INLINE T norm(const NionExpr<Derived, T>& q) noexcept {
+    return q.derived().norm();
+}
+
+template <concepts::Scalar T, std::size_t N, typename Space>
+NION_HOST_DEVICE NION_FORCE_INLINE constexpr ::nion<T, N, Space> inv(const ::nion<T, N, Space>& q) {
+    return q.inv();
+}
+
+template <concepts::Scalar T, std::size_t N1, std::size_t N2, typename Space>
+NION_HOST_DEVICE constexpr T dot(
+    const ::nion<T, N1, Space>& lhs, const ::nion<T, N2, Space>& rhs) noexcept
+{
+    const std::size_t min_sz = (lhs.size() < rhs.size()) ? lhs.size() : rhs.size();
+    T acc{};
+    for (std::size_t i = 0; i < min_sz; ++i) {
+        acc = acc + lhs[i] * rhs[i];
+    }
+    return acc;
+}
 
 // ============================================================================
 // 4. Convenient Fixed-Size Hypercomplex Type Aliases
@@ -769,7 +993,14 @@ public:
 
 } // namespace nion_math
 
-// Expose convenient fixed-dimension aliases and batch/view types at global scope
+// Expose convenient fixed-dimension aliases, free functions, and batch/view types at global scope
+using nion_math::real;
+using nion_math::imag;
+using nion_math::conj;
+using nion_math::abs;
+using nion_math::norm;
+using nion_math::inv;
+using nion_math::dot;
 using nion_math::real_nion;
 using nion_math::complex_t;
 using nion_math::quaternion;
@@ -778,5 +1009,7 @@ using nion_math::sedenion;
 using nion_math::trigintaduonion;
 using nion_math::nion_view;
 using nion_math::nion_batch_soa;
+
+#include "nion_trig.hpp"
 
 #endif // NION_HPP

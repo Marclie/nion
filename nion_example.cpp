@@ -151,7 +151,7 @@ int main() {
         const auto t1 = std::chrono::high_resolution_clock::now();
 
         const double elapsed_ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
-        const octonion<float> expected = soa_a.get(0) * soa_b.get(0);
+        [[maybe_unused]] const octonion<float> expected = soa_a.get(0) * soa_b.get(0);
         const octonion<float> actual   = soa_out.get(0);
         assert((expected - actual).abs() < 1e-5f);
 

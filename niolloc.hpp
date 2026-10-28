@@ -113,6 +113,11 @@ concept ValidDimension = (N == NION_DYNAMIC) || std::has_single_bit(N);
 // ============================================================================
 namespace detail {
 
+/// Tag for internal uninitialized construction when the caller immediately overwrites all elements
+struct uninit_tag {
+    explicit constexpr uninit_tag() = default;
+};
+
 NION_HOST_DEVICE constexpr std::size_t next_power_of_two(std::size_t n) noexcept {
     if (n <= 1) return 1;
     // Bit-twiddling ceiling power of two that works in both constexpr and GPU device code
@@ -354,11 +359,19 @@ public:
         (N * sizeof(T) >= 32) ? 32 :
         (N * sizeof(T) >= 16) ? 16 : alignof(T);
 
-    alignas(alignment) T m_data[N]{};
+    alignas(alignment) T m_data[N];
 
-    NION_HOST_DEVICE constexpr niolloc_storage() noexcept = default;
+    NION_HOST_DEVICE constexpr niolloc_storage() noexcept : m_data{} {}
 
-    NION_HOST_DEVICE constexpr explicit niolloc_storage(std::size_t count) noexcept {
+    NION_HOST_DEVICE constexpr niolloc_storage(detail::uninit_tag, std::size_t count) noexcept {
+        assert(count <= N && "Fixed-size niolloc_storage cannot exceed N");
+        (void)count;
+        if (std::is_constant_evaluated()) {
+            detail::fill_n(m_data, N, T{});
+        }
+    }
+
+    NION_HOST_DEVICE constexpr explicit niolloc_storage(std::size_t count) noexcept : m_data{} {
         assert(count <= N && "Fixed-size niolloc_storage cannot exceed N");
         (void)count;
     }
@@ -404,6 +417,12 @@ public:
     using space_type                         = Space;
 
     NION_HOST_DEVICE constexpr niolloc_storage() noexcept = default;
+
+    niolloc_storage(detail::uninit_tag, std::size_t count)
+        : m_size(detail::next_power_of_two(count))
+    {
+        m_data = Space::template allocate<T>(m_size);
+    }
 
     explicit niolloc_storage(std::size_t count)
         : m_size(detail::next_power_of_two(count))
