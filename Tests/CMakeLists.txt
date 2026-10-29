@@ -17,6 +17,11 @@ if ( NOT HAS_CONCEPTS )
     message(FATAL_ERROR "Your compiler does not support concepts. Concepts are required for this library")
 endif()
 
+if (TEST_LARGE_DEGREE AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    message(STATUS "Skipping the incompatible NumberSystems reference library with Clang")
+    set(TEST_LARGE_DEGREE OFF)
+endif()
+
 if (TEST_LARGE_DEGREE)
     add_definitions(-DTEST_LARGE_DEGREE)
 endif()
