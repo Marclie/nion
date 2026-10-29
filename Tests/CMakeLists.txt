@@ -28,15 +28,18 @@ if(NOT HAS_CONCEPTS)
 endif()
 
 option(TEST_LARGE_DEGREE "Test Sedenion (N=16) and Trigintaduonion (N=32) against Douglas Wilhelm Harder's NumberSystems library" OFF)
-option(FULL_RECURSION "Force recursive Cayley-Dickson multiplication" OFF)
-
+if (TEST_LARGE_DEGREE AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set(TEST_LARGE_DEGREE OFF)
+endif()
 if(TEST_LARGE_DEGREE)
     add_compile_definitions(TEST_LARGE_DEGREE)
 endif()
 
+option(FULL_RECURSION "Force recursive Cayley-Dickson multiplication" OFF)
 if(FULL_RECURSION)
     add_compile_definitions(FULL_RECURSION)
 endif()
+
 
 if(TEST_LARGE_DEGREE)
     # Fetch content from Douglas Wilhelm Harder's NumberSystems library for comparison of our algorithms
