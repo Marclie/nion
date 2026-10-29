@@ -1,0 +1,62 @@
+name: Nion CI/CD Benchmark & Accuracy Pipeline
+
+on:
+  push:
+    branches: [ main, master, "feature/**" ]
+  pull_request:
+    branches: [ main, master, "feature/**" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build & Validate (${{ matrix.compiler }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - compiler: g++
+            cc: gcc
+            cxx: g++
+          - compiler: clang++
+            cc: clang
+            cxx: clang++
+
+    env:
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
+      # Scale factor for shared cloud runner jitter (1.0 = strict local, 2.0 = shared VM headroom)
+      NION_CI_SPEED_SCALE: "2.0"
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Build & Reference Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake \
+            ninja-build \
+            libboost-dev \
+            libboost-math-dev
+
+      - name: Configure CMake (Release + Native SIMD)
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DNION_ENABLE_NATIVE_SIMD=ON \
+            -DNION_BUILD_EXAMPLES=ON \
+            -DNION_BUILD_TESTS=ON \
+            -DTEST_LARGE_DEGREE=ON
+
+      - name: Build Targets
+        run: |
+          cmake --build build --parallel
+
+      - name: Run Automated CTest Accuracy & Speed Assertions
+        run: |
+          ctest --test-dir build --output-on-failure --verbose

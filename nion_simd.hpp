@@ -323,8 +323,9 @@ NION_HOST_DEVICE NION_FORCE_INLINE constexpr T vec_norm_sq(
     #if NION_SIMD_AVX2
         if constexpr (std::is_same_v<T, float>) {
             std::size_t i = 0;
+            const std::size_t vec_end = n & ~std::size_t(7);
             __m256 acc = _mm256_setzero_ps();
-            for (; i + 8 <= n; i += 8) {
+            for (; i < vec_end; i += 8) {
                 __m256 va = _mm256_loadu_ps(a + i);
             #if defined(__FMA__)
                 acc = _mm256_fmadd_ps(va, va, acc);
@@ -344,8 +345,9 @@ NION_HOST_DEVICE NION_FORCE_INLINE constexpr T vec_norm_sq(
             return total;
         } else if constexpr (std::is_same_v<T, double>) {
             std::size_t i = 0;
+            const std::size_t vec_end = n & ~std::size_t(3);
             __m256d acc = _mm256_setzero_pd();
-            for (; i + 4 <= n; i += 4) {
+            for (; i < vec_end; i += 4) {
                 __m256d va = _mm256_loadu_pd(a + i);
             #if defined(__FMA__)
                 acc = _mm256_fmadd_pd(va, va, acc);

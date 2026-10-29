@@ -83,6 +83,9 @@ set_target_properties(${NION_TEST_TARGET} PROPERTIES OUTPUT_NAME "nion")
 target_include_directories(${NION_TEST_TARGET} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 # Locate Boost headers (including Conda environments if present)
+if(POLICY CMP0167)
+    cmake_policy(SET CMP0167 OLD)
+endif()
 find_package(Boost QUIET)
 if(Boost_FOUND)
     target_include_directories(${NION_TEST_TARGET} PRIVATE ${Boost_INCLUDE_DIRS})
@@ -102,7 +105,39 @@ else()
 endif()
 
 if(TEST_LARGE_DEGREE)
-    target_include_directories(${NION_TEST_TARGET} PRIVATE ${CMAKE_BINARY_DIR}/_deps/numbersystems)
     file(GLOB_RECURSE number_systems_files ${CMAKE_BINARY_DIR}/_deps/numbersystems/*.cpp)
-    target_sources(${NION_TEST_TARGET} PRIVATE ${number_systems_files})
+    add_library(numbersystems_objs OBJECT ${number_systems_files})
+    target_include_directories(numbersystems_objs PUBLIC ${CMAKE_BINARY_DIR}/_deps/numbersystems)
+    target_link_libraries(${NION_TEST_TARGET} PRIVATE numbersystems_objs)
 endif()
+
+# ============================================================================
+# Automated CI/CD Accuracy & Benchmark Assertion Executable (nion_ci_test)
+# ============================================================================
+add_executable(nion_ci_test
+    ../niolloc.hpp
+    ../nion_simd.hpp
+    ../nion.hpp
+    ../nion_trig.hpp
+    benchmark_ci_test.cpp
+)
+target_include_directories(nion_ci_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)
+if(Boost_FOUND)
+    target_include_directories(nion_ci_test PRIVATE ${Boost_INCLUDE_DIRS})
+elseif(BOOST_HEADER_DIR)
+    target_include_directories(nion_ci_test PRIVATE ${BOOST_HEADER_DIR})
+endif()
+
+if(TEST_LARGE_DEGREE)
+    target_link_libraries(nion_ci_test PRIVATE numbersystems_objs)
+endif()
+
+enable_testing()
+add_test(NAME NionCI_N2_Complex          COMMAND nion_ci_test --suite=n2)
+add_test(NAME NionCI_N4_Quaternion       COMMAND nion_ci_test --suite=n4)
+add_test(NAME NionCI_N8_Octonion         COMMAND nion_ci_test --suite=n8)
+add_test(NAME NionCI_N16_Sedenion        COMMAND nion_ci_test --suite=n16)
+add_test(NAME NionCI_N32_Trigintaduonion COMMAND nion_ci_test --suite=n32)
+add_test(NAME NionCI_SIMD_Batches        COMMAND nion_ci_test --suite=simd)
+add_test(NAME NionCI_Speed_Benchmarks    COMMAND nion_ci_test --suite=speed)
+
