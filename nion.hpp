@@ -410,10 +410,13 @@ public:
     }
 
     // Standard copy/move constructors & assignments
-    NION_HOST_DEVICE constexpr nion(const nion&) = default;
-    NION_HOST_DEVICE constexpr nion(nion&&) noexcept = default;
-    NION_HOST_DEVICE constexpr nion& operator=(const nion&) = default;
-    NION_HOST_DEVICE constexpr nion& operator=(nion&&) noexcept = default;
+    // NOTE: no NION_HOST_DEVICE here. NVCC ignores execution-space annotations on functions
+    // explicitly defaulted on their first declaration (warning #20012-D) and instead infers
+    // __host__ __device__ from the (already NION_HOST_DEVICE) niolloc_storage members.
+    constexpr nion(const nion&) = default;
+    constexpr nion(nion&&) noexcept = default;
+    constexpr nion& operator=(const nion&) = default;
+    constexpr nion& operator=(nion&&) noexcept = default;
 
     /// Cross-space copy helper (e.g., copying HostSpace nion <-> DeviceSpace / UnifiedSpace nion)
     template <std::size_t OtherN, typename OtherSpace>

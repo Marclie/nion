@@ -67,33 +67,45 @@ namespace nion_math::simd {
 /// Bitwise constexpr computation of the Cayley-Dickson multiplication sign:
 /// Returns +1 or -1 for basis product e_p * e_q = (+/- 1) * e_{p ^ q}.
 /// Works for ANY arbitrary dimension on both Host and GPU Device!
+///
+/// Implemented as a loop (the doubling recursion below is tail-recursive with an accumulated
+/// sign). A recursive device function makes the CUDA stack size statically undeterminable
+/// (nvlink: "Stack size for entry function ... cannot be statically determined"); combined with
+/// large register-resident nions (e.g. N = 64) that overflowed the default per-thread stack and
+/// caused "an illegal memory access was encountered".
 NION_HOST_DEVICE constexpr int cd_sign_bitwise(std::size_t p, std::size_t q) noexcept {
-    if (p == 0 || q == 0) return 1;
-    if (p == q) return -1;
+    int sign = 1;
+    while (true) {
+        if (p == 0 || q == 0) return sign;
+        if (p == q) return -sign;
 
-    // Find highest power of two splitting p and q
-    const std::size_t max_pq = (p > q) ? p : q;
-    std::size_t half = 1;
-    while ((half << 1) <= max_pq) {
-        half <<= 1;
-    }
+        // Find highest power of two splitting p and q
+        const std::size_t max_pq = (p > q) ? p : q;
+        std::size_t half = 1;
+        while ((half << 1) <= max_pq) {
+            half <<= 1;
+        }
 
-    const bool p_hi = (p >= half);
-    const bool q_hi = (q >= half);
-    const std::size_t p_rem = p & (half - 1);
-    const std::size_t q_rem = q & (half - 1);
+        const bool p_hi = (p >= half);
+        const bool q_hi = (q >= half);
+        const std::size_t p_rem = p & (half - 1);
+        const std::size_t q_rem = q & (half - 1);
 
-    if (!p_hi && q_hi) {
-        // (a, 0) * (0, d) = (0, d * a) -> sign(q_rem, p_rem)
-        return cd_sign_bitwise(q_rem, p_rem);
-    } else if (p_hi && !q_hi) {
-        // (0, b) * (c, 0) = (0, b * conj(c))
-        const int conj_c = (q_rem == 0) ? 1 : -1;
-        return conj_c * cd_sign_bitwise(p_rem, q_rem);
-    } else {
-        // Both p_hi and q_hi: (0, b) * (0, d) = (-conj(d) * b, 0)
-        const int conj_d = (q_rem == 0) ? 1 : -1;
-        return -conj_d * cd_sign_bitwise(q_rem, p_rem);
+        if (!p_hi && q_hi) {
+            // (a, 0) * (0, d) = (0, d * a) -> sign(q_rem, p_rem)
+            p = q_rem;
+            q = p_rem;
+        } else if (p_hi && !q_hi) {
+            // (0, b) * (c, 0) = (0, b * conj(c))
+            if (q_rem != 0) sign = -sign;  // conj_c
+            p = p_rem;
+            q = q_rem;
+        } else {
+            // Both p_hi and q_hi: (0, b) * (0, d) = (-conj(d) * b, 0)
+            if (q_rem == 0) sign = -sign;  // -conj_d
+            p = q_rem;
+            q = p_rem;
+        }
     }
 }
 
@@ -491,7 +503,7 @@ NION_HOST_DEVICE NION_FORCE_INLINE constexpr void mul_fixed_step_p(
 {
     constexpr std::size_t p = P + 1;
     const T ap = a[p];
-    ((cd_table<N>.signs[K][p] > 0
+    ((cd_sign_bitwise(p, p ^ K) > 0
         ? (acc[K] = acc[K] + ap * b[p ^ K])
         : (acc[K] = acc[K] - ap * b[p ^ K])), ...);
 }
@@ -503,7 +515,7 @@ NION_HOST_DEVICE NION_FORCE_INLINE constexpr T mul_fixed_lane_k(
     std::index_sequence<P...>) noexcept
 {
     T acc = a[0] * b[K];
-    ((cd_table<N>.signs[K][P + 1] > 0
+    ((cd_sign_bitwise(P + 1, (P + 1) ^ K) > 0
         ? (acc = acc + a[P + 1] * b[(P + 1) ^ K])
         : (acc = acc - a[P + 1] * b[(P + 1) ^ K])), ...);
     return acc;
@@ -619,7 +631,12 @@ NION_HOST_DEVICE NION_FORCE_INLINE constexpr void mul_fixed_table(
             const T ap = a[p];
             for (std::size_t k = 0; k < N; ++k) {
                 const std::size_t q = p ^ k;
-                if (cd_table<N>.signs[k][p] > 0) {
+#if NION_ON_DEVICE
+                const int s = cd_sign_bitwise(p, q);
+#else
+                const int s = cd_table<N>.signs[k][p];
+#endif
+                if (s > 0) {
                     tmp[k] = tmp[k] + ap * b[q];
                 } else {
                     tmp[k] = tmp[k] - ap * b[q];

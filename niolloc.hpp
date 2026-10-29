@@ -418,40 +418,51 @@ public:
     static constexpr bool is_dynamic         = true;
     using space_type                         = Space;
 
-    NION_HOST_DEVICE constexpr niolloc_storage() noexcept = default;
+    // Defaulted on first declaration: NVCC infers __host__ __device__ (annotating it triggers #20012-D)
+    constexpr niolloc_storage() noexcept = default;
 
-    niolloc_storage(detail::uninit_tag, std::size_t count)
+    NION_HOST_DEVICE niolloc_storage(detail::uninit_tag, std::size_t count)
         : m_size(detail::next_power_of_two(count))
     {
+#if !NION_ON_DEVICE
         m_data = Space::template allocate<T>(m_size);
+#endif
     }
 
-    explicit niolloc_storage(std::size_t count)
+    NION_HOST_DEVICE explicit niolloc_storage(std::size_t count)
         : m_size(detail::next_power_of_two(count))
     {
+#if !NION_ON_DEVICE
         m_data = Space::template allocate<T>(m_size);
         if constexpr (Space::host_accessible) {
             detail::fill_n(m_data, m_size, T{});
         }
+#endif
     }
 
-    niolloc_storage(std::size_t count, const T& val)
+    NION_HOST_DEVICE niolloc_storage(std::size_t count, const T& val)
         : m_size(detail::next_power_of_two(count))
     {
+#if !NION_ON_DEVICE
         m_data = Space::template allocate<T>(m_size);
         if constexpr (Space::host_accessible) {
             detail::fill_n(m_data, m_size, val);
         }
+#else
+        (void)val;
+#endif
     }
 
     // Copy constructor
-    niolloc_storage(const niolloc_storage& other)
+    NION_HOST_DEVICE niolloc_storage(const niolloc_storage& other)
         : m_size(other.m_size)
     {
+#if !NION_ON_DEVICE
         if (m_size > 0) {
             m_data = Space::template allocate<T>(m_size);
             Space::copy(m_data, other.m_data, m_size);
         }
+#endif
     }
 
     // Move constructor
@@ -461,8 +472,9 @@ public:
     {}
 
     // Copy assignment
-    niolloc_storage& operator=(const niolloc_storage& other) {
+    NION_HOST_DEVICE niolloc_storage& operator=(const niolloc_storage& other) {
         if (this != &other) {
+#if !NION_ON_DEVICE
             if (m_size != other.m_size) {
                 Space::deallocate(m_data, m_size);
                 m_size = other.m_size;
@@ -471,6 +483,7 @@ public:
             if (m_size > 0) {
                 Space::copy(m_data, other.m_data, m_size);
             }
+#endif
         }
         return *this;
     }
@@ -487,7 +500,7 @@ public:
         return *this;
     }
 
-    ~niolloc_storage() noexcept {
+    NION_HOST_DEVICE ~niolloc_storage() noexcept {
 #if !NION_ON_DEVICE
         Space::deallocate(m_data, m_size);
 #endif
@@ -504,7 +517,8 @@ public:
         return m_data[i];
     }
 
-    void resize(std::size_t new_count) {
+    NION_HOST_DEVICE void resize(std::size_t new_count) {
+#if !NION_ON_DEVICE
         const std::size_t target = detail::next_power_of_two(new_count);
         if (target == m_size) return;
         T* new_data = Space::template allocate<T>(target);
@@ -522,6 +536,9 @@ public:
         Space::deallocate(m_data, m_size);
         m_data = new_data;
         m_size = target;
+#else
+        (void)new_count;
+#endif
     }
 
     void fill(const T& val) {

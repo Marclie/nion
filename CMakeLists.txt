@@ -154,22 +154,41 @@ if(NION_ENABLE_CUDA)
         message(FATAL_ERROR "NION_ENABLE_CUDA is ON, but no CUDA compiler (nvcc) was found.")
     endif()
 
+    # Pick the GPU architecture BEFORE enable_language(CUDA): enable_language() itself caches the
+    # compiler default (sm_75 for CUDA 13), so a later `if(NOT DEFINED ...)` check never fires and
+    # binaries for newer GPUs (e.g. sm_120 Blackwell) would only contain sm_75 SASS + PTX for JIT.
+    if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES AND NOT DEFINED ENV{CUDAARCHS}
+       AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.24)
+        set(CMAKE_CUDA_ARCHITECTURES "native" CACHE STRING "Target CUDA GPU architectures")
+    endif()
+
+    # Use ONE CUDA runtime consistently. CUDA-language targets link CMAKE_CUDA_RUNTIME_LIBRARY
+    # (Static by default), so linking CUDA::cudart (shared) as well put two runtimes in one binary.
+    # The static runtime is the nvcc/CMake default and avoids loader issues with the shared
+    # libcudart.so (e.g. WSL picking up a mismatched libnvidia-ptxjitcompiler.so.1).
+    option(NION_CUDA_STATIC_RUNTIME "Link the static CUDA runtime (cudart_static) instead of libcudart.so" ON)
+    if(NION_CUDA_STATIC_RUNTIME)
+        set(CMAKE_CUDA_RUNTIME_LIBRARY Static)
+    else()
+        set(CMAKE_CUDA_RUNTIME_LIBRARY Shared)
+    endif()
+
     enable_language(CUDA)
     find_package(CUDAToolkit REQUIRED)
 
-    if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-        set(CMAKE_CUDA_ARCHITECTURES "native" CACHE STRING "Target CUDA GPU architectures" FORCE)
-    endif()
-
     target_compile_definitions(nion INTERFACE NION_ENABLE_CUDA=1)
-    target_link_libraries(nion INTERFACE CUDA::cudart)
+    if(NION_CUDA_STATIC_RUNTIME)
+        target_link_libraries(nion INTERFACE CUDA::cudart_static)
+    else()
+        target_link_libraries(nion INTERFACE CUDA::cudart)
+    endif()
 
     # Enable constexpr host/device interoperability in NVCC
     target_compile_options(nion INTERFACE
         $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
     )
 
-    message(STATUS "[Nion] CUDA GPU backend enabled (Architectures: ${CMAKE_CUDA_ARCHITECTURES})")
+    message(STATUS "[Nion] CUDA GPU backend enabled (Architectures: ${CMAKE_CUDA_ARCHITECTURES}, Runtime: ${CMAKE_CUDA_RUNTIME_LIBRARY})")
 endif()
 
 # --- 4b. AMD ROCm / HIP Backend ---

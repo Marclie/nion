@@ -15,6 +15,7 @@
 #include <cmath>
 #include <iomanip>
 #include <iostream>
+#include <vector>
 
 // Use namespace nion_math (or its shorthand alias `nions`)
 using namespace nion_math;
@@ -54,6 +55,54 @@ __global__ void gpu_nion_kernel(
     if (idx < count) {
         hypercomplex_polynomial_step<T, N>(out_buffer, a_buffer, b_buffer, idx);
     }
+}
+#endif
+
+#if NION_GPU_COMPILER && defined(NION_ENABLE_CUDA)
+/// Runs `gpu_nion_kernel<T, N>` on `count` elements in managed memory and compares every
+/// component against the identical CPU computation. Returns false on any CUDA error or mismatch.
+template <typename T, std::size_t N>
+bool run_gpu_kernel_check(const char* label, std::size_t count, T tol) {
+    const std::size_t total = count * N;
+    T* a = nullptr; T* b = nullptr; T* out = nullptr;
+    auto check = [&](cudaError_t e, const char* what) {
+        if (e != cudaSuccess) {
+            std::cout << "[GPU Kernel]    " << label << ": " << what << " failed: "
+                      << cudaGetErrorString(e) << "\n";
+            return false;
+        }
+        return true;
+    };
+    bool ok = check(cudaMallocManaged(&a, total * sizeof(T)), "cudaMallocManaged(a)") &&
+              check(cudaMallocManaged(&b, total * sizeof(T)), "cudaMallocManaged(b)") &&
+              check(cudaMallocManaged(&out, total * sizeof(T)), "cudaMallocManaged(out)");
+    if (ok) {
+        for (std::size_t i = 0; i < total; ++i) {
+            a[i] = static_cast<T>(std::sin(0.37 * static_cast<double>(i) + 0.1));
+            b[i] = static_cast<T>(std::cos(0.23 * static_cast<double>(i) - 0.4));
+        }
+        constexpr unsigned threads = 128;
+        const unsigned blocks = static_cast<unsigned>((count + threads - 1) / threads);
+        gpu_nion_kernel<T, N><<<blocks, threads>>>(out, a, b, count);
+        ok = check(cudaGetLastError(), "kernel launch") &&
+             check(cudaDeviceSynchronize(), "kernel execution");
+    }
+    if (ok) {
+        T max_err{};
+        std::vector<T> cpu(total);
+        for (std::size_t idx = 0; idx < count; ++idx) {
+            hypercomplex_polynomial_step<T, N>(cpu.data(), a, b, idx);
+        }
+        for (std::size_t i = 0; i < total; ++i) {
+            const T err = std::abs(cpu[i] - out[i]);
+            if (!(err <= max_err)) max_err = err;  // also propagates NaN
+        }
+        ok = (max_err <= tol);
+        std::cout << "[GPU Kernel]    " << label << ": " << count << " elements, max |GPU - CPU| = "
+                  << max_err << (ok ? " (OK)" : " (MISMATCH)") << "\n";
+    }
+    cudaFree(a); cudaFree(b); cudaFree(out);
+    return ok;
 }
 #endif
 
@@ -133,6 +182,31 @@ int main() {
         auto u_prod = u1 * u2;
         std::cout << "[UnifiedSpace]  u1 * u2 = " << u_prod << "\n\n";
     }
+
+#if NION_GPU_COMPILER && defined(NION_ENABLE_CUDA)
+    // 4b. GPU Kernel Execution: the same NION_HOST_DEVICE code path run on the device and the CPU.
+    //     N = 64 exercises the device branch of mul_fixed_table<64> (cd_sign_bitwise instead of
+    //     the host-only constexpr cd_table<64>).
+    {
+        int device_count = 0;
+        const cudaError_t e = cudaGetDeviceCount(&device_count);
+        if (e != cudaSuccess || device_count == 0) {
+            std::cout << "[GPU Kernel]    skipped (no CUDA device available: "
+                      << cudaGetErrorString(e) << ")\n\n";
+        } else {
+            bool gpu_ok = true;
+            gpu_ok &= run_gpu_kernel_check<float, 4>("quaternion<float>  (N=4) ", 4096, 1e-4f);
+            gpu_ok &= run_gpu_kernel_check<double, 8>("octonion<double>   (N=8) ", 4096, 1e-11);
+            gpu_ok &= run_gpu_kernel_check<double, 16>("sedenion<double>   (N=16)", 2048, 1e-11);
+            gpu_ok &= run_gpu_kernel_check<double, 64>("nion<double, 64>   (N=64)", 1024, 1e-10);
+            std::cout << "\n";
+            if (!gpu_ok) {
+                std::cout << "GPU kernel verification FAILED\n";
+                return 1;
+            }
+        }
+    }
+#endif
 
     // 5. High-Throughput AoS vs. SoA SIMD Benchmark (Octonions N = 8)
     {
