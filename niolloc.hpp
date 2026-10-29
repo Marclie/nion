@@ -355,9 +355,11 @@ public:
     static constexpr std::size_t static_size = N;
     static constexpr bool is_dynamic         = false;
     static constexpr std::size_t alignment   =
-        (N * sizeof(T) >= 64) ? 64 :
-        (N * sizeof(T) >= 32) ? 32 :
-        (N * sizeof(T) >= 16) ? 16 : alignof(T);
+        concepts::SimdFloat<T> ? (
+            (N * sizeof(T) >= 64) ? 64 :
+            (N * sizeof(T) >= 32) ? 32 :
+            (N * sizeof(T) >= 16) ? 16 : alignof(T)
+        ) : alignof(T);
 
     alignas(alignment) T m_data[N];
 

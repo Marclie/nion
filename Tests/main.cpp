@@ -561,11 +561,11 @@ int main() {
     std::cout << std::fixed << std::setprecision(4) << std::noshowpoint;
 
     ReadMeExamples();
-//    order2Test();
-//    mixedOrderTest();
-//    split_nions();
+    order2Test();
+    mixedOrderTest();
+    split_nions();
 
-    int num_trials = 100000;
+    int num_trials = 1e6;
     benchmark(num_trials);
 
 //    writeSinData(num_trials);

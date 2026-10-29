@@ -315,8 +315,8 @@ NION_HOST_DEVICE NION_FORCE_INLINE constexpr T vec_norm_sq(
     if (n == 0) return T{};
     if (n == 1) return a[0] * a[0];
     if (n == 2) return a[0] * a[0] + a[1] * a[1];
-    if (n == 3) return (a[0] * a[0] + a[1] * a[1]) + a[2] * a[2];
-    if (n == 4) return (a[0] * a[0] + a[1] * a[1]) + (a[2] * a[2] + a[3] * a[3]);
+    if (n == 3) return a[0] * a[0] + a[1] * a[1] + a[2] * a[2];
+    if (n == 4) return a[0] * a[0] + a[1] * a[1] + a[2] * a[2] + a[3] * a[3];
 
 #if !NION_ON_DEVICE
     if (!std::is_constant_evaluated()) {
@@ -472,13 +472,13 @@ NION_HOST_DEVICE NION_FORCE_INLINE constexpr void mul_fixed_4(
     #endif
     }
 #endif
-    const T a0 = a[0], a1 = a[1], a2 = a[2], a3 = a[3];
-    const T b0 = b[0], b1 = b[1], b2 = b[2], b3 = b[3];
+    const T l0 = a[0], l1 = a[1], l2 = a[2], l3 = a[3];
+    const T r0 = b[0], r1 = b[1], r2 = b[2], r3 = b[3];
 
-    out[0] = a0 * b0 - a1 * b1 - a2 * b2 - a3 * b3;
-    out[1] = a0 * b1 + a1 * b0 + a2 * b3 - a3 * b2;
-    out[2] = a0 * b2 - a1 * b3 + a2 * b0 + a3 * b1;
-    out[3] = a0 * b3 + a1 * b2 - a2 * b1 + a3 * b0;
+    out[0] = l0 * r0 - l1 * r1 - l2 * r2 - l3 * r3;
+    out[1] = l1 * r0 + l0 * r1 - l3 * r2 + l2 * r3;
+    out[2] = l2 * r0 + l3 * r1 + l0 * r2 - l1 * r3;
+    out[3] = l3 * r0 - l2 * r1 + l1 * r2 + l0 * r3;
 }
 
 /// Helper: update all output lanes K = 0..N-1 for a fixed input lane p = P + 1 (SIMD-friendly).
@@ -508,10 +508,6 @@ NION_HOST_DEVICE NION_FORCE_INLINE constexpr T mul_fixed_lane_k(
 }
 
 /// Compile-time unrolled multiplication for N = 8, 16, 32.
-/// - For SIMD floating-point types (`float`, `double`), iterates `p` in the outer pack and updates
-///   all `K = 0..N-1` independent output lanes in parallel in YMM/XMM registers (AVX2 FMA).
-/// - For x87 `long double` or composite types, iterates `K` in the outer pack and accumulates a single
-///   register `acc` (`st(0)`) across `p = 0..N-1` to avoid x87 register-stack spills!
 template <std::size_t N, typename T, std::size_t... K, std::size_t... P>
 NION_HOST_DEVICE NION_FORCE_INLINE constexpr void mul_fixed_unrolled_impl(
     T* NION_RESTRICT out, const T* NION_RESTRICT a, const T* NION_RESTRICT b,
@@ -526,6 +522,74 @@ NION_HOST_DEVICE NION_FORCE_INLINE constexpr void mul_fixed_unrolled_impl(
     }
 }
 
+/// Fast-Path N = 8 (Octonion Multiplication: SIMD for float/double, hard-coded flat expressions from master for scalar/long double)
+template <typename T>
+NION_HOST_DEVICE NION_FORCE_INLINE constexpr void mul_fixed_8(
+    T* NION_RESTRICT out, const T* NION_RESTRICT Lhs, const T* NION_RESTRICT Rhs) noexcept
+{
+#if !NION_ON_DEVICE
+    if (!std::is_constant_evaluated()) {
+        if constexpr (concepts::SimdFloat<T>) {
+            mul_fixed_unrolled_impl<8>(out, Lhs, Rhs, std::make_index_sequence<8>{}, std::make_index_sequence<7>{});
+            return;
+        }
+    }
+#endif
+    const T l0 = Lhs[0], l1 = Lhs[1], l2 = Lhs[2], l3 = Lhs[3],
+            l4 = Lhs[4], l5 = Lhs[5], l6 = Lhs[6], l7 = Lhs[7];
+    const T r0 = Rhs[0], r1 = Rhs[1], r2 = Rhs[2], r3 = Rhs[3],
+            r4 = Rhs[4], r5 = Rhs[5], r6 = Rhs[6], r7 = Rhs[7];
+
+    out[0] = l0 * r0 - l1 * r1 - l2 * r2 - l3 * r3 - l4 * r4 - l5 * r5 - l6 * r6 - l7 * r7;
+    out[1] = l1 * r0 + l0 * r1 - l3 * r2 + l2 * r3 - l5 * r4 + l4 * r5 + l7 * r6 - l6 * r7;
+    out[2] = l2 * r0 + l3 * r1 + l0 * r2 - l1 * r3 - l6 * r4 - l7 * r5 + l4 * r6 + l5 * r7;
+    out[3] = l3 * r0 - l2 * r1 + l1 * r2 + l0 * r3 - l7 * r4 + l6 * r5 - l5 * r6 + l4 * r7;
+    out[4] = l4 * r0 + l5 * r1 + l6 * r2 + l7 * r3 + l0 * r4 - l1 * r5 - l2 * r6 - l3 * r7;
+    out[5] = l5 * r0 - l4 * r1 + l7 * r2 - l6 * r3 + l1 * r4 + l0 * r5 + l3 * r6 - l2 * r7;
+    out[6] = l6 * r0 - l7 * r1 - l4 * r2 + l5 * r3 + l2 * r4 - l3 * r5 + l0 * r6 + l1 * r7;
+    out[7] = l7 * r0 + l6 * r1 - l5 * r2 - l4 * r3 + l3 * r4 + l2 * r5 - l1 * r6 + l0 * r7;
+}
+
+/// Fast-Path N = 16 (Sedenion Multiplication: SIMD for float/double, hard-coded flat expressions from master for scalar/long double)
+template <typename T>
+NION_HOST_DEVICE NION_FORCE_INLINE constexpr void mul_fixed_16(
+    T* NION_RESTRICT out, const T* NION_RESTRICT Lhs, const T* NION_RESTRICT Rhs) noexcept
+{
+#if !NION_ON_DEVICE
+    if (!std::is_constant_evaluated()) {
+        if constexpr (concepts::SimdFloat<T>) {
+            mul_fixed_unrolled_impl<16>(out, Lhs, Rhs, std::make_index_sequence<16>{}, std::make_index_sequence<15>{});
+            return;
+        }
+    }
+#endif
+    const T l0  = Lhs[ 0], l1  = Lhs[ 1], l2  = Lhs[ 2], l3  = Lhs[ 3],
+            l4  = Lhs[ 4], l5  = Lhs[ 5], l6  = Lhs[ 6], l7  = Lhs[ 7],
+            l8  = Lhs[ 8], l9  = Lhs[ 9], l10 = Lhs[10], l11 = Lhs[11],
+            l12 = Lhs[12], l13 = Lhs[13], l14 = Lhs[14], l15 = Lhs[15];
+    const T r0  = Rhs[ 0], r1  = Rhs[ 1], r2  = Rhs[ 2], r3  = Rhs[ 3],
+            r4  = Rhs[ 4], r5  = Rhs[ 5], r6  = Rhs[ 6], r7  = Rhs[ 7],
+            r8  = Rhs[ 8], r9  = Rhs[ 9], r10 = Rhs[10], r11 = Rhs[11],
+            r12 = Rhs[12], r13 = Rhs[13], r14 = Rhs[14], r15 = Rhs[15];
+
+    out[ 0] = l0 * r0  - l1 * r1  - l2 * r2  - l3 * r3  - l4 * r4  - l5 * r5  - l6 * r6  - l7 * r7  - l8 * r8  - l9 * r9  - l10 * r10 - l11 * r11 - l12 * r12 - l13 * r13 - l14 * r14 - l15 * r15;
+    out[ 1] = l0 * r1  + l1 * r0  + l2 * r3  - l3 * r2  + l4 * r5  - l5 * r4  - l6 * r7  + l7 * r6  + l8 * r9  - l9 * r8  - l10 * r11 + l11 * r10 - l12 * r13 + l13 * r12 + l14 * r15 - l15 * r14;
+    out[ 2] = l0 * r2  - l1 * r3  + l2 * r0  + l3 * r1  + l4 * r6  + l5 * r7  - l6 * r4  - l7 * r5  + l8 * r10 + l9 * r11 - l10 * r8  - l11 * r9  - l12 * r14 - l13 * r15 + l14 * r12 + l15 * r13;
+    out[ 3] = l0 * r3  + l1 * r2  - l2 * r1  + l3 * r0  + l4 * r7  - l5 * r6  + l6 * r5  - l7 * r4  + l8 * r11 - l9 * r10 + l10 * r9  - l11 * r8  - l12 * r15 + l13 * r14 - l14 * r13 + l15 * r12;
+    out[ 4] = l0 * r4  - l1 * r5  - l2 * r6  - l3 * r7  + l4 * r0  + l5 * r1  + l6 * r2  + l7 * r3  + l8 * r12 + l9 * r13 + l10 * r14 + l11 * r15 - l12 * r8  - l13 * r9  - l14 * r10 - l15 * r11;
+    out[ 5] = l0 * r5  + l1 * r4  - l2 * r7  + l3 * r6  - l4 * r1  + l5 * r0  - l6 * r3  + l7 * r2  + l8 * r13 - l9 * r12 + l10 * r15 - l11 * r14 + l12 * r9  - l13 * r8  + l14 * r11 - l15 * r10;
+    out[ 6] = l0 * r6  + l1 * r7  + l2 * r4  - l3 * r5  - l4 * r2  + l5 * r3  + l6 * r0  - l7 * r1  + l8 * r14 - l9 * r15 - l10 * r12 + l11 * r13 + l12 * r10 - l13 * r11 - l14 * r8  + l15 * r9 ;
+    out[ 7] = l0 * r7  - l1 * r6  + l2 * r5  + l3 * r4  - l4 * r3  - l5 * r2  + l6 * r1  + l7 * r0  + l8 * r15 + l9 * r14 - l10 * r13 - l11 * r12 + l12 * r11 + l13 * r10 - l14 * r9  - l15 * r8 ;
+    out[ 8] = l0 * r8  - l1 * r9  - l2 * r10 - l3 * r11 - l4 * r12 - l5 * r13 - l6 * r14 - l7 * r15 + l8 * r0  + l9 * r1  + l10 * r2  + l11 * r3  + l12 * r4  + l13 * r5  + l14 * r6  + l15 * r7 ;
+    out[ 9] = l0 * r9  + l1 * r8  - l2 * r11 + l3 * r10 - l4 * r13 + l5 * r12 + l6 * r15 - l7 * r14 - l8 * r1  + l9 * r0  - l10 * r3  + l11 * r2  - l12 * r5  + l13 * r4  + l14 * r7  - l15 * r6 ;
+    out[10] = l0 * r10 + l1 * r11 + l2 * r8  - l3 * r9  - l4 * r14 - l5 * r15 + l6 * r12 + l7 * r13 - l8 * r2  + l9 * r3  + l10 * r0  - l11 * r1  - l12 * r6  - l13 * r7  + l14 * r4  + l15 * r5 ;
+    out[11] = l0 * r11 - l1 * r10 + l2 * r9  + l3 * r8  - l4 * r15 + l5 * r14 - l6 * r13 + l7 * r12 - l8 * r3  - l9 * r2  + l10 * r1  + l11 * r0  - l12 * r7  + l13 * r6  - l14 * r5  + l15 * r4 ;
+    out[12] = l0 * r12 + l1 * r13 + l2 * r14 + l3 * r15 + l4 * r8  - l5 * r9  - l6 * r10 - l7 * r11 - l8 * r4  + l9 * r5  + l10 * r6  + l11 * r7  + l12 * r0  - l13 * r1  - l14 * r2  - l15 * r3 ;
+    out[13] = l0 * r13 - l1 * r12 + l2 * r15 - l3 * r14 + l4 * r9  + l5 * r8  + l6 * r11 - l7 * r10 - l8 * r5  - l9 * r4  + l10 * r7  - l11 * r6  + l12 * r1  + l13 * r0  + l14 * r3  - l15 * r2 ;
+    out[14] = l0 * r14 - l1 * r15 - l2 * r12 + l3 * r13 + l4 * r10 - l5 * r11 + l6 * r8  + l7 * r9  - l8 * r6  - l9 * r7  - l10 * r4  + l11 * r5  + l12 * r2  - l13 * r3  + l14 * r0  + l15 * r1 ;
+    out[15] = l0 * r15 + l1 * r14 - l2 * r13 - l3 * r12 + l4 * r11 + l5 * r10 - l6 * r9  + l7 * r8  - l8 * r7  + l9 * r6  - l10 * r5  - l11 * r4  + l12 * r3  + l13 * r2  - l14 * r1  + l15 * r0 ;
+}
+
 /// Compile-Time Table-Driven Multiplication for Fixed Dimensions N <= 64 (e.g., Octonions N=8, Sedenions N=16)
 /// Uses the constexpr `cd_table<N>` so the compiler completely unrolls the dot products without branches!
 template <std::size_t N, typename T>
@@ -538,6 +602,10 @@ NION_HOST_DEVICE NION_FORCE_INLINE constexpr void mul_fixed_table(
         mul_fixed_2(out, a, b);
     } else if constexpr (N == 4) {
         mul_fixed_4(out, a, b);
+    } else if constexpr (N == 8) {
+        mul_fixed_8(out, a, b);
+    } else if constexpr (N == 16) {
+        mul_fixed_16(out, a, b);
     } else if constexpr (N <= 32) {
         mul_fixed_unrolled_impl<N>(out, a, b, std::make_index_sequence<N>{}, std::make_index_sequence<N - 1>{});
     } else if constexpr (N <= 64) {

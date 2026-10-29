@@ -314,13 +314,9 @@ public:
     {
         const std::size_t sz = size();
         const std::size_t limit = (init.size() < sz) ? init.size() : sz;
-        std::size_t idx = 0;
-        for (const auto& val : init) {
-            if (idx >= limit) break;
-            m_store[idx++] = val;
-        }
-        for (; idx < sz; ++idx) {
-            m_store[idx] = T{};
+        nion_math::detail::copy_n(init.begin(), limit, m_store.data());
+        for (std::size_t i = limit; i < sz; ++i) {
+            m_store[i] = T{};
         }
     }
 
@@ -344,6 +340,11 @@ public:
         : m_store(nion_math::detail::uninit_tag{},
                   is_dynamic ? nion_math::detail::next_power_of_two(count) : N)
     {
+#if !NION_ON_DEVICE && (defined(__GNUC__) || defined(__clang__))
+        if (!std::is_constant_evaluated()) {
+            asm("" : "+r"(ptr));
+        }
+#endif
         const std::size_t sz = size();
         const std::size_t limit = (count < sz) ? count : sz;
         nion_math::detail::copy_n(ptr, limit, m_store.data());
